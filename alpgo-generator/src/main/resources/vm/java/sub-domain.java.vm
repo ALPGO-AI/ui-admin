@@ -5,8 +5,8 @@ import ${import};
 #end
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import com.alpgo.common.annotation.Excel;
-import com.alpgo.common.core.domain.BaseEntity;
+import annotation.common.cc.alpgo.Excel;
+import domain.core.common.cc.alpgo.BaseEntity;
 
 /**
  * ${subTable.functionName}对象 ${subTableName}

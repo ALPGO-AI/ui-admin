@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.alpgo.sdtool.mapper.StableDiffusionOutputMapper">
+<mapper namespace="cc.alpgo.sdtool.mapper.StableDiffusionOutputMapper">
 
     <resultMap type="StableDiffusionOutput" id="StableDiffusionOutputResult">
         <result property="outputId"    column="output_id"    />

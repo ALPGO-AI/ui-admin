@@ -2,16 +2,15 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.alpgo.sdtool.mapper.StableDiffusionPatternMapper">
-
+<mapper namespace="cc.alpgo.sdtool.mapper.StableDiffusionPatternMapper">
     <resultMap type="StableDiffusionPattern" id="StableDiffusionPatternResult">
         <result property="patternId"    column="pattern_id"    />
         <result property="model"    column="model"    />
-        <result property="positiveprompt"    column="positivePrompt"    />
-        <result property="negativeprompt"    column="negativePrompt"    />
-        <result property="sampleimage"    column="sampleImage"    />
-        <result property="presettemplate"    column="presetTemplate"    />
-        <result property="patternstyle"    column="patternStyle"    />
+        <result property="positivePrompt"    column="positive_prompt"    />
+        <result property="negativePrompt"    column="negative_prompt"    />
+        <result property="sampleImage"    column="sample_image"    />
+        <result property="presetTemplate"    column="preset_template"    />
+        <result property="patternStyle"    column="pattern_style"    />
         <result property="parametersJson"    column="parameters_json"    />
         <result property="delFlag"    column="del_flag"    />
         <result property="createBy"    column="create_by"    />
@@ -21,18 +20,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStableDiffusionPatternVo">
-        select pattern_id, model, positivePrompt, negativePrompt, sampleImage, presetTemplate, patternStyle, parameters_json, del_flag, create_by, create_time, update_by, update_time from stable_diffusion_pattern
+        select pattern_id, model, positive_prompt, negative_prompt, sample_image, preset_template, pattern_style, parameters_json, del_flag, create_by, create_time, update_by, update_time from stable_diffusion_pattern
     </sql>
 
     <select id="selectStableDiffusionPatternList" parameterType="StableDiffusionPattern" resultMap="StableDiffusionPatternResult">
         <include refid="selectStableDiffusionPatternVo"/>
         <where>
             <if test="model != null  and model != ''"> and model = #{model}</if>
-            <if test="positiveprompt != null  and positiveprompt != ''"> and positivePrompt = #{positiveprompt}</if>
-            <if test="negativeprompt != null  and negativeprompt != ''"> and negativePrompt = #{negativeprompt}</if>
-            <if test="sampleimage != null  and sampleimage != ''"> and sampleImage = #{sampleimage}</if>
-            <if test="presettemplate != null  and presettemplate != ''"> and presetTemplate = #{presettemplate}</if>
-            <if test="patternstyle != null  and patternstyle != ''"> and patternStyle = #{patternstyle}</if>
+            <if test="positivePrompt != null  and positivePrompt != ''"> and positive_prompt = #{positivePrompt}</if>
+            <if test="negativePrompt != null  and negativePrompt != ''"> and negative_prompt = #{negativePrompt}</if>
+            <if test="sampleImage != null  and sampleImage != ''"> and sample_image = #{sampleImage}</if>
+            <if test="presetTemplate != null  and presetTemplate != ''"> and preset_template = #{presetTemplate}</if>
+            <if test="patternStyle != null  and patternStyle != ''"> and pattern_style = #{patternStyle}</if>
         </where>
     </select>
 
@@ -55,11 +54,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         insert into stable_diffusion_pattern
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="model != null">model,</if>
-            <if test="positiveprompt != null">positivePrompt,</if>
-            <if test="negativeprompt != null">negativePrompt,</if>
-            <if test="sampleimage != null">sampleImage,</if>
-            <if test="presettemplate != null">presetTemplate,</if>
-            <if test="patternstyle != null">patternStyle,</if>
+            <if test="positivePrompt != null">positive_prompt,</if>
+            <if test="negativePrompt != null">negative_prompt,</if>
+            <if test="sampleImage != null">sample_image,</if>
+            <if test="presetTemplate != null">preset_template,</if>
+            <if test="patternStyle != null">pattern_style,</if>
             <if test="parametersJson != null">parameters_json,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
@@ -69,11 +68,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="model != null">#{model},</if>
-            <if test="positiveprompt != null">#{positiveprompt},</if>
-            <if test="negativeprompt != null">#{negativeprompt},</if>
-            <if test="sampleimage != null">#{sampleimage},</if>
-            <if test="presettemplate != null">#{presettemplate},</if>
-            <if test="patternstyle != null">#{patternstyle},</if>
+            <if test="positivePrompt != null">#{positivePrompt},</if>
+            <if test="negativePrompt != null">#{negativePrompt},</if>
+            <if test="sampleImage != null">#{sampleImage},</if>
+            <if test="presetTemplate != null">#{presetTemplate},</if>
+            <if test="patternStyle != null">#{patternStyle},</if>
             <if test="parametersJson != null">#{parametersJson},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>
@@ -87,11 +86,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update stable_diffusion_pattern
         <trim prefix="SET" suffixOverrides=",">
             <if test="model != null">model = #{model},</if>
-            <if test="positiveprompt != null">positivePrompt = #{positiveprompt},</if>
-            <if test="negativeprompt != null">negativePrompt = #{negativeprompt},</if>
-            <if test="sampleimage != null">sampleImage = #{sampleimage},</if>
-            <if test="presettemplate != null">presetTemplate = #{presettemplate},</if>
-            <if test="patternstyle != null">patternStyle = #{patternstyle},</if>
+            <if test="positivePrompt != null">positive_prompt = #{positivePrompt},</if>
+            <if test="negativePrompt != null">negative_prompt = #{negativePrompt},</if>
+            <if test="sampleImage != null">sample_image = #{sampleImage},</if>
+            <if test="presetTemplate != null">preset_template = #{presetTemplate},</if>
+            <if test="patternStyle != null">pattern_style = #{patternStyle},</if>
             <if test="parametersJson != null">parameters_json = #{parametersJson},</if>
             <if test="delFlag != null">del_flag = #{delFlag},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
