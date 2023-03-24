@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { Notification, MessageBox, Message, Loading } from 'element-ui'
 import store from '@/store'
-import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { tansParams, blobValidate } from "@/utils/ruoyi";
 import cache from '@/plugins/cache'
@@ -12,23 +11,23 @@ let downloadLoadingInstance;
 let isReloginShow;
 
 axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
+axios.defaults.withCredentials = true;
 // 创建axios实例
 const service = axios.create({
   // axios中请求配置有baseURL选项，表示请求URL公共部分
-  baseURL: process.env.VUE_APP_BASE_API,
+  baseURL: '/webui',
   // 超时
   timeout: 100000
 })
-
 // request拦截器
 service.interceptors.request.use(config => {
-  // 是否需要设置 token
-  const isToken = (config.headers || {}).isToken === false
   // 是否需要防止数据重复提交
   const isRepeatSubmit = (config.headers || {}).repeatSubmit === false
-  if (getToken() && !isToken) {
-    config.headers['Authorization'] = 'Bearer ' + getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
-  }
+  const basicToken = btoa(`${username}:${password}`)
+  const headerParams = cache.local.getJSON("headerParams")
+  const username = headerParams.stable_diffusion_webui_username
+  const password = headerParams.stable_diffusion_webui_password
+  config.headers['Authorization'] = 'Bearer ' + basicToken
   // get请求映射params参数
   if (config.method === 'get' && config.params) {
     let url = config.url + '?' + tansParams(config.params);

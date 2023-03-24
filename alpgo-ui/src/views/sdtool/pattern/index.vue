@@ -8,20 +8,20 @@
             :value="dict.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="正向提示" prop="positiveprompt">
-        <el-input v-model="queryParams.positiveprompt" placeholder="请输入正向提示" clearable size="small"
+      <el-form-item label="正向提示" prop="positivePrompt">
+        <el-input v-model="queryParams.positivePrompt" placeholder="请输入正向提示" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="负向提示" prop="negativeprompt">
-        <el-input v-model="queryParams.negativeprompt" placeholder="请输入负向提示" clearable size="small"
+      <el-form-item label="负向提示" prop="negativePrompt">
+        <el-input v-model="queryParams.negativePrompt" placeholder="请输入负向提示" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="预设模板" prop="presettemplate">
-        <el-input v-model="queryParams.presettemplate" placeholder="请输入预设模板" clearable size="small"
+      <el-form-item label="预设模板" prop="presetTemplate">
+        <el-input v-model="queryParams.presetTemplate" placeholder="请输入预设模板" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="pattern风格" prop="patternstyle">
-        <el-input v-model="queryParams.patternstyle" placeholder="请输入pattern风格" clearable size="small"
+      <el-form-item label="pattern风格" prop="patternStyle">
+        <el-input v-model="queryParams.patternStyle" placeholder="请输入pattern风格" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
@@ -58,15 +58,15 @@
           <dict-tag :options="dict.type.stable_diffusion_model" :value="scope.row.model" />
         </template>
       </el-table-column>
-      <el-table-column label="正向提示" align="center" prop="positiveprompt" />
-      <el-table-column label="负向提示" align="center" prop="negativeprompt" />
-      <el-table-column label="样例图片" align="center" prop="sampleimage" width="150">
+      <el-table-column label="正向提示" align="center" prop="positivePrompt" />
+      <el-table-column label="负向提示" align="center" prop="negativePrompt" />
+      <el-table-column label="样例图片" align="center" prop="sampleImage" width="150">
         <template slot-scope="scope">
-          <image-preview :src="scope.row.sampleimage" :width="128" :height="128" />
+          <image-preview v-if="scope.row.sampleImage" :src="scope.row.sampleImage" :width="128" :height="128" />
         </template>
       </el-table-column>
-      <el-table-column label="预设模板" align="center" prop="presettemplate" />
-      <el-table-column label="pattern风格" align="center" prop="patternstyle" />
+      <el-table-column label="预设模板" align="center" prop="presetTemplate" />
+      <el-table-column label="pattern风格" align="center" prop="patternStyle" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-cloud" @click="handleGenerate(scope.row)"
@@ -95,17 +95,17 @@
               :label="dict.value">{{ dict.label }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="正向提示" prop="positiveprompt">
-          <el-input v-model="form.positiveprompt" placeholder="请输入正向提示" />
+        <el-form-item label="正向提示" prop="positivePrompt">
+          <el-input v-model="form.positivePrompt" placeholder="请输入正向提示" />
         </el-form-item>
-        <el-form-item label="负向提示" prop="negativeprompt">
-          <el-input v-model="form.negativeprompt" placeholder="请输入负向提示" />
+        <el-form-item label="负向提示" prop="negativePrompt">
+          <el-input v-model="form.negativePrompt" placeholder="请输入负向提示" />
         </el-form-item>
-        <el-form-item label="预设模板" prop="presettemplate">
-          <el-input v-model="form.presettemplate" placeholder="请输入预设模板" />
+        <el-form-item label="预设模板" prop="presetTemplate">
+          <el-input v-model="form.presetTemplate" placeholder="请输入预设模板" />
         </el-form-item>
-        <el-form-item label="pattern风格" prop="patternstyle">
-          <el-input v-model="form.patternstyle" placeholder="请输入pattern风格" />
+        <el-form-item label="pattern风格" prop="patternStyle">
+          <el-input v-model="form.patternStyle" placeholder="请输入pattern风格" />
         </el-form-item>
         <el-form-item label="CFG">
           <el-input v-model="form.parameters.CFG" placeholder="请输入CFG" />
@@ -133,7 +133,7 @@ import { listPattern, getPattern, delPattern, addPattern, updatePattern, generat
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 
 export default {
-  name: "Pattern",
+  name: "SDPattern",
   dicts: ['stable_diffusion_model', 'stable_diffusion_sampler'],
   components: {
     HeaderParams
@@ -163,11 +163,11 @@ export default {
         pageNum: 1,
         pageSize: 10,
         model: null,
-        positiveprompt: null,
-        negativeprompt: null,
+        positivePrompt: null,
+        negativePrompt: null,
         sampleimage: null,
-        presettemplate: null,
-        patternstyle: null,
+        presetTemplate: null,
+        patternStyle: null,
       },
       // 表单参数
       form: {
@@ -205,11 +205,11 @@ export default {
       this.form = {
         patternId: null,
         model: "0",
-        positiveprompt: null,
-        negativeprompt: null,
+        positivePrompt: null,
+        negativePrompt: null,
         sampleimage: null,
-        presettemplate: null,
-        patternstyle: null,
+        presetTemplate: null,
+        patternStyle: null,
         delFlag: null,
         createBy: null,
         createTime: null,
@@ -259,6 +259,9 @@ export default {
       });
     },
     handleGenerateSketchBySampleImg(row) {
+      if (!this.checkHadInputHeaderParams()) {
+        return
+      }
       if (!row.sampleimage) {
         this.$message({
           type: 'info',
@@ -272,15 +275,18 @@ export default {
         });
         return
       }
-      const patternId = row.patternId
-      const patternstyle = row.patternstyle
-      this.$modal.confirm('是否确认以"' + patternstyle + '"风格的数据项进行AI出图？').then(() => {
+      const params = {
+          ...row,
+          parameters: JSON.parse(row.parametersJson) || {}
+      }
+      const patternStyle = row.patternStyle
+      this.$modal.confirm('是否确认以"' + patternStyle + '"风格的数据项进行AI出图？').then(() => {
         this.$message({
           type: 'success',
           message: '调用成功，处理中，大概需要60秒，请勿跳转页面'
         });
         this.$progress.start(60)
-        return generateSketchBySampleImg(patternId).then(data => {
+        return generateSketchBySampleImg(params).then(data => {
           this.$progress.success()
           this.$message({
             type: 'info',
@@ -301,7 +307,25 @@ export default {
         });
       });
     },
+    checkHadInputHeaderParams () {
+      const headerParams = this.$cache.local.getJSON("headerParams") || {}
+      const domain = headerParams.stable_diffusion_webui_domain
+      const username = headerParams.stable_diffusion_webui_username
+      const password = headerParams.stable_diffusion_webui_password
+      if (!domain || !username || !password) {
+        this.$message({
+          type: 'info',
+          message: '请先输入Header参数'
+        });
+        return false
+      }
+      return true
+    },
     handleGenerate(row) {
+      if (!this.checkHadInputHeaderParams()) {
+        return
+      }
+
       if (this.$progress.checkIsRunning()) {
         this.$message({
           type: 'info',
@@ -309,15 +333,18 @@ export default {
         });
         return
       }
-      const patternId = row.patternId
-      const patternstyle = row.patternstyle
-      this.$modal.confirm('是否确认以"' + patternstyle + '"风格的数据项进行AI出图？').then(() => {
+      const params = {
+          ...row,
+          parameters: JSON.parse(row.parametersJson) || {}
+      }
+      const patternStyle = row.patternStyle
+      this.$modal.confirm('是否确认以"' + patternStyle + '"风格的数据项进行AI出图？').then(() => {
         this.$message({
           type: 'success',
           message: '调用成功，处理中，大概需要10秒，请勿跳转页面'
         });
         this.$progress.start(10)
-        return generateByPattern(patternId).then(data => {
+        return generateByPattern(params).then(data => {
           this.$progress.success()
           const dataInner = data.data
           const fileName = dataInner.fileName
@@ -329,7 +356,8 @@ export default {
             row.sampleimage = fileName
           }, 3000)
         });
-      }).catch(() => {
+      }).catch((e) => {
+        console.log(e)
         this.$progress.failed()
         this.$message({
           type: 'info',
