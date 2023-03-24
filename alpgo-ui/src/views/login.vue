@@ -56,7 +56,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span><a target="_blank" href="https://beian.miit.gov.cn/">{{ process.env.VUE_APP_BACKUP_NO }}}</a></span>
+      <span><a target="_blank" href="https://beian.miit.gov.cn/">{{ VUE_APP_BACKUP_NO }}}</a></span>
     </div>
   </div>
 </template>
@@ -70,6 +70,7 @@ export default {
   name: "Login",
   data() {
     return {
+      VUE_APP_BACKUP_NO: process.env.VUE_APP_BACKUP_NO,
       codeUrl: "",
       loginForm: {
         username: "admin",
