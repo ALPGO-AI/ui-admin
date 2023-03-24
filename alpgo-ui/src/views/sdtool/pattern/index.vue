@@ -62,7 +62,7 @@
       <el-table-column label="负向提示" align="center" prop="negativePrompt" />
       <el-table-column label="样例图片" align="center" prop="sampleImage" width="150">
         <template slot-scope="scope">
-          <image-preview v-if="scope.row.sampleImage" :src="scope.row.sampleImage" :width="128" :height="128" />
+          <image-preview :src="scope.row.sampleImage || ''" :width="128" :height="128" />
         </template>
       </el-table-column>
       <el-table-column label="预设模板" align="center" prop="presetTemplate" />
@@ -165,7 +165,7 @@ export default {
         model: null,
         positivePrompt: null,
         negativePrompt: null,
-        sampleimage: null,
+        sampleImage: null,
         presetTemplate: null,
         patternStyle: null,
       },
@@ -207,7 +207,7 @@ export default {
         model: "0",
         positivePrompt: null,
         negativePrompt: null,
-        sampleimage: null,
+        sampleImage: null,
         presetTemplate: null,
         patternStyle: null,
         delFlag: null,
@@ -262,7 +262,7 @@ export default {
       if (!this.checkHadInputHeaderParams()) {
         return
       }
-      if (!row.sampleimage) {
+      if (!row.sampleImage) {
         this.$message({
           type: 'info',
           message: '请先生成样图'
@@ -346,15 +346,9 @@ export default {
         this.$progress.start(10)
         return generateByPattern(params).then(data => {
           this.$progress.success()
-          const dataInner = data.data
-          const fileName = dataInner.fileName
-          this.$message({
-            type: 'info',
-            message: '等待图片上传到COS'
-          });
-          setTimeout(() => {
-            row.sampleimage = fileName
-          }, 3000)
+          const images = data.images
+          // TODO: upload to server then update pattern and output data
+          // row.sampleImage = fileNames
         });
       }).catch((e) => {
         console.log(e)

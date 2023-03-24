@@ -86,7 +86,7 @@ const generateData = (params) => {
     "subseed_strength": 0,
     "seed_resize_from_h": -1,
     "seed_resize_from_w": -1,
-    "sampler_name": "string",
+    "sampler_name": params.parameters && params.parameters.sampler || 'Euler a',
     "batch_size": 1,
     "n_iter": 1,
     "steps": params.parameters && params.parameters.steps || 20,
@@ -105,7 +105,7 @@ const generateData = (params) => {
     "override_settings_restore_afterwards": true,
     "script_args": [],
     "sampler_index": params.parameters && params.parameters.sampler || 'Euler a',
-    "script_name": "string"
+    "script_name": null
   }
 }
 export async function generateByPattern(params) {
