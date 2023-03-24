@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alpgo.sdtool.mapper.StableDiffusionOutputMapper">
+
+    <resultMap type="StableDiffusionOutput" id="StableDiffusionOutputResult">
+        <result property="outputId"    column="output_id"    />
+        <result property="outputImageUrl"    column="output_image_url"    />
+        <result property="referenceImageUrl"    column="reference_image_url"    />
+        <result property="seed"    column="seed"    />
+        <result property="type"    column="type"    />
+        <result property="straightParameter"    column="straight_parameter"    />
+        <result property="referenceOuputId"    column="reference_ouput_id"    />
+        <result property="patternId"    column="pattern_id"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectStableDiffusionOutputVo">
+        select output_id, output_image_url, reference_image_url, seed, type, straight_parameter, reference_ouput_id, pattern_id, create_by, create_time, update_by, update_time from stable_diffusion_output
+    </sql>
+
+    <select id="selectStableDiffusionOutputList" parameterType="StableDiffusionOutput" resultMap="StableDiffusionOutputResult">
+        <include refid="selectStableDiffusionOutputVo"/>
+        <where>
+            <if test="outputImageUrl != null  and outputImageUrl != ''"> and output_image_url = #{outputImageUrl}</if>
+            <if test="referenceImageUrl != null  and referenceImageUrl != ''"> and reference_image_url = #{referenceImageUrl}</if>
+            <if test="seed != null  and seed != ''"> and seed = #{seed}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="referenceOuputId != null "> and reference_ouput_id = #{referenceOuputId}</if>
+            <if test="patternId != null "> and pattern_id = #{patternId}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectStableDiffusionOutputByOutputId" parameterType="Long" resultMap="StableDiffusionOutputResult">
+        <include refid="selectStableDiffusionOutputVo"/>
+        where output_id = #{outputId}
+    </select>
+
+    <insert id="insertStableDiffusionOutput" parameterType="StableDiffusionOutput" useGeneratedKeys="true" keyProperty="outputId">
+        insert into stable_diffusion_output
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="outputImageUrl != null">output_image_url,</if>
+            <if test="referenceImageUrl != null">reference_image_url,</if>
+            <if test="seed != null">seed,</if>
+            <if test="type != null">type,</if>
+            <if test="straightParameter != null">straight_parameter,</if>
+            <if test="referenceOuputId != null">reference_ouput_id,</if>
+            <if test="patternId != null">pattern_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="outputImageUrl != null">#{outputImageUrl},</if>
+            <if test="referenceImageUrl != null">#{referenceImageUrl},</if>
+            <if test="seed != null">#{seed},</if>
+            <if test="type != null">#{type},</if>
+            <if test="straightParameter != null">#{straightParameter},</if>
+            <if test="referenceOuputId != null">#{referenceOuputId},</if>
+            <if test="patternId != null">#{patternId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStableDiffusionOutput" parameterType="StableDiffusionOutput">
+        update stable_diffusion_output
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="outputImageUrl != null">output_image_url = #{outputImageUrl},</if>
+            <if test="referenceImageUrl != null">reference_image_url = #{referenceImageUrl},</if>
+            <if test="seed != null">seed = #{seed},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="straightParameter != null">straight_parameter = #{straightParameter},</if>
+            <if test="referenceOuputId != null">reference_ouput_id = #{referenceOuputId},</if>
+            <if test="patternId != null">pattern_id = #{patternId},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where output_id = #{outputId}
+    </update>
+
+    <delete id="deleteStableDiffusionOutputByOutputId" parameterType="Long">
+        delete from stable_diffusion_output where output_id = #{outputId}
+    </delete>
+
+    <delete id="deleteStableDiffusionOutputByOutputIds" parameterType="String">
+        delete from stable_diffusion_output where output_id in
+        <foreach item="outputId" collection="array" open="(" separator="," close=")">
+            #{outputId}
+        </foreach>
+    </delete>
+</mapper>
