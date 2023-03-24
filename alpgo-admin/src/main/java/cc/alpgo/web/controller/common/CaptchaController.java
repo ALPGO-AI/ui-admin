@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.redis.RedisCache;
 import cc.alpgo.common.utils.sign.Base64;
-import cc.alpgo.common.config.alpgoConfig;
+import cc.alpgo.common.config.AlpgoConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FastByteArrayOutputStream;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,7 +61,7 @@ public class CaptchaController
         BufferedImage image = null;
 
         // 生成验证码
-        String captchaType = alpgoConfig.getCaptchaType();
+        String captchaType = AlpgoConfig.getCaptchaType();
         if ("math".equals(captchaType))
         {
             String capText = captchaProducerMath.createText();

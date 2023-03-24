@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import cc.alpgo.common.config.alpgoConfig;
+import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.utils.DateUtils;
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.uuid.IdUtils;
@@ -72,7 +72,7 @@ public class FileUtils
      */
     public static String writeImportBytes(byte[] data) throws IOException
     {
-        return writeBytes(data, alpgoConfig.getImportPath());
+        return writeBytes(data, AlpgoConfig.getImportPath());
     }
 
     /**

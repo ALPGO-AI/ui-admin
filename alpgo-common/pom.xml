@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>alpgo</artifactId>
-        <groupId>com.alpgo</groupId>
+        <groupId>cc.alpgo</groupId>
         <version>3.8.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>

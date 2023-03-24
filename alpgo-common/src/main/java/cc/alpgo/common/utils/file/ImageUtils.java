@@ -10,7 +10,7 @@ import java.util.Arrays;
 import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import cc.alpgo.common.config.alpgoConfig;
+import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.constant.Constants;
 import cc.alpgo.common.utils.StringUtils;
 
@@ -81,7 +81,7 @@ public class ImageUtils
             else
             {
                 // 本机地址
-                String localPath = alpgoConfig.getProfile();
+                String localPath = AlpgoConfig.getProfile();
                 String downloadPath = localPath + StringUtils.substringAfter(url, Constants.RESOURCE_PREFIX);
                 in = new FileInputStream(downloadPath);
             }

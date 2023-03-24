@@ -157,11 +157,11 @@ public class Constants
     /**
      * 定时任务白名单配置（仅允许访问的包名，如其他需要可以自行添加）
      */
-    public static final String[] JOB_WHITELIST_STR = { "com.alpgo" };
+    public static final String[] JOB_WHITELIST_STR = { "cc.alpgo" };
 
     /**
      * 定时任务违规的字符
      */
     public static final String[] JOB_ERROR_STR = { "java.net.URL", "javax.naming.InitialContext", "org.yaml.snakeyaml",
-            "org.springframework", "org.apache", "com.alpgo.common.utils.file" };
+            "org.springframework", "org.apache", "cc.alpgo.common.utils.file" };
 }

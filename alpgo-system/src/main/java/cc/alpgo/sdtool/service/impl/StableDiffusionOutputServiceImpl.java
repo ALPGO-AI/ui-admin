@@ -77,7 +77,7 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         if (pattern == null) {
             return stableDiffusionOutput;
         }
-        stableDiffusionOutput.setPatternStyle(StringUtils.CVN(pattern.getPatternstyle()));
+        stableDiffusionOutput.setPatternStyle(StringUtils.CVN(pattern.getPatternStyle()));
         return stableDiffusionOutput;
     }
 
@@ -186,13 +186,13 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         if (stableDiffusionPattern == null) {
             return null;
         }
-        String negativeprompt = stableDiffusionPattern.getNegativeprompt();
-        String positiveprompt = stableDiffusionPattern.getPositiveprompt();
+        String negativeprompt = stableDiffusionPattern.getNegativePrompt();
+        String positiveprompt = stableDiffusionPattern.getPositivePrompt();
         String sessionHash = UUID.randomUUID().toString();
         StableDiffusionApiResponse result = stableDiffusionApiUtil.sendApiToImg(params,
                 new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), output.getSeed()).toPreDict(sessionHash));
         String fileName = result.getFileName();
-        stableDiffusionPattern.setSampleimage(fileName);
+        stableDiffusionPattern.setSampleImage(fileName);
         // 添加output数据
         return generateFromOutput(stableDiffusionPattern, output, result, "GENERATE_IMAGE");
     }
@@ -207,13 +207,13 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         if (stableDiffusionPattern == null) {
             return null;
         }
-        String negativeprompt = stableDiffusionPattern.getNegativeprompt();
-        String positiveprompt = stableDiffusionPattern.getPositiveprompt();
+        String negativeprompt = stableDiffusionPattern.getNegativePrompt();
+        String positiveprompt = stableDiffusionPattern.getPositivePrompt();
         StableDiffusionApiParams stableDiffusionApiParams = new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), output.getSeed());
         String imageBase64String = imageApiUtil.getImageBase64String(output.getOutputImageUrl());
         String sessionHash = UUID.randomUUID().toString();
         StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.sendApiToImg(params, stableDiffusionApiParams.toPreDictForControlNet(imageBase64String, sessionHash));
-        StableDiffusionApiResponse result = stableDiffusionApiUtil.sendApiToImg(params, stableDiffusionApiParams.toPreDictForSketch(stableDiffusionPattern.getSampleimage(), sessionHash));
+        StableDiffusionApiResponse result = stableDiffusionApiUtil.sendApiToImg(params, stableDiffusionApiParams.toPreDictForSketch(stableDiffusionPattern.getSampleImage(), sessionHash));
         // 添加output数据
         return generateFromOutput(stableDiffusionPattern, output, result, "SKETCH_IMAGE");
     }

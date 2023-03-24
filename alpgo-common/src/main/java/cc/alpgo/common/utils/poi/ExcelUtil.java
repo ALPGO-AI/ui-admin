@@ -69,7 +69,7 @@ import cc.alpgo.common.annotation.Excel;
 import cc.alpgo.common.annotation.Excel.ColumnType;
 import cc.alpgo.common.annotation.Excel.Type;
 import cc.alpgo.common.annotation.Excels;
-import cc.alpgo.common.config.alpgoConfig;
+import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.text.Convert;
 import cc.alpgo.common.exception.UtilException;
@@ -1090,7 +1090,7 @@ public class ExcelUtil<T>
      */
     public String getAbsoluteFile(String filename)
     {
-        String downloadPath = alpgoConfig.getDownloadPath() + filename;
+        String downloadPath = AlpgoConfig.getDownloadPath() + filename;
         File desc = new File(downloadPath);
         if (!desc.getParentFile().exists())
         {

@@ -10,7 +10,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import cc.alpgo.common.config.alpgoConfig;
+import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.constant.Constants;
 
 /**
@@ -29,7 +29,7 @@ public class ResourcesConfig implements WebMvcConfigurer
     {
         /** 本地文件上传路径 */
         registry.addResourceHandler(Constants.RESOURCE_PREFIX + "/**")
-                .addResourceLocations("file:" + alpgoConfig.getProfile() + "/");
+                .addResourceLocations("file:" + AlpgoConfig.getProfile() + "/");
 
         /** swagger配置 */
         registry.addResourceHandler("/swagger-ui/**")

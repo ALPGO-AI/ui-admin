@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>alpgo</artifactId>
-        <groupId>com.alpgo</groupId>
+        <groupId>cc.alpgo</groupId>
         <version>3.8.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -45,19 +45,19 @@
 
         <!-- 核心模块-->
         <dependency>
-            <groupId>com.alpgo</groupId>
+            <groupId>cc.alpgo</groupId>
             <artifactId>alpgo-framework</artifactId>
         </dependency>
 
         <!-- 定时任务-->
         <dependency>
-            <groupId>com.alpgo</groupId>
+            <groupId>cc.alpgo</groupId>
             <artifactId>alpgo-quartz</artifactId>
         </dependency>
 
         <!-- 代码生成-->
         <dependency>
-            <groupId>com.alpgo</groupId>
+            <groupId>cc.alpgo</groupId>
             <artifactId>alpgo-generator</artifactId>
         </dependency>
 

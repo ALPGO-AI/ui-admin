@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import cc.alpgo.common.annotation.Log;
-import cc.alpgo.common.config.alpgoConfig;
+import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.constant.UserConstants;
 import cc.alpgo.framework.web.service.TokenService;
 import cc.alpgo.system.service.ISysUserService;
@@ -127,7 +127,7 @@ public class SysProfileController extends BaseController
         if (!file.isEmpty())
         {
             LoginUser loginUser = getLoginUser();
-            String avatar = FileUploadUtils.upload(alpgoConfig.getAvatarPath(), file);
+            String avatar = FileUploadUtils.upload(AlpgoConfig.getAvatarPath(), file);
             if (userService.updateUserAvatar(loginUser.getUsername(), avatar))
             {
                 AjaxResult ajax = AjaxResult.success();

@@ -28,8 +28,8 @@ public class DataSourceAspect
 {
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Pointcut("@annotation(com.alpgo.common.annotation.DataSource)"
-            + "|| @within(com.alpgo.common.annotation.DataSource)")
+    @Pointcut("@annotation(cc.alpgo.common.annotation.DataSource)"
+            + "|| @within(cc.alpgo.common.annotation.DataSource)")
     public void dsPointCut()
     {
 

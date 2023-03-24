@@ -8,11 +8,11 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  *
  * @author alpgo
  */
-public class alpgoServletInitializer extends SpringBootServletInitializer
+public class AlpgoServletInitializer extends SpringBootServletInitializer
 {
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application)
     {
-        return application.sources(alpgoApplication.class);
+        return application.sources(AlpgoApplication.class);
     }
 }

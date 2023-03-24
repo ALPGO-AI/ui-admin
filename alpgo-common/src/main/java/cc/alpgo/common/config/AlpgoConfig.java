@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConfigurationProperties(prefix = "alpgo")
-public class alpgoConfig
+public class AlpgoConfig
 {
     /** 项目名称 */
     private String name;
@@ -88,7 +88,7 @@ public class alpgoConfig
 
     public void setProfile(String profile)
     {
-        alpgoConfig.profile = profile;
+        AlpgoConfig.profile = profile;
     }
 
     public static boolean isAddressEnabled()
@@ -98,7 +98,7 @@ public class alpgoConfig
 
     public void setAddressEnabled(boolean addressEnabled)
     {
-        alpgoConfig.addressEnabled = addressEnabled;
+        AlpgoConfig.addressEnabled = addressEnabled;
     }
 
     public static String getCaptchaType() {
@@ -106,7 +106,7 @@ public class alpgoConfig
     }
 
     public void setCaptchaType(String captchaType) {
-        alpgoConfig.captchaType = captchaType;
+        AlpgoConfig.captchaType = captchaType;
     }
 
     /**
