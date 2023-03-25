@@ -15,10 +15,10 @@ alpgo:
   # 验证码类型 math 数组计算 char 字符验证
   captchaType: math
   # 腾讯云cos配置
-  cosApiSecretId:
-  cosApiSecretKey:
-  cosApiBucketName:
-  cosApiRegion:
+  cosApiSecretId: ${COS_API_SECRET_ID}
+  cosApiSecretKey: ${COS_API_SECRET_KEY}
+  cosApiBucketName: ${COS_API_BUCKET_NAME}
+  cosApiRegion: ${COS_API_REGION}
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
@@ -66,9 +66,9 @@ spring:
   # redis 配置
   redis:
     # 地址
-    host: localhost
+    host: 192.168.50.201
     # 端口，默认为6379
-    port: 6379
+    port: 16379
     # 数据库索引
     database: 0
     # 连接超时时间
