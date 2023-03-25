@@ -211,6 +211,13 @@ export default {
       return result;
     },
     handleGenerateSketchBySampleImg (row) {
+      if (!this.$cache.local.checkHadInputHeaderParams()) {
+        this.$message({
+          type: 'info',
+          message: '请先输入webui地址'
+        })
+        return
+      }
       if (this.$progress.checkIsRunning()) {
         this.$message({
           type: 'info',
@@ -230,8 +237,11 @@ export default {
           this.$progress.success()
           this.$message({
             type: 'info',
-            message: '等待图片上传到COS，稍后请刷新页面或点击搜索查看新数据'
+            message: '等待图片上传到COS'
           });
+          setTimeout(() => {
+            this.getList()
+          }, 3000)
         });
       }).catch(() => {
         this.$progress.failed()
@@ -242,6 +252,13 @@ export default {
       });
     },
     handleGenerate(row) {
+      if (!this.$cache.local.checkHadInputHeaderParams()) {
+        this.$message({
+          type: 'info',
+          message: '请先输入webui地址'
+        })
+        return
+      }
       if (this.$progress.checkIsRunning()) {
         this.$message({
           type: 'info',
@@ -261,8 +278,11 @@ export default {
           this.$progress.success()
           this.$message({
             type: 'info',
-            message: '等待图片上传到COS，稍后请刷新页面或点击搜索查看新数据'
+            message: '等待图片上传到COS'
           });
+          setTimeout(() => {
+            this.getList()
+          }, 3000)
         });
       }).catch(() => {
         this.$progress.failed()

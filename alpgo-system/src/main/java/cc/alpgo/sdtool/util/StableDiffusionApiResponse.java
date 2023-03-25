@@ -7,6 +7,15 @@ public class StableDiffusionApiResponse {
     private List<String> images;
     private Map<String, Object> parameters;
     private String info;
+    private List<String> patternImages;
+
+    public List<String> getPatternImages() {
+        return patternImages;
+    }
+
+    public void setPatternImages(List<String> patternImages) {
+        this.patternImages = patternImages;
+    }
 
     public List<String> getImages() {
         return images;

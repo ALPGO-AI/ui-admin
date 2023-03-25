@@ -32,6 +32,14 @@ const sessionCache = {
   }
 }
 const localCache = {
+  checkHadInputHeaderParams () {
+    const headerParams = this.getJSON("headerParams") || {}
+    const domain = headerParams.stablediffusionwebuidomain
+    if (!domain) {
+      return false
+    }
+    return true
+  },
   set (key, value) {
     if (!localStorage) {
       return

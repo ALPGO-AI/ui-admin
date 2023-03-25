@@ -278,7 +278,11 @@ export default {
       });
     },
     handleGenerateSketchBySampleImg(row) {
-      if (!this.checkHadInputHeaderParams()) {
+      if (!this.$cache.local.checkHadInputHeaderParams()) {
+        this.$message({
+          type: 'info',
+          message: '请先输入webui地址'
+        })
         return
       }
       if (this.$progress.checkIsRunning()) {
@@ -320,22 +324,12 @@ export default {
         });
       });
     },
-    checkHadInputHeaderParams () {
-      const headerParams = this.$cache.local.getJSON("headerParams") || {}
-      const domain = headerParams.stablediffusionwebuidomain
-      const username = headerParams.stablediffusionwebuiusername
-      const password = headerParams.stablediffusionwebuipassword
-      if (!domain || !username || !password) {
+    handleGenerate(row) {
+      if (!this.$cache.local.checkHadInputHeaderParams()) {
         this.$message({
           type: 'info',
-          message: '请先输入Header参数'
-        });
-        return false
-      }
-      return true
-    },
-    handleGenerate(row) {
-      if (!this.checkHadInputHeaderParams()) {
+          message: '请先输入webui地址'
+        })
         return
       }
 
@@ -353,18 +347,23 @@ export default {
       const patternId = row.patternId
       const patternStyle = row.patternStyle
       this.$modal.confirm('是否确认以"' + patternStyle + '"风格的数据项进行AI出图？').then(() => {
+        const enable_hr = params.parameters.enable_hr
+        const seconds = enable_hr ? 60 : 10
         this.$message({
           type: 'success',
-          message: '调用成功，处理中，大概需要10秒，请勿跳转页面'
+          message: `调用成功，处理中，大概需要${seconds}秒，请勿跳转页面`
         });
-        const enable_hr = params.parameters.enable_hr
-        this.$progress.start(enable_hr ? 60 : 10)
-        return generateByPattern(patternId).then(data => {
+        this.$progress.start(seconds)
+        return generateByPattern(patternId).then(response => {
           this.$progress.success()
           this.$message({
             type: 'success',
-            message: '处理完成，请稍后刷新页面或者点击搜索查看最新数据'
+            message: '处理完成，等待图片上传到COS'
           });
+          setTimeout(() => {
+            const data = response.data
+            row.sampleImage = formatImgArrToSrc(data.patternImages)
+          }, 3000)
         });
       }).catch((e) => {
         console.log(e)

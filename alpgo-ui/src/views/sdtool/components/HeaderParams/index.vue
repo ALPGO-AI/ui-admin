@@ -19,8 +19,6 @@ export default {
       headerParams: {},
       form: [
         { label: 'webui地址', key: 'stablediffusionwebuidomain', type: 'input' },
-        { label: 'webui用户名', key: 'stablediffusionwebuiusername', type: 'input' },
-        { label: 'webui密码', key: 'stablediffusionwebuipassword', type: 'password' }
       ]
     };
   },

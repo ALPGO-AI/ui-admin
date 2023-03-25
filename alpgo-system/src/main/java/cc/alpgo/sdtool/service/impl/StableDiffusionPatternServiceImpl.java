@@ -127,6 +127,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters());
         List<String> imageUrlsFromDb = selectAllRelatedOutputImageUrls(patternId);
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrlsFromDb));
+        result.setPatternImages(imageUrlsFromDb);
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
         return result;
     }
