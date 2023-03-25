@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// 查询stable_diffusion_output列表
+// 查询Stable Diffusion 输出图片列表
 export function listOutput(query) {
   return request({
     url: '/sdtool/output/list',
@@ -9,7 +9,7 @@ export function listOutput(query) {
   })
 }
 
-// 查询stable_diffusion_output详细
+// 查询Stable Diffusion 输出图片详细
 export function getOutput(outputId) {
   return request({
     url: '/sdtool/output/' + outputId,
@@ -17,7 +17,7 @@ export function getOutput(outputId) {
   })
 }
 
-// 新增stable_diffusion_output
+// 新增Stable Diffusion 输出图片
 export function addOutput(data) {
   return request({
     url: '/sdtool/output',
@@ -26,7 +26,7 @@ export function addOutput(data) {
   })
 }
 
-// 修改stable_diffusion_output
+// 修改Stable Diffusion 输出图片
 export function updateOutput(data) {
   return request({
     url: '/sdtool/output',
@@ -35,7 +35,7 @@ export function updateOutput(data) {
   })
 }
 
-// 删除stable_diffusion_output
+// 删除Stable Diffusion 输出图片
 export function delOutput(outputId) {
   return request({
     url: '/sdtool/output/' + outputId,

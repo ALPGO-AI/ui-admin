@@ -117,7 +117,7 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改stable_diffusion_output对话框 -->
+    <!-- 添加或修改Stable Diffusion 输出图片对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="输出图片地址" prop="outputImageUrl">
@@ -163,9 +163,9 @@ export default {
       loading: true,
       // 显示搜索条件
       showSearch: true,
-      // stable_diffusion_output表格数据
+      // Stable Diffusion 输出图片表格数据
       outputList: [],
-      // stable_diffusion_output树选项
+      // Stable Diffusion 输出图片树选项
       outputOptions: [],
       // 弹出层标题
       title: "",
@@ -292,7 +292,7 @@ export default {
         });
       });
     },
-    /** 查询stable_diffusion_output列表 */
+    /** 查询Stable Diffusion 输出图片列表 */
     getList() {
       this.loading = true;
       listOutput(this.queryParams).then(response => {
@@ -349,7 +349,7 @@ export default {
         this.form.referenceOuputId = 0;
       }
       this.open = true;
-      this.title = "添加stable_diffusion_output";
+      this.title = "添加Stable Diffusion 输出图片";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -360,7 +360,7 @@ export default {
       getOutput(row.outputId).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改stable_diffusion_output";
+        this.title = "修改Stable Diffusion 输出图片";
       });
     },
     /** 提交按钮 */
@@ -385,7 +385,7 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      this.$modal.confirm('是否确认删除stable_diffusion_output编号为"' + row.outputId + '"的数据项？').then(function() {
+      this.$modal.confirm('是否确认删除Stable Diffusion 输出图片编号为"' + row.outputId + '"的数据项？').then(function() {
         return delOutput(row.outputId);
       }).then(() => {
         this.getList();

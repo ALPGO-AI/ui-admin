@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// 查询stable_diffusion_pattern列表
+// 查询Stable Diffusion 风格模板列表
 export function listPattern(query) {
   return request({
     url: '/sdtool/pattern/list',
@@ -9,7 +9,7 @@ export function listPattern(query) {
   })
 }
 
-// 查询stable_diffusion_pattern详细
+// 查询Stable Diffusion 风格模板详细
 export function getPattern(patternId) {
   return request({
     url: '/sdtool/pattern/' + patternId,
@@ -17,7 +17,7 @@ export function getPattern(patternId) {
   })
 }
 
-// 新增stable_diffusion_pattern
+// 新增Stable Diffusion 风格模板
 export function addPattern(data) {
   return request({
     url: '/sdtool/pattern',
@@ -26,7 +26,7 @@ export function addPattern(data) {
   })
 }
 
-// 修改stable_diffusion_pattern
+// 修改Stable Diffusion 风格模板
 export function updatePattern(data) {
   return request({
     url: '/sdtool/pattern',
@@ -35,7 +35,7 @@ export function updatePattern(data) {
   })
 }
 
-// 删除stable_diffusion_pattern
+// 删除Stable Diffusion 风格模板
 export function delPattern(patternId) {
   return request({
     url: '/sdtool/pattern/' + patternId,

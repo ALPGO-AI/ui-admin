@@ -86,7 +86,7 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
 
-    <!-- 添加或修改stable_diffusion_pattern对话框 -->
+    <!-- 添加或修改Stable Diffusion 风格模板对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="模型">
@@ -173,7 +173,7 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // stable_diffusion_pattern表格数据
+      // Stable Diffusion 风格模板表格数据
       patternList: [],
       // 弹出层标题
       title: "",
@@ -203,7 +203,7 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询stable_diffusion_pattern列表 */
+    /** 查询Stable Diffusion 风格模板列表 */
     getList() {
       this.loading = true;
       listPattern(this.queryParams).then(response => {
@@ -262,7 +262,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加stable_diffusion_pattern";
+      this.title = "添加Stable Diffusion 风格模板";
     },
     handleDuplicate(row) {
       this.reset();
@@ -274,7 +274,7 @@ export default {
         };
         this.form.patternId = null;
         this.open = true;
-        this.title = "复制stable_diffusion_pattern";
+        this.title = "复制Stable Diffusion 风格模板";
       });
     },
     handleGenerateSketchBySampleImg(row) {
@@ -384,7 +384,7 @@ export default {
           parameters: JSON.parse(response.data.parametersJson) || {}
         };
         this.open = true;
-        this.title = "修改stable_diffusion_pattern";
+        this.title = "修改Stable Diffusion 风格模板";
       });
     },
     /** 提交按钮 */
@@ -411,7 +411,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const patternIds = row.patternId || this.ids;
-      this.$modal.confirm('是否确认删除stable_diffusion_pattern编号为"' + patternIds + '"的数据项？').then(function () {
+      this.$modal.confirm('是否确认删除Stable Diffusion 风格模板编号为"' + patternIds + '"的数据项？').then(function () {
         return delPattern(patternIds);
       }).then(() => {
         this.getList();

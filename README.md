@@ -21,6 +21,11 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
 
 - ![Preview](images/ui-admin-sdtool-output.png)
 
+### 系统功能
+
+- 默认注册功能不开放，可以在 系统管理 > 参数设置 里按需修改，注册用户默认没有角色，也就没有菜单权限，需要管理员手动赋予权限
+- 登录验证码功能默认开启，可以在 系统管理 > 参数设置 里按需修改
+
 ### 项目CI
 
 本项目使用 Coding 进行构建和部署，https://alpgo.coding.net/p/alpgo-ai/ci/job
