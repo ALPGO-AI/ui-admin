@@ -189,34 +189,14 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         String sessionHash = UUID.randomUUID().toString();
         StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params,
                 new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), output.getSeed()).toPreDict(sessionHash));
-        List<String> imageUrls = cosUtil.upload(result.getImages());
+        List<String> imageUrls = cosUtil.uploadAsync(result.getImages());
         // 添加output数据
         return generateFromOutput(stableDiffusionPattern, output, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters());
     }
 
     @Override
     public StableDiffusionOutput generateSketchBySampleImgFromOutput(Map<String, String> params, Long outputId) throws IOException {
-        StableDiffusionOutput output = selectStableDiffusionOutputByOutputId(outputId);
-        if (output == null) {
-            return null;
-        }
-        StableDiffusionPattern stableDiffusionPattern = stableDiffusionPatternService.selectStableDiffusionPatternByPatternId(output.getPatternId());
-        if (stableDiffusionPattern == null) {
-            return null;
-        }
-        String negativeprompt = stableDiffusionPattern.getNegativePrompt();
-        String positiveprompt = stableDiffusionPattern.getPositivePrompt();
-        StableDiffusionApiParams stableDiffusionApiParams = new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), output.getSeed());
-        String imageBase64String = imageApiUtil.getImageBase64String(output.getOutputImageUrl());
-        String sessionHash = UUID.randomUUID().toString();
-        StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.txt2img(params, stableDiffusionApiParams.toPreDictForControlNet(imageBase64String, sessionHash));
-        StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params, stableDiffusionApiParams.toPreDictForSketch(stableDiffusionPattern.getSampleImage(), sessionHash));
-        // 添加output数据
-
-        List<String> imageUrls = cosUtil.upload(result.getImages());
-        String imgUrlJson = new Gson().toJson(imageUrls);
-
-        return generateFromOutput(stableDiffusionPattern, output, imgUrlJson, "SKETCH_IMAGE", result.getParameters());
+        return null; // TODO
     }
 
     private StableDiffusionOutput generateFromOutput(StableDiffusionPattern stableDiffusionPattern, StableDiffusionOutput output, String imageUrl, String type, Map<String, Object> params) {

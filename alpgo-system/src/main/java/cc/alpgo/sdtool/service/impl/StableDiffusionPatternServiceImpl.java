@@ -120,7 +120,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         String sessionHash = UUID.randomUUID().toString();
         StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params, new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), "-1").toPreDict(sessionHash));
         List<String> images = result.getImages();
-        List<String> imageUrls = cosUtil.upload(images);
+        List<String> imageUrls = cosUtil.uploadAsync(images);
         result.setImages(imageUrls);
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrls));
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);

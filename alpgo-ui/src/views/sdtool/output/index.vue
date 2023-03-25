@@ -84,13 +84,13 @@
             @click="handleGenerate(scope.row)"
             v-hasPermi="['sdtool:pattern:edit']"
           >使用相同模板再次生成</el-button>
-          <el-button
+          <!-- <el-button
             size="mini"
             type="text"
             icon="el-icon-cloud"
             @click="handleGenerateSketchBySampleImg(scope.row)"
             v-hasPermi="['sdtool:pattern:edit']"
-          >以此样图生成线稿</el-button>
+          >以此样图生成线稿</el-button> -->
           <el-button
             size="mini"
             type="text"
@@ -149,6 +149,7 @@ import { listOutput, getOutput, delOutput, addOutput, updateOutput, generateByPa
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
+import { formatImgArrToSrc } from "@/utils";
 
 export default {
   name: "Output",
@@ -233,15 +234,8 @@ export default {
           this.$progress.success()
           this.$message({
             type: 'info',
-            message: '等待图片上传到COS'
+            message: '等待图片上传到COS，稍后请刷新页面或点击搜索查看新数据'
           });
-          setTimeout(() => {
-            this.$message({
-              type: 'success',
-              message: '图片上传成功'
-            });
-            this.getList()
-          }, 3000)
         });
       }).catch(() => {
         this.$progress.failed()
@@ -271,15 +265,8 @@ export default {
           this.$progress.success()
           this.$message({
             type: 'info',
-            message: '等待图片上传到COS'
+            message: '等待图片上传到COS，稍后请刷新页面或点击搜索查看新数据'
           });
-          setTimeout(() => {
-            this.$message({
-              type: 'success',
-              message: '图片上传成功'
-            });
-            this.getList()
-          }, 3000)
         });
       }).catch(() => {
         this.$progress.failed()
@@ -293,7 +280,14 @@ export default {
     getList() {
       this.loading = true;
       listOutput(this.queryParams).then(response => {
-        this.outputList = response.rows;
+        const rows = response.rows;
+        this.outputList = rows.map(row => {
+          return {
+            ...row,
+            outputImageUrl: formatImgArrToSrc(JSON.parse(row.outputImageUrl)),
+            referenceImageUrl: formatImgArrToSrc(JSON.parse(row.referenceImageUrl)),
+          }
+        });
         this.total = response.total;
         this.loading = false;
       });

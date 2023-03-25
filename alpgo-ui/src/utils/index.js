@@ -1,7 +1,7 @@
 import { parseTime } from './ruoyi'
 
 export function formatImgArrToSrc(array) {
-  let prefix = "https://outputs-1251764741.cos.ap-shanghai.myqcloud.com/"
+  let prefix = process.env.VUE_APP_CDN;
   let result = "";
   for (let index = 0; index < array.length; index++) {
     const key = array[index];

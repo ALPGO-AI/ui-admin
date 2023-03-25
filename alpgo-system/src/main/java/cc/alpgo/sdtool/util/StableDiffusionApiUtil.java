@@ -37,8 +37,6 @@ public class StableDiffusionApiUtil {
         String string = response.body().string();
         Gson gson = new Gson();
         StableDiffusionApiResponse result = gson.fromJson(string, StableDiffusionApiResponse.class);
-        List<String> data = result.getImages();
-
         return result;
     }
 
@@ -78,15 +76,5 @@ public class StableDiffusionApiUtil {
                     }
                 })
                 .build();
-    }
-
-    private String getFileName(Object nameObj) throws UnsupportedEncodingException {
-        if (nameObj == null) {
-            return "";
-        }
-        String pathOrigin = (String) nameObj;
-        pathOrigin = pathOrigin.replaceAll("\\\\\\\\", "\\");
-        String encodeUrl = java.net.URLEncoder.encode(pathOrigin, "UTF-8");
-        return "https://outputs-1251764741.cos.ap-shanghai.myqcloud.com/" + encodeUrl.replaceAll("\\+", "%20");
     }
 }

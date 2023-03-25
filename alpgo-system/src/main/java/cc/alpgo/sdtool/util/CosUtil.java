@@ -2,6 +2,7 @@ package cc.alpgo.sdtool.util;
 
 import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.utils.uuid.UUID;
+import cc.alpgo.sdtool.util.event.UploadToCosEvent;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
@@ -12,6 +13,7 @@ import com.qcloud.cos.region.Region;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import sun.misc.BASE64Decoder;
 
@@ -30,6 +32,8 @@ import java.util.Map;
 public class CosUtil {
 
     @Autowired
+    private ApplicationContext applicationContext;
+    @Autowired
     private AlpgoConfig alpgoConfig;
     private static final Logger log = LoggerFactory.getLogger(CosUtil.class);
     private COSClient cosClient = null;
@@ -40,6 +44,18 @@ public class CosUtil {
             dataMap.put(UUID.randomUUID().toString() + ".png", image);
         }
         return uploadFileBase64(dataMap);
+    }
+
+    public List<String> uploadAsync(List<String> images) {
+        Map<String, String> dataMap = new HashMap<>();
+        List<String> list = new ArrayList<>();
+        for (String image : images) {
+            String key = UUID.randomUUID().toString() + ".png";
+            dataMap.put(key, image);
+            list.add(key);
+            applicationContext.publishEvent(new UploadToCosEvent(key, image));
+        }
+        return list;
     }
 
     public COSClient getClient() {
