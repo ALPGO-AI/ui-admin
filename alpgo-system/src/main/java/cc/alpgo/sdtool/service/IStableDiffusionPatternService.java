@@ -64,6 +64,9 @@ public interface IStableDiffusionPatternService
     public int deleteStableDiffusionPatternByPatternId(Long patternId);
 
     public StableDiffusionApiResponse generateByPatternId(Map<String, String> params, Long patternId) throws IOException;
+
+    List<String> selectAllRelatedOutputImageUrls(Long patternId);
+
     public StableDiffusionApiResponse generateSketchBySampleImg(Map<String, String> params, Long patternId) throws IOException;
 
     List<StableDiffusionPattern> selectStableDiffusionPatternListByPatternIds(List<Long> toArray);

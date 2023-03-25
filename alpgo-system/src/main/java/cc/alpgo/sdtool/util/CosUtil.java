@@ -32,6 +32,8 @@ import java.util.Map;
 public class CosUtil {
 
     @Autowired
+    private TimeStringUtil timeStringUtil;
+    @Autowired
     private ApplicationContext applicationContext;
     @Autowired
     private AlpgoConfig alpgoConfig;
@@ -41,16 +43,20 @@ public class CosUtil {
     public List<String> upload(List<String> images) {
         Map<String, String> dataMap = new HashMap<>();
         for (String image : images) {
-            dataMap.put(UUID.randomUUID().toString() + ".png", image);
+            dataMap.put(generateFileName(), image);
         }
         return uploadFileBase64(dataMap);
+    }
+
+    private String generateFileName() {
+        return timeStringUtil.getTimeString() + "_" + UUID.randomUUID().toString() + ".png";
     }
 
     public List<String> uploadAsync(List<String> images) {
         Map<String, String> dataMap = new HashMap<>();
         List<String> list = new ArrayList<>();
         for (String image : images) {
-            String key = UUID.randomUUID().toString() + ".png";
+            String key = generateFileName();
             dataMap.put(key, image);
             list.add(key);
             applicationContext.publishEvent(new UploadToCosEvent(key, image));

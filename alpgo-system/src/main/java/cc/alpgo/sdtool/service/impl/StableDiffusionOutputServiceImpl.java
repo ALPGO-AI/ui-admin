@@ -13,7 +13,6 @@ import cc.alpgo.common.utils.uuid.UUID;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import cc.alpgo.sdtool.util.*;
-import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,10 +185,14 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         }
         String negativeprompt = stableDiffusionPattern.getNegativePrompt();
         String positiveprompt = stableDiffusionPattern.getPositivePrompt();
-        String sessionHash = UUID.randomUUID().toString();
         StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params,
-                new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), output.getSeed()).toPreDict(sessionHash));
+                new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), output.getSeed()).toRequestBody());
         List<String> imageUrls = cosUtil.uploadAsync(result.getImages());
+        result.setImages(imageUrls);
+        List<String> imageUrlsFromDb = stableDiffusionPatternService.selectAllRelatedOutputImageUrls(stableDiffusionPattern.getPatternId());
+        imageUrlsFromDb.addAll(imageUrls);
+        stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrlsFromDb));
+        stableDiffusionPatternService.updateStableDiffusionPattern(stableDiffusionPattern);
         // 添加output数据
         return generateFromOutput(stableDiffusionPattern, output, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters());
     }

@@ -119,6 +119,11 @@
         <el-form-item label="Steps">
           <el-input v-model="form.parameters.steps" placeholder="请输入步数" />
         </el-form-item>
+        <!-- <el-form-item label="开启高清修复">
+          <el-switch v-model="form.parameters.enable_hr" 
+            active-color="#13ce66"
+            inactive-color="#ff4949"/>
+        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -132,6 +137,14 @@
 import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, generateSketchBySampleImg } from "@/api/sdtool/pattern";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
+
+const initParams = {
+  CFG: "7",
+  steps: "20",
+  sampler: "Euler a",
+  enable_hr: false
+};
+
 export default {
   name: "SDPattern",
   dicts: ['stable_diffusion_model', 'stable_diffusion_sampler'],
@@ -171,11 +184,7 @@ export default {
       },
       // 表单参数
       form: {
-        parameters: {
-          CFG: "7",
-          steps: "20",
-          sampler: "Euler a"
-        }
+        parameters: initParams
       },
       // 表单校验
       rules: {
@@ -221,11 +230,7 @@ export default {
         createTime: null,
         updateBy: null,
         updateTime: null,
-        parameters: {
-          CFG: "7",
-          steps: "20",
-          sampler: "Euler a"
-        }
+        parameters: initParams
       };
       this.resetForm("form");
     },
@@ -347,7 +352,10 @@ export default {
         this.$progress.start(10)
         return generateByPattern(patternId).then(data => {
           this.$progress.success()
-          row.sampleImage = formatImgArrToSrc(JSON.parse(data.sampleImage))
+          this.$message({
+            type: 'success',
+            message: '处理完成，请稍后刷新页面或者点击搜索查看最新数据'
+          });
         });
       }).catch((e) => {
         console.log(e)

@@ -1,6 +1,5 @@
 package cc.alpgo.sdtool.util;
 
-import cc.alpgo.sdtool.constant.ApiContants;
 import com.google.gson.Gson;
 
 import java.util.*;
@@ -88,7 +87,7 @@ public class StableDiffusionApiParams {
         Map<String, String> map = new Gson().fromJson(parametersJson, HashMap.class);
         this.sampler_index = map.getOrDefault("sampler", "Euler a");
         this.script_name = null;
-        this.enable_hr = true;
+        this.enable_hr = Boolean.parseBoolean(map.getOrDefault("enable_hr", "false"));
         this.denoising_strength = 0.6f;
         this.firstphase_width = 0;
         this.firstphase_height = 0;
@@ -124,14 +123,7 @@ public class StableDiffusionApiParams {
         this.script_args = new ArrayList<>();
     }
 
-    public String toPreDict(String sessionHash) {
-        return new Gson().toJson(this);
-    }
-
-    public String toPreDictForSketch(String fileName, String sessionHash) {
-        return new Gson().toJson(this);
-    }
-    public String toPreDictForControlNet(String base64ImgString, String sessionHash) {
+    public String toRequestBody() {
         return new Gson().toJson(this);
     }
 }

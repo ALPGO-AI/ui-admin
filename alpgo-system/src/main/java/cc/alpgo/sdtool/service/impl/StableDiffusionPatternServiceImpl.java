@@ -1,11 +1,14 @@
 package cc.alpgo.sdtool.service.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import cc.alpgo.common.utils.DateUtils;
-import cc.alpgo.common.utils.uuid.UUID;
+import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import cc.alpgo.sdtool.service.IStableDiffusionOutputService;
 import cc.alpgo.sdtool.util.*;
@@ -117,14 +120,29 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         }
         String negativeprompt = stableDiffusionPattern.getNegativePrompt();
         String positiveprompt = stableDiffusionPattern.getPositivePrompt();
-        String sessionHash = UUID.randomUUID().toString();
-        StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params, new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), "-1").toPreDict(sessionHash));
+        StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params, new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), "-1").toRequestBody());
         List<String> images = result.getImages();
         List<String> imageUrls = cosUtil.uploadAsync(images);
         result.setImages(imageUrls);
-        stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrls));
-        stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
         stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters());
+        List<String> imageUrlsFromDb = selectAllRelatedOutputImageUrls(patternId);
+        stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrlsFromDb));
+        stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
+        return result;
+    }
+
+    @Override
+    public List<String> selectAllRelatedOutputImageUrls(Long patternId) {
+        List<String> result = new ArrayList<>();
+        StableDiffusionOutput searchByPatternId = new StableDiffusionOutput();
+        searchByPatternId.setPatternId(patternId);
+        List<StableDiffusionOutput> stableDiffusionOutputs = stableDiffusionOutputService.selectStableDiffusionOutputList(searchByPatternId);
+        stableDiffusionOutputs = stableDiffusionOutputs.stream().sorted(Comparator.comparing(StableDiffusionOutput::getCreateTime).reversed()).collect(Collectors.toList());
+        for (StableDiffusionOutput stableDiffusionOutput : stableDiffusionOutputs) {
+            String outputImageUrl = stableDiffusionOutput.getOutputImageUrl();
+            List list = new Gson().fromJson(outputImageUrl, List.class);
+            result.addAll(list);
+        }
         return result;
     }
 

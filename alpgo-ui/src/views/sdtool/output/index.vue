@@ -70,8 +70,8 @@
           <json-viewer
             :value="scope.row.straightParameter && formatter(scope.row.straightParameter) || {}"
             :expand-depth="0"
+            copyable
             boxed
-            sort
           ></json-viewer>
         </template>
       </el-table-column>
