@@ -71,8 +71,8 @@
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-cloud" @click="handleGenerate(scope.row)"
             v-hasPermi="['sdtool:pattern:edit']">以此模板生成图片</el-button>
-          <el-button size="mini" type="text" icon="el-icon-cloud" @click="handleGenerateSketchBySampleImg(scope.row)"
-            v-hasPermi="['sdtool:pattern:edit']">以此样图生成线稿</el-button>
+          <!-- <el-button size="mini" type="text" icon="el-icon-cloud" @click="handleGenerateSketchBySampleImg(scope.row)"
+            v-hasPermi="['sdtool:pattern:edit']">以此样图生成线稿</el-button> -->
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleDuplicate(scope.row)"
             v-hasPermi="['sdtool:pattern:edit']">复制</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
@@ -131,7 +131,7 @@
 <script>
 import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, generateSketchBySampleImg } from "@/api/sdtool/pattern";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
-
+import { formatImgArrToSrc } from "@/utils"
 export default {
   name: "SDPattern",
   dicts: ['stable_diffusion_model', 'stable_diffusion_sampler'],
@@ -190,7 +190,13 @@ export default {
     getList() {
       this.loading = true;
       listPattern(this.queryParams).then(response => {
-        this.patternList = response.rows;
+        const rows = response.rows || [];
+        this.patternList = rows.map(row => {
+          return {
+            ...row,
+            sampleImage: formatImgArrToSrc(JSON.parse(row.sampleImage))
+          }
+        });
         this.total = response.total;
         this.loading = false;
       });
@@ -261,12 +267,6 @@ export default {
     handleGenerateSketchBySampleImg(row) {
       if (!this.checkHadInputHeaderParams()) {
         return
-      }
-      if (!row.sampleImage) {
-        this.$message({
-          type: 'info',
-          message: '请先生成样图'
-        });
       }
       if (this.$progress.checkIsRunning()) {
         this.$message({
@@ -347,7 +347,7 @@ export default {
         this.$progress.start(10)
         return generateByPattern(patternId).then(data => {
           this.$progress.success()
-          row.sampleImage = data.sampleImage
+          row.sampleImage = formatImgArrToSrc(JSON.parse(data.sampleImage))
         });
       }).catch((e) => {
         console.log(e)

@@ -121,6 +121,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params, new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), "-1").toPreDict(sessionHash));
         List<String> images = result.getImages();
         List<String> imageUrls = cosUtil.upload(images);
+        result.setImages(imageUrls);
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrls));
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
         stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters());

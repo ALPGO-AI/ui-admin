@@ -1,5 +1,18 @@
 import { parseTime } from './ruoyi'
 
+export function formatImgArrToSrc(array) {
+  let prefix = "https://outputs-1251764741.cos.ap-shanghai.myqcloud.com/"
+  let result = "";
+  for (let index = 0; index < array.length; index++) {
+    const key = array[index];
+    result += prefix + key;
+    if (index < array.length - 1) {
+      result += ",";
+    }
+  }
+  return result;
+}
+
 /**
  * 表格时间格式化
  */

@@ -25,6 +25,7 @@ public class StableDiffusionApiUtil {
         String domain = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_DOMAIN);
         String token = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_TOKEN);
         String url = domain + "/sdapi/v1/txt2img";
+        url = url.replace("//sdapi", "/sdapi");
         RequestBody body = RequestBody.create(MediaType.parse("application/json"), content);
         Request request = new Request.Builder()
                 .url(url)
