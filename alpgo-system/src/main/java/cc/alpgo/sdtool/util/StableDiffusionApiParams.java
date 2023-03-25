@@ -2,6 +2,7 @@ package cc.alpgo.sdtool.util;
 
 import com.google.gson.Gson;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -9,71 +10,71 @@ import java.util.*;
  */
 public class StableDiffusionApiParams {
     // Enable HR
-    private boolean enable_hr;
+    private Boolean enable_hr;
     // Denoising strength
-    private float denoising_strength;
+    private Float denoising_strength;
     // First phase width
-    private int firstphase_width;
+    private Integer firstphase_width;
     // First phase height
-    private int firstphase_height;
+    private Integer firstphase_height;
     // HR scale
-    private float hr_scale;
+    private Float hr_scale;
     // HR upscaler
     private String hr_upscaler;
     // HR second pass steps
-    private int hr_second_pass_steps;
+    private Integer hr_second_pass_steps;
     // HR resize x
-    private int hr_resize_x;
+    private Integer hr_resize_x;
     // HR resize y
-    private int hr_resize_y;
+    private Integer hr_resize_y;
     // Prompt
     private String prompt;
     // Styles
     private List<String> styles;
     // Seed
-    private int seed;
+    private Integer seed;
     // Subseed
-    private int subseed;
+    private Integer subseed;
     // Subseed strength
-    private float subseed_strength;
+    private Float subseed_strength;
     // Seed resize from h
-    private int seed_resize_from_h;
+    private Integer seed_resize_from_h;
     // Seed resize from w
-    private int seed_resize_from_w;
+    private Integer seed_resize_from_w;
     // Sampler name
     private String sampler_name;
     // Batch size
-    private int batch_size;
+    private Integer batch_size;
     // N iter
-    private int n_iter;
+    private Integer n_iter;
     // Steps
-    private int steps;
+    private Integer steps;
     // Cfg scale
-    private float cfg_scale;
+    private Float cfg_scale;
     // Width
-    private int width;
+    private Integer width;
     // Height
-    private int height;
+    private Integer height;
     // Restore faces
-    private boolean restore_faces;
+    private Boolean restore_faces;
     // Tiling
-    private boolean tiling;
+    private Boolean tiling;
     // Negative prompt
     private String negative_prompt;
     // Eta
-    private float eta;
+    private Float eta;
     // S churn
-    private float s_churn;
+    private Float s_churn;
     // S tmax
-    private float s_tmax;
+    private Float s_tmax;
     // S tmin
-    private float s_tmin;
+    private Float s_tmin;
     // S noise
-    private float s_noise;
+    private Float s_noise;
     // Override settings
     private Object override_settings;
     // Override settings restore afterwards
-    private boolean override_settings_restore_afterwards;
+    private Boolean override_settings_restore_afterwards;
     // Script args
     private List<Object> script_args;
     // Sampler index
@@ -84,14 +85,14 @@ public class StableDiffusionApiParams {
      * Constructor for StableDiffusionApiParamsBuilder.
      */
     public StableDiffusionApiParams(String positiveprompt, String negativeprompt, String parametersJson, String seed) {
-        Map<String, String> map = new Gson().fromJson(parametersJson, HashMap.class);
-        this.sampler_index = map.getOrDefault("sampler", "Euler a");
+        Map<String, Object> map = new Gson().fromJson(parametersJson, HashMap.class);
+        this.sampler_index = (String) map.getOrDefault("sampler", "Euler a");
         this.script_name = null;
-        this.enable_hr = Boolean.parseBoolean(map.getOrDefault("enable_hr", "false"));
+        this.enable_hr = (Boolean) map.getOrDefault("enable_hr", Boolean.FALSE);
         this.denoising_strength = 0.6f;
         this.firstphase_width = 0;
         this.firstphase_height = 0;
-        this.hr_scale = 2;
+        this.hr_scale = 2f;
         this.hr_upscaler = "Latent";
         this.hr_second_pass_steps = 0;
         this.hr_resize_x = 0;
@@ -100,27 +101,38 @@ public class StableDiffusionApiParams {
         this.styles = new ArrayList<>();
         this.seed = Integer.parseInt(seed);
         this.subseed = -1;
-        this.subseed_strength = 0;
+        this.subseed_strength = 0f;
         this.seed_resize_from_h = -1;
         this.seed_resize_from_w = -1;
         this.sampler_name = "";
         this.batch_size = 1;
         this.n_iter = 1;
-        this.steps = Integer.parseInt(map.getOrDefault("steps", "30"));
-        this.cfg_scale = Float.parseFloat(map.getOrDefault("CFG", "7"));
+        this.steps = BigDecimal.valueOf((Double)map.getOrDefault("steps", 30)).intValue();
+        this.cfg_scale = BigDecimal.valueOf((Double)map.getOrDefault("CFG", 7)).floatValue();
         this.width = 512;
         this.height = 512;
         this.restore_faces = false;
         this.tiling = false;
         this.negative_prompt = negativeprompt;
-        this.eta = 0;
-        this.s_churn = 0;
-        this.s_tmax = 0;
-        this.s_tmin = 0;
-        this.s_noise = 1;
+        this.eta = 0f;
+        this.s_churn = 0f;
+        this.s_tmax = 0f;
+        this.s_tmin = 0f;
+        this.s_noise = 1f;
         this.override_settings = new Object();
         this.override_settings_restore_afterwards = true;
         this.script_args = new ArrayList<>();
+    }
+
+    private Boolean tryBoolean(Map<String, String> map, String key) {
+        String booleanValue = map.get(key);
+        boolean result = false;
+        try {
+            result = Boolean.parseBoolean(booleanValue);
+        } catch (Exception e) {
+            return false;
+        }
+        return result;
     }
 
     public String toRequestBody() {

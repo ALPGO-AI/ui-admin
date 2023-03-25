@@ -1,6 +1,9 @@
 import { parseTime } from './ruoyi'
 
 export function formatImgArrToSrc(array) {
+  if (!array || array.length == 0) {
+    return "";
+  }
   let prefix = process.env.VUE_APP_CDN;
   let result = "";
   for (let index = 0; index < array.length; index++) {

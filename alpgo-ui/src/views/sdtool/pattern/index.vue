@@ -96,9 +96,17 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="正向提示" prop="positivePrompt">
-          <el-input v-model="form.positivePrompt" placeholder="请输入正向提示" />
+          <el-input 
+            type="textarea"
+            :rows="5"
+            v-model="form.positivePrompt"
+            placeholder="请输入正向提示" />
         </el-form-item>
-        <el-form-item label="负向提示" prop="negativePrompt">
+        <el-form-item
+            type="textarea"
+            :rows="5"
+            label="负向提示"
+            prop="negativePrompt">
           <el-input v-model="form.negativePrompt" placeholder="请输入负向提示" />
         </el-form-item>
         <el-form-item label="预设模板" prop="presetTemplate">
@@ -108,7 +116,7 @@
           <el-input v-model="form.patternStyle" placeholder="请输入pattern风格" />
         </el-form-item>
         <el-form-item label="CFG">
-          <el-input v-model="form.parameters.CFG" placeholder="请输入CFG" />
+          <el-input-number v-model="form.parameters.CFG" :precision="1" :step="0.1" :max="20"></el-input-number>
         </el-form-item>
         <el-form-item label="Sampler">
           <el-radio-group v-model="form.parameters.sampler">
@@ -117,7 +125,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="Steps">
-          <el-input v-model="form.parameters.steps" placeholder="请输入步数" />
+          <el-input-number v-model="form.parameters.steps" :precision="0" :step="1" :max="100"></el-input-number>
         </el-form-item>
         <!-- <el-form-item label="开启高清修复">
           <el-switch v-model="form.parameters.enable_hr" 
@@ -139,8 +147,8 @@ import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
 
 const initParams = {
-  CFG: "7",
-  steps: "20",
+  CFG: 7,
+  steps: 20,
   sampler: "Euler a",
   enable_hr: false
 };
