@@ -4,6 +4,8 @@ import cc.alpgo.sdtool.constant.ApiContants;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -18,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class StableDiffusionApiUtil {
 
+    private static final Logger log = LoggerFactory.getLogger(CosUtil.class);
     private String token = null;
 
     public StableDiffusionApiResponse txt2img(Map<String, String> params, String content) throws IOException {
@@ -26,6 +29,7 @@ public class StableDiffusionApiUtil {
         String token = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_TOKEN);
         String url = domain + "/sdapi/v1/txt2img";
         url = url.replace("//sdapi", "/sdapi");
+        log.info("request stable diffusion domain {} ,api: {}", domain, url);
         RequestBody body = RequestBody.create(MediaType.parse("application/json"), content);
         Request request = new Request.Builder()
                 .url(url)

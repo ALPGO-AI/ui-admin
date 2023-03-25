@@ -322,9 +322,9 @@ export default {
     },
     checkHadInputHeaderParams () {
       const headerParams = this.$cache.local.getJSON("headerParams") || {}
-      const domain = headerParams.stable_diffusion_webui_domain
-      const username = headerParams.stable_diffusion_webui_username
-      const password = headerParams.stable_diffusion_webui_password
+      const domain = headerParams.stablediffusionwebuidomain
+      const username = headerParams.stablediffusionwebuiusername
+      const password = headerParams.stablediffusionwebuipassword
       if (!domain || !username || !password) {
         this.$message({
           type: 'info',
