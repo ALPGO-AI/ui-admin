@@ -337,6 +337,7 @@ export default {
           ...row,
           parameters: JSON.parse(row.parametersJson) || {}
       }
+      const patternId = row.patternId
       const patternStyle = row.patternStyle
       this.$modal.confirm('是否确认以"' + patternStyle + '"风格的数据项进行AI出图？').then(() => {
         this.$message({
@@ -344,11 +345,9 @@ export default {
           message: '调用成功，处理中，大概需要10秒，请勿跳转页面'
         });
         this.$progress.start(10)
-        return generateByPattern(params).then(data => {
+        return generateByPattern(patternId).then(data => {
           this.$progress.success()
-          const images = data.images
-          // TODO: upload to server then update pattern and output data
-          // row.sampleImage = fileNames
+          row.sampleImage = data.sampleImage
         });
       }).catch((e) => {
         console.log(e)

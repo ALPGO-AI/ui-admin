@@ -97,6 +97,11 @@
             <artifactId>tencentcloud-sdk-java-nlp</artifactId>
             <version>3.1.635</version>
         </dependency>
+        <dependency>
+            <groupId>com.qcloud</groupId>
+            <artifactId>cos_api</artifactId>
+            <version>5.6.97</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -40,13 +40,6 @@ module.exports = {
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
-      },
-      '/webui': {
-        target: process.env.VUE_APP_WEBUI_API,
-        changeOrigin: true,
-        pathRewrite: {
-          '^/webui': ''
-        }
       }
     },
     disableHostCheck: true

@@ -1,53 +1,34 @@
 package cc.alpgo.sdtool.util;
 
-
 import java.util.List;
+import java.util.Map;
 
 public class StableDiffusionApiResponse {
-    private List<Object> data;
-    private boolean is_generating;
-    private double duration;
-    private double average_duration;
+    private List<String> images;
+    private Map<String, Object> parameters;
+    private String info;
 
-    private String fileName;
-
-    public String getFileName() {
-        return fileName;
+    public List<String> getImages() {
+        return images;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setImages(List<String> images) {
+        this.images = images;
     }
 
-    public List<Object> getData() {
-        return data;
+    public Map<String, Object> getParameters() {
+        return parameters;
     }
 
-    public void setData(List<Object> data) {
-        this.data = data;
+    public void setParameters(Map<String, Object> parameters) {
+        this.parameters = parameters;
     }
 
-    public boolean isIs_generating() {
-        return is_generating;
+    public String getInfo() {
+        return info;
     }
 
-    public void setIs_generating(boolean is_generating) {
-        this.is_generating = is_generating;
-    }
-
-    public double getDuration() {
-        return duration;
-    }
-
-    public void setDuration(double duration) {
-        this.duration = duration;
-    }
-
-    public double getAverage_duration() {
-        return average_duration;
-    }
-
-    public void setAverage_duration(double average_duration) {
-        this.average_duration = average_duration;
+    public void setInfo(String info) {
+        this.info = info;
     }
 }

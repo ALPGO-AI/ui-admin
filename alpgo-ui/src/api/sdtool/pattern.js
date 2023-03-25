@@ -1,6 +1,4 @@
 import request from '@/utils/request'
-import sdapiRequest from '@/utils/sdapiRequest'
-import cache from '@/plugins/cache'
 
 // 查询stable_diffusion_pattern列表
 export function listPattern(query) {
@@ -44,28 +42,6 @@ export function delPattern(patternId) {
     method: 'delete'
   })
 }
-const getToken = async () => {
-  const headerParams = cache.local.getJSON("headerParams")
-  const username = headerParams.stable_diffusion_webui_username
-  const password = headerParams.stable_diffusion_webui_password
-  const url = '/login'
-  let data = new FormData();
-  data.append('username', username)
-  data.append('password', password)
-  await sdapiRequest({
-    url,
-    method: 'post',
-    data: data
-  })
-  const tokenResult = await sdapiRequest({
-    url: '/token',
-    method: 'get'
-  })
-  const token = tokenResult.token
-  return {
-    // Cookie: `access-token=${token}`
-  }
-}
 const generateData = (params) => {
   return {
     "enable_hr": false,
@@ -108,15 +84,10 @@ const generateData = (params) => {
     "script_name": null
   }
 }
-export async function generateByPattern(params) {
-  const data = generateData(params)
-  const url = '/sdapi/v1/txt2img'
-  const headers = await getToken()
-  return sdapiRequest({
-    url,
-    method: 'post',
-    data: data,
-    headers
+export async function generateByPattern(patternId) {
+  return request({
+    url: '/sdtool/pattern/' + patternId + `/generate`,
+    method: 'post'
   })
 }
 

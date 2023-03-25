@@ -64,7 +64,7 @@ public interface IStableDiffusionOutputService
      */
     public int deleteStableDiffusionOutputByOutputId(Long outputId);
 
-    StableDiffusionOutput generateOutput(StableDiffusionPattern stableDiffusionPattern, StableDiffusionApiResponse response, String type);
+    StableDiffusionOutput generateOutput(StableDiffusionPattern pattern, String imageUrl, String type, Map<String, Object> params);
 
     StableDiffusionOutput generateByPatternId(Map<String, String> params, Long outputId) throws IOException;
 

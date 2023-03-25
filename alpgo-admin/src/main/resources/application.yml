@@ -14,7 +14,11 @@ alpgo:
   addressEnabled: false
   # 验证码类型 math 数组计算 char 字符验证
   captchaType: math
-
+  # 腾讯云cos配置
+  cosApiSecretId:
+  cosApiSecretKey:
+  cosApiBucketName:
+  cosApiRegion:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
@@ -36,7 +40,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.alpgo: debug
+    cc.alpgo: debug
     org.springframework: warn
 
 # Spring配置
@@ -62,13 +66,11 @@ spring:
   # redis 配置
   redis:
     # 地址
-    host: 127.0.0.1
+    host: localhost
     # 端口，默认为6379
     port: 6379
     # 数据库索引
     database: 0
-    # 密码
-    password: 7hGTGS5XSUFLq6m2
     # 连接超时时间
     timeout: 10s
     lettuce:
@@ -94,7 +96,7 @@ token:
 # MyBatis配置
 mybatis:
     # 搜索指定包别名
-    typeAliasesPackage: com.alpgo.**.domain
+    typeAliasesPackage: cc.alpgo.**.domain
     # 配置mapper的扫描，找到所有的mapper.xml映射文件
     mapperLocations: classpath*:mapper/**/*Mapper.xml
     # 加载全局的配置文件

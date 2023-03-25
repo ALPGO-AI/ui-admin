@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -19,39 +20,48 @@ public class StableDiffusionApiUtil {
 
     private String token = null;
 
-    public StableDiffusionApiResponse sendApiToImg(Map<String, String> params, String content) throws IOException {
+    public StableDiffusionApiResponse txt2img(Map<String, String> params, String content) throws IOException {
         OkHttpClient client = getClient(params);
         String domain = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_DOMAIN);
         String token = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_TOKEN);
-        String url = domain + "/run/predict";
+        String url = domain + "/sdapi/v1/txt2img";
         RequestBody body = RequestBody.create(MediaType.parse("application/json"), content);
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
                 .addHeader("Content-Type", "application/json")
-                .addHeader("Cookie", token)
+//                .addHeader("Cookie", token)
                 .build();
         Response response = client.newCall(request).execute();
         String string = response.body().string();
         Gson gson = new Gson();
         StableDiffusionApiResponse result = gson.fromJson(string, StableDiffusionApiResponse.class);
-        List<Object> data = result.getData();
-        if (!CollectionUtils.isEmpty(data)) {
-            Object listObj = data.get(0);
-            if (listObj instanceof ArrayList) {
-                ArrayList arr = (ArrayList) listObj;
-                if (!CollectionUtils.isEmpty(arr)) {
-                    Object linkedTreeMapObj = arr.get(0);
-                    LinkedTreeMap map = (LinkedTreeMap) linkedTreeMapObj;
-                    Object nameObj = map.get("name");
-                    String fileName = getFileName(nameObj);
-                    result.setFileName(fileName);
-                }
-            }
-        }
+        List<String> data = result.getImages();
+
         return result;
     }
 
+    public String getToken(Map<String, String> params) throws IOException {
+        params.put(ApiContants.STABLE_DIFFUSION_WEBUI_USERNAME, "username");
+        params.put(ApiContants.STABLE_DIFFUSION_WEBUI_PASSWORD, "password");
+        OkHttpClient client = getClient(params);
+        String domain = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_DOMAIN);
+        String url = domain + "/login";
+        RequestBody body = new FormBody.Builder()
+                .add("username", params.get(ApiContants.STABLE_DIFFUSION_WEBUI_USERNAME))
+                .add("password", params.get(ApiContants.STABLE_DIFFUSION_WEBUI_PASSWORD))
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Response response = client.newCall(request).execute();
+        String string = response.body().string();
+        Gson gson = new Gson();
+        Map<String, Object> result = gson.fromJson(string, Map.class);
+        String token = (String) result.get("token");
+        return token;
+    }
     private OkHttpClient getClient(Map<String, String> params) {
         String username = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_USERNAME);
         String password = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_PASSWORD);

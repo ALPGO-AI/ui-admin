@@ -59,6 +59,11 @@ service.interceptors.request.use(config => {
       }
     }
   }
+  const headerParams = cache.local.getJSON("headerParams")
+  config.headers = {
+    ...config.headers,
+    ...headerParams
+  }
   return config
 }, error => {
     console.log(error)

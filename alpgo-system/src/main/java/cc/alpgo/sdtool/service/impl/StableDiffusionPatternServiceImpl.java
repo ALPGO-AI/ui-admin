@@ -8,10 +8,8 @@ import cc.alpgo.common.utils.DateUtils;
 import cc.alpgo.common.utils.uuid.UUID;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import cc.alpgo.sdtool.service.IStableDiffusionOutputService;
-import cc.alpgo.sdtool.util.ImageApiUtil;
-import cc.alpgo.sdtool.util.StableDiffusionApiParams;
-import cc.alpgo.sdtool.util.StableDiffusionApiResponse;
-import cc.alpgo.sdtool.util.StableDiffusionApiUtil;
+import cc.alpgo.sdtool.util.*;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import cc.alpgo.sdtool.mapper.StableDiffusionPatternMapper;
@@ -32,6 +30,8 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     private StableDiffusionApiUtil stableDiffusionApiUtil;
     @Autowired
     private ImageApiUtil imageApiUtil;
+    @Autowired
+    private CosUtil cosUtil;
     @Autowired
     private IStableDiffusionOutputService stableDiffusionOutputService;
 
@@ -118,34 +118,19 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         String negativeprompt = stableDiffusionPattern.getNegativePrompt();
         String positiveprompt = stableDiffusionPattern.getPositivePrompt();
         String sessionHash = UUID.randomUUID().toString();
-        StableDiffusionApiResponse result = stableDiffusionApiUtil.sendApiToImg(params, new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), "-1").toPreDict(sessionHash));
-        String fileName = result.getFileName();
-        stableDiffusionPattern.setSampleImage(fileName);
+        StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params, new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), "-1").toPreDict(sessionHash));
+        List<String> images = result.getImages();
+        List<String> imageUrls = cosUtil.upload(images);
+        stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrls));
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
-        // 添加output数据
-        stableDiffusionOutputService.generateOutput(stableDiffusionPattern, result, "GENERATE_IMAGE");
+        stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters());
         return result;
     }
 
     @Override
     public StableDiffusionApiResponse generateSketchBySampleImg(Map<String, String> params, Long patternId) throws IOException {
-        StableDiffusionPattern stableDiffusionPattern = selectStableDiffusionPatternByPatternId(patternId);
-        if (stableDiffusionPattern == null) {
-            return null;
-        }
-        if (stableDiffusionPattern.getSampleImage() == null) {
-            return null;
-        }
-        String negativeprompt = stableDiffusionPattern.getNegativePrompt();
-        String positiveprompt = stableDiffusionPattern.getPositivePrompt();
-        StableDiffusionApiParams stableDiffusionApiParams = new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), "-1");
-        String imageBase64String = imageApiUtil.getImageBase64String(stableDiffusionPattern.getSampleImage());
-        String sessionHash = UUID.randomUUID().toString();
-        StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.sendApiToImg(params, stableDiffusionApiParams.toPreDictForControlNet(imageBase64String, sessionHash));
-        StableDiffusionApiResponse result = stableDiffusionApiUtil.sendApiToImg(params, stableDiffusionApiParams.toPreDictForSketch(stableDiffusionPattern.getSampleImage(), sessionHash));
-        // 添加output数据
-        stableDiffusionOutputService.generateOutput(stableDiffusionPattern, result, "SKETCH_IMAGE");
-        return result;
+
+        return null;
     }
 
     @Override
