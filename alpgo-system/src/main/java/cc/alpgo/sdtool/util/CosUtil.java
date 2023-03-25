@@ -15,6 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sun.misc.BASE64Decoder;
 
+import com.idrsolutions.image.png.PngCompressor;
+
+import java.io.*;
+import java.util.Base64;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,8 +74,9 @@ public class CosUtil {
         return keys;
     }
 
-    private String uploadFileBase64Single(String base64Str, String fileKey) throws IOException {
-        byte[] bytes = new BASE64Decoder().decodeBuffer(base64Str.trim());
+    private String uploadFileBase64Single(String base64Str, String fileKey) throws Exception {
+        String base64compress = compressImageByFile(base64Str);
+        byte[] bytes = new BASE64Decoder().decodeBuffer(base64compress.trim());
         //转化为输入流
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
         ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -84,5 +89,27 @@ public class CosUtil {
         String result = putObjectResult.getETag();  // 获取文件的 etag
         log.info("uploadFileBase64==result=======result:{}",result);
         return result;
+    }
+
+    /**
+     * 压缩jpg图片,返回base64字符串
+     * sourceFile: 源文件;
+     */
+    public static String compressImageByFile(String inString) throws Exception {
+        byte[] bytes = new BASE64Decoder().decodeBuffer(inString.trim());
+        //转化为输入流
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ByteArrayOutputStream out = null;
+        try {
+            out = new ByteArrayOutputStream();
+            PngCompressor.compress(inputStream, out);
+            return Base64.getEncoder().encodeToString(out.toByteArray());
+        } catch (IOException e) {
+            throw e;
+        } finally {
+            if (out != null){
+                out.close();
+            }
+        }
     }
 }
