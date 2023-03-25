@@ -127,11 +127,11 @@
         <el-form-item label="Steps">
           <el-input-number v-model="form.parameters.steps" :precision="0" :step="1" :max="100"></el-input-number>
         </el-form-item>
-        <!-- <el-form-item label="开启高清修复">
+        <el-form-item label="开启高清修复">
           <el-switch v-model="form.parameters.enable_hr" 
             active-color="#13ce66"
             inactive-color="#ff4949"/>
-        </el-form-item> -->
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -357,7 +357,8 @@ export default {
           type: 'success',
           message: '调用成功，处理中，大概需要10秒，请勿跳转页面'
         });
-        this.$progress.start(10)
+        const enable_hr = params.parameters.enable_hr
+        this.$progress.start(enable_hr ? 60 : 10)
         return generateByPattern(patternId).then(data => {
           this.$progress.success()
           this.$message({
