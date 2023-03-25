@@ -56,7 +56,7 @@
       </el-table-column>
       <el-table-column label="输出图片地址" align="center" prop="outputImageUrl" width="150">
         <template slot-scope="scope">
-          <el-link type="primary" :href="scope.row.outputImageUrl">图片地址</el-link>
+          <el-link type="primary" :href="scope.row.outputImageUrl" target="_blank">图片地址</el-link>
         </template>
       </el-table-column>
       <!-- <el-table-column label="参考原图地址" align="center" prop="referenceImageUrl" /> -->
@@ -68,7 +68,7 @@
       <el-table-column label="直出参数" align="left" prop="straightParameter" >
         <template slot-scope="scope">
           <json-viewer
-            :value="formatter(scope.row.straightParameter)"
+            :value="scope.row.straightParameter && formatter(scope.row.straightParameter) || {}"
             :expand-depth="0"
             boxed
             sort
@@ -202,13 +202,9 @@ export default {
   },
   methods: {
     formatter (paramString) {
-      const jsonStartIndex = paramString.indexOf("{\"prompt\":");
-      const temp = paramString.substring(jsonStartIndex);
-      const jsonEndIndex = temp.indexOf(", <p>");
-      const resultJsonStr = temp.substring(0, jsonEndIndex);
-      let result = null;
+      let result = {};
       try {
-        result = JSON.parse(resultJsonStr);
+        result = JSON.parse(paramString);
       } catch (error) {
         result = {};
       }
