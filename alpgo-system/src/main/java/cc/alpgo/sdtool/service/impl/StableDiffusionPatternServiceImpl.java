@@ -12,6 +12,8 @@ import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import cc.alpgo.sdtool.service.IStableDiffusionOutputService;
 import cc.alpgo.sdtool.util.*;
+import cc.alpgo.sdtool.util.request.Txt2txtControlNetRequestParams;
+import cc.alpgo.sdtool.util.request.Txt2txtRequestParams;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,8 +33,6 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     private StableDiffusionPatternMapper stableDiffusionPatternMapper;
     @Autowired
     private StableDiffusionApiUtil stableDiffusionApiUtil;
-    @Autowired
-    private ImageApiUtil imageApiUtil;
     @Autowired
     private CosUtil cosUtil;
     @Autowired
@@ -120,7 +120,12 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         }
         String negativeprompt = stableDiffusionPattern.getNegativePrompt();
         String positiveprompt = stableDiffusionPattern.getPositivePrompt();
-        StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params, new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), "-1").toRequestBody());
+        StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params,
+                new Txt2txtRequestParams(
+                        positiveprompt,
+                        negativeprompt,
+                        stableDiffusionPattern.getParametersJson(),
+                        "-1").toRequestBody());
         List<String> images = result.getImages();
         List<String> imageUrls = cosUtil.uploadAsync(images);
         result.setImages(imageUrls);
@@ -148,7 +153,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     }
 
     @Override
-    public StableDiffusionApiResponse generateSketchBySampleImg(Map<String, String> params, Long patternId) throws IOException {
+    public StableDiffusionApiResponse generateByImg(Map<String, String> params, Long patternId) throws IOException {
 
         return null;
     }

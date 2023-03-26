@@ -68,5 +68,5 @@ public interface IStableDiffusionOutputService
 
     StableDiffusionOutput generateByPatternId(Map<String, String> params, Long outputId) throws IOException;
 
-    StableDiffusionOutput generateSketchBySampleImgFromOutput(Map<String, String> params, Long outputId) throws IOException;
+    StableDiffusionOutput generateByImgFromOutput(Map<String, String> params, Long outputId) throws IOException;
 }

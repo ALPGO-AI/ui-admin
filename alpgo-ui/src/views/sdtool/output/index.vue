@@ -48,7 +48,7 @@
       default-expand-all
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
-      <el-table-column label="id" align="center" prop="patternId" width="55"/>
+      <el-table-column label="id" align="center" prop="outputId" width="55"/>
       <el-table-column label="输出图片缩略图" align="center" prop="outputImageUrl" width="150">
         <template slot-scope="scope">
           <image-preview :src="scope.row.outputImageUrl" :width="128" :height="128"/>
@@ -82,15 +82,15 @@
             type="text"
             icon="el-icon-cloud"
             @click="handleGenerate(scope.row)"
-            v-hasPermi="['sdtool:pattern:edit']"
+            v-hasPermi="['sdtool:output:edit']"
           >使用相同模板再次生成</el-button>
-          <!-- <el-button
+          <el-button
             size="mini"
             type="text"
             icon="el-icon-cloud"
-            @click="handleGenerateSketchBySampleImg(scope.row)"
-            v-hasPermi="['sdtool:pattern:edit']"
-          >以此样图生成线稿</el-button> -->
+            @click="handleGenerateByImg(scope.row)"
+            v-hasPermi="['sdtool:output:edit']"
+          >以此样图进行生成</el-button>
           <el-button
             size="mini"
             type="text"
@@ -145,7 +145,7 @@
 </template>
 
 <script>
-import { listOutput, getOutput, delOutput, addOutput, updateOutput, generateByPattern, generateSketchBySampleImg } from "@/api/sdtool/output";
+import { listOutput, getOutput, delOutput, addOutput, updateOutput, generateByPattern, generateByImg } from "@/api/sdtool/output";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
@@ -210,7 +210,7 @@ export default {
       }
       return result;
     },
-    handleGenerateSketchBySampleImg (row) {
+    handleGenerateByImg (row) {
       if (!this.$cache.local.checkHadInputHeaderParams()) {
         this.$message({
           type: 'info',
@@ -233,7 +233,7 @@ export default {
           message: '调用成功，处理中，大概需要60秒，请勿跳转页面'
         });
         this.$progress.start(60)
-        return generateSketchBySampleImg(outputId).then(data => {
+        return generateByImg(outputId).then(data => {
           this.$progress.success()
           this.$message({
             type: 'info',

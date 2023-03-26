@@ -67,7 +67,7 @@ public interface IStableDiffusionPatternService
 
     List<String> selectAllRelatedOutputImageUrls(Long patternId);
 
-    public StableDiffusionApiResponse generateSketchBySampleImg(Map<String, String> params, Long patternId) throws IOException;
+    public StableDiffusionApiResponse generateByImg(Map<String, String> params, Long patternId) throws IOException;
 
     List<StableDiffusionPattern> selectStableDiffusionPatternListByPatternIds(List<Long> toArray);
 }

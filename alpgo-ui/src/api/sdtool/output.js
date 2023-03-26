@@ -49,9 +49,9 @@ export function generateByPattern(outputId) {
   })
 }
 
-export function generateSketchBySampleImg(outputId) {
+export function generateByImg(outputId) {
   return request({
-    url: '/sdtool/output/' + outputId + `/generateSketchBySampleImg`,
+    url: '/sdtool/output/' + outputId + `/generateByImg`,
     method: 'post'
   })
 }

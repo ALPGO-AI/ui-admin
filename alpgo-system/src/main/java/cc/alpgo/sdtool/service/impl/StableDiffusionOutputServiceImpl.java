@@ -9,10 +9,13 @@ import java.util.stream.Collectors;
 
 import cc.alpgo.common.utils.DateUtils;
 import cc.alpgo.common.utils.StringUtils;
-import cc.alpgo.common.utils.uuid.UUID;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import cc.alpgo.sdtool.util.*;
+import cc.alpgo.sdtool.util.request.Img2imgRequestParams;
+import cc.alpgo.sdtool.util.request.Txt2txtControlNetRequestParams;
+import cc.alpgo.sdtool.util.request.Txt2txtRequestParams;
+import com.github.pagehelper.Page;
 import com.google.gson.Gson;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,8 @@ import org.springframework.stereotype.Service;
 import cc.alpgo.sdtool.mapper.StableDiffusionOutputMapper;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.service.IStableDiffusionOutputService;
+
+import static cc.alpgo.sdtool.constant.ApiContants.maskImg;
 
 /**
  * stable_diffusion_outputService业务层处理
@@ -32,8 +37,6 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
 {
     @Autowired
     private StableDiffusionApiUtil stableDiffusionApiUtil;
-    @Autowired
-    private ImageApiUtil imageApiUtil;
     @Autowired
     private CosUtil cosUtil;
     @Autowired
@@ -91,10 +94,13 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
 
     private List<StableDiffusionOutput> fillData(List<StableDiffusionOutput> stableDiffusionOutputs, Map<String, Object> dataMap) {
         if (CollectionUtils.isEmpty(stableDiffusionOutputs)) {
-            return new ArrayList<>();
+            return new Page<>();
         }
-        List<StableDiffusionOutput> collect = stableDiffusionOutputs.stream().map(item -> fillData(item, dataMap)).collect(Collectors.toList());
-        return collect;
+        for (StableDiffusionOutput stableDiffusionOutput : stableDiffusionOutputs) {
+            fillData(stableDiffusionOutput, dataMap);
+        }
+
+        return stableDiffusionOutputs;
     }
 
     private Map<String, Object> selectDataMap(List<StableDiffusionOutput> stableDiffusionOutputs) {
@@ -183,10 +189,10 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         if (stableDiffusionPattern == null) {
             return null;
         }
-        String negativeprompt = stableDiffusionPattern.getNegativePrompt();
-        String positiveprompt = stableDiffusionPattern.getPositivePrompt();
+        String negativePrompt = stableDiffusionPattern.getNegativePrompt();
+        String positivePrompt = stableDiffusionPattern.getPositivePrompt();
         StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params,
-                new StableDiffusionApiParams(positiveprompt, negativeprompt, stableDiffusionPattern.getParametersJson(), output.getSeed()).toRequestBody());
+                new Txt2txtRequestParams(positivePrompt, negativePrompt, stableDiffusionPattern.getParametersJson(), output.getSeed()).toRequestBody());
         List<String> imageUrls = cosUtil.uploadAsync(result.getImages());
         result.setImages(imageUrls);
         List<String> imageUrlsFromDb = stableDiffusionPatternService.selectAllRelatedOutputImageUrls(stableDiffusionPattern.getPatternId());
@@ -194,20 +200,80 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrlsFromDb));
         stableDiffusionPatternService.updateStableDiffusionPattern(stableDiffusionPattern);
         // 添加output数据
-        return generateFromOutput(stableDiffusionPattern, output, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters());
+        return generateFromOutput(stableDiffusionPattern, output, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters(), new ArrayList<>());
     }
 
     @Override
-    public StableDiffusionOutput generateSketchBySampleImgFromOutput(Map<String, String> params, Long outputId) throws IOException {
-        return null; // TODO
+    public StableDiffusionOutput generateByImgFromOutput(Map<String, String> params, Long outputId) throws IOException {
+        StableDiffusionOutput output = selectStableDiffusionOutputByOutputId(outputId);
+        if (output == null) {
+            return null;
+        }
+        StableDiffusionPattern stableDiffusionPattern = stableDiffusionPatternService.selectStableDiffusionPatternByPatternId(output.getPatternId());
+        if (stableDiffusionPattern == null) {
+            return null;
+        }
+        String negativePrompt = stableDiffusionPattern.getNegativePrompt();
+        String positivePrompt = stableDiffusionPattern.getPositivePrompt();
+        String straightParameter = output.getStraightParameter();
+        Map<String, Object> straightParameterMap = new Gson().fromJson(straightParameter, HashMap.class);
+        List<String> initImgUrls = new Gson().fromJson(output.getOutputImageUrl(), List.class);
+        fillImg2imgData(straightParameterMap, initImgUrls);
+        StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params,
+                new Txt2txtControlNetRequestParams(
+                        positivePrompt,
+                        negativePrompt,
+                        stableDiffusionPattern.getParametersJson(),
+                        "-1",
+                        ((List<String>) straightParameterMap.get("init_images")).get(0)
+                ).toRequestBody());
+        List<String> imageUrls = cosUtil.uploadAsync(result.getImages());
+        result.setImages(imageUrls);
+        List<String> imageUrlsFromDb = stableDiffusionPatternService.selectAllRelatedOutputImageUrls(stableDiffusionPattern.getPatternId());
+        imageUrlsFromDb.addAll(imageUrls);
+        stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrlsFromDb));
+        stableDiffusionPatternService.updateStableDiffusionPattern(stableDiffusionPattern);
+        // 添加output数据
+        return generateFromOutput(stableDiffusionPattern, output, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters(), initImgUrls);
     }
 
-    private StableDiffusionOutput generateFromOutput(StableDiffusionPattern stableDiffusionPattern, StableDiffusionOutput output, String imageUrl, String type, Map<String, Object> params) {
+    private void fillImg2imgData(Map<String, Object> straightParameterMap, List<String> imageUrls) throws IOException {
+        straightParameterMap.put("image_cfg_scale", straightParameterMap.get("cfg_scale"));
+        straightParameterMap.put("resize_mode", 0.0);
+        straightParameterMap.put("include_init_images", true);
+        straightParameterMap.put("initial_noise_multiplier", 0.0);
+        straightParameterMap.put("inpaint_full_res", false);
+        straightParameterMap.put("inpaint_full_res_padding", 0.0);
+        straightParameterMap.put("inpainting_fill", 0.0);
+        straightParameterMap.put("inpainting_mask_invert", 0.0);
+        straightParameterMap.put("init_images", convertToBase64(imageUrls));
+        straightParameterMap.put("mask", maskImg);
+        straightParameterMap.put("mask_blur", 4.0);
+    }
+
+    private List<String> convertToBase64(List<String> imageUrls) throws IOException {
+        List<String> result = new ArrayList<>();
+        for (String imageUrl : imageUrls) {
+            String imageBase64String = cosUtil.downloadToBase64(imageUrl);
+            result.add(imageBase64String);
+        }
+        return result;
+    }
+
+    private String convertToBase64(String imageUrl) throws IOException {
+        if (StringUtils.isEmpty(imageUrl)) {
+            return null;
+        }
+        return cosUtil.downloadToBase64(imageUrl);
+    }
+    private StableDiffusionOutput generateFromOutput(StableDiffusionPattern stableDiffusionPattern, StableDiffusionOutput output, String imageUrl, String type, Map<String, Object> params, List<String> initImgUrls) {
         StableDiffusionOutput outputToDb = new StableDiffusionOutput();
         outputToDb.setOutputImageUrl(imageUrl);
         outputToDb.setPatternId(stableDiffusionPattern.getPatternId());
         outputToDb.setReferenceImageUrl(imageUrl);
         outputToDb.setSeed(output.getSeed());
+        params.put("init_images", null);
+        params.put("mask", null);
         outputToDb.setStraightParameter(new Gson().toJson(params));
         outputToDb.setType(type);
         outputToDb.setReferenceOuputId(output.getReferenceOuputId());
