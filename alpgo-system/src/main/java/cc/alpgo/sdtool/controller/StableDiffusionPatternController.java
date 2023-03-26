@@ -113,11 +113,4 @@ public class StableDiffusionPatternController extends BaseController
 
         return AjaxResult.success(stableDiffusionPatternService.generateByPatternId(getHeaderMap(), patternId));
     }
-    @PreAuthorize("@ss.hasPermi('sdtool:pattern:edit')")
-    @Log(title = "stable_diffusion_pattern", businessType = BusinessType.OTHER)
-    @PostMapping("/{patternId}/generateSketchBySampleImg")
-    public AjaxResult generateSketchBySampleImg(@PathVariable("patternId") Long patternId) throws IOException {
-
-        return AjaxResult.success(stableDiffusionPatternService.generateSketchBySampleImg(getHeaderMap(), patternId));
-    }
 }

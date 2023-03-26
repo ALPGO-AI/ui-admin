@@ -1,4 +1,4 @@
-package cc.alpgo.sdtool.util;
+package cc.alpgo.sdtool.util.request;
 
 import com.google.gson.Gson;
 
@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * This class is used to build parameters for the Stable Diffusion API.
  */
-public class StableDiffusionApiParams {
+public class Txt2txtRequestParams {
     // Enable HR
     private Boolean enable_hr;
     // Denoising strength
@@ -84,7 +84,7 @@ public class StableDiffusionApiParams {
     /**
      * Constructor for StableDiffusionApiParamsBuilder.
      */
-    public StableDiffusionApiParams(String positiveprompt, String negativeprompt, String parametersJson, String seed) {
+    public Txt2txtRequestParams(String positiveprompt, String negativeprompt, String parametersJson, String seed) {
         Map<String, Object> map = new Gson().fromJson(parametersJson, HashMap.class);
         this.sampler_index = (String) map.getOrDefault("sampler", "Euler a");
         this.script_name = null;

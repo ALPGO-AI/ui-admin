@@ -113,8 +113,8 @@ public class StableDiffusionOutputController extends BaseController
 
     @PreAuthorize("@ss.hasPermi('sdtool:output:edit')")
     @Log(title = "stable_diffusion_output", businessType = BusinessType.OTHER)
-    @PostMapping("/{outputId}/generateSketchBySampleImg")
-    public AjaxResult generateSketchBySampleImgFromOutput(@PathVariable("outputId") Long outputId) throws IOException {
-        return AjaxResult.success(stableDiffusionOutputService.generateSketchBySampleImgFromOutput(getHeaderMap(), outputId));
+    @PostMapping("/{outputId}/generateByImg")
+    public AjaxResult generateByImgFromOutput(@PathVariable("outputId") Long outputId) throws IOException {
+        return AjaxResult.success(stableDiffusionOutputService.generateByImgFromOutput(getHeaderMap(), outputId));
     }
 }

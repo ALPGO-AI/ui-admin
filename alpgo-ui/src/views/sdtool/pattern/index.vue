@@ -71,8 +71,6 @@
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-cloud" @click="handleGenerate(scope.row)"
             v-hasPermi="['sdtool:pattern:edit']">以此模板生成图片</el-button>
-          <!-- <el-button size="mini" type="text" icon="el-icon-cloud" @click="handleGenerateSketchBySampleImg(scope.row)"
-            v-hasPermi="['sdtool:pattern:edit']">以此样图生成线稿</el-button> -->
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleDuplicate(scope.row)"
             v-hasPermi="['sdtool:pattern:edit']">复制</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
@@ -142,7 +140,7 @@
 </template>
 
 <script>
-import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, generateSketchBySampleImg } from "@/api/sdtool/pattern";
+import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, generateByImg } from "@/api/sdtool/pattern";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
 
@@ -275,53 +273,6 @@ export default {
         this.form.patternId = null;
         this.open = true;
         this.title = "复制Stable Diffusion 风格模板";
-      });
-    },
-    handleGenerateSketchBySampleImg(row) {
-      if (!this.$cache.local.checkHadInputHeaderParams()) {
-        this.$message({
-          type: 'info',
-          message: '请先输入webui地址'
-        })
-        return
-      }
-      if (this.$progress.checkIsRunning()) {
-        this.$message({
-          type: 'info',
-          message: '请等待上一次操作完成'
-        });
-        return
-      }
-      const params = {
-          ...row,
-          parameters: JSON.parse(row.parametersJson) || {}
-      }
-      const patternStyle = row.patternStyle
-      this.$modal.confirm('是否确认以"' + patternStyle + '"风格的数据项进行AI出图？').then(() => {
-        this.$message({
-          type: 'success',
-          message: '调用成功，处理中，大概需要60秒，请勿跳转页面'
-        });
-        this.$progress.start(60)
-        return generateSketchBySampleImg(params).then(data => {
-          this.$progress.success()
-          this.$message({
-            type: 'info',
-            message: '等待图片上传到COS'
-          });
-          setTimeout(() => {
-            this.$message({
-              type: 'success',
-              message: '图片上传成功'
-            });
-          }, 3000)
-        });
-      }).catch(() => {
-        this.$progress.failed()
-        this.$message({
-          type: 'info',
-          message: '取消输入'
-        });
       });
     },
     handleGenerate(row) {
