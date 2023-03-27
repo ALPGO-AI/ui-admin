@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
-import cc.alpgo.sdtool.util.StableDiffusionApiResponse;
+import cc.alpgo.sdtool.util.res.StableDiffusionApiResponse;
 
 /**
  * stable_diffusion_patternService接口
@@ -63,7 +63,7 @@ public interface IStableDiffusionPatternService
      */
     public int deleteStableDiffusionPatternByPatternId(Long patternId);
 
-    public StableDiffusionApiResponse generateByPatternId(Map<String, String> params, Long patternId) throws IOException;
+    public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId) throws Exception;
 
     List<String> selectAllRelatedOutputImageUrls(Long patternId);
 

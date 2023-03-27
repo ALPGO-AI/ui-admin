@@ -67,7 +67,7 @@
       </el-table-column>
       <el-table-column label="预设模板" align="center" prop="presetTemplate" />
       <el-table-column label="pattern风格" align="center" prop="patternStyle" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-cloud" @click="handleGenerate(scope.row)"
             v-hasPermi="['sdtool:pattern:edit']">以此模板生成图片</el-button>
@@ -85,8 +85,8 @@
       @pagination="getList" />
 
     <!-- 添加或修改Stable Diffusion 风格模板对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+    <el-dialog :title="title" :visible.sync="open" width="1000px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="180px">
         <el-form-item label="模型">
           <el-radio-group v-model="form.model">
             <el-radio v-for="dict in dict.type.stable_diffusion_model" :key="dict.value"
@@ -94,7 +94,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="正向提示" prop="positivePrompt">
-          <el-input 
+          <el-input
             type="textarea"
             :rows="5"
             v-model="form.positivePrompt"
@@ -126,9 +126,41 @@
           <el-input-number v-model="form.parameters.steps" :precision="0" :step="1" :max="100"></el-input-number>
         </el-form-item>
         <el-form-item label="开启高清修复">
-          <el-switch v-model="form.parameters.enable_hr" 
+          <el-switch v-model="form.parameters.enable_hr"
             active-color="#13ce66"
             inactive-color="#ff4949"/>
+        </el-form-item>
+        <el-form-item label="width">
+          <el-input-number v-model="form.parameters.width" :precision="0" :step="1" :max="2000"></el-input-number>
+        </el-form-item>
+        <el-form-item label="height">
+          <el-input-number v-model="form.parameters.height" :precision="0" :step="1" :max="2000"></el-input-number>
+        </el-form-item>
+        <el-form-item label="开启ControlNet">
+          <el-switch v-model="form.parameters.controlnet.enable"
+            active-color="#13ce66"
+            inactive-color="#ff4949"/>
+        </el-form-item>
+        <el-form-item v-if="form.parameters.controlnet.enable">
+          <el-form-item label="ControlNet预处理器">
+            <el-select v-model="form.parameters.controlnet.module" placeholder="请选择">
+              <el-option
+                v-for="item in controlNetProcessor"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="ControlNet模型">
+            <el-radio-group v-model="form.parameters.controlnet.model">
+              <el-radio v-for="dict in controlNetModels" :key="dict.value"
+                :label="dict.value">{{ dict.label }}</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="预处理图片" prop="outputImageUrl">
+            <image-upload v-model="form.parameters.controlnet.inputImage"/>
+          </el-form-item>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -143,14 +175,28 @@
 import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, generateByImg } from "@/api/sdtool/pattern";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
+import { controlNetModels, controlNetProcessor } from "@/utils/constant";
 
 const initParams = {
   CFG: 7,
   steps: 20,
   sampler: "Euler a",
-  enable_hr: false
+  enable_hr: false,
+  height: 512,
+  width: 512,
+  controlnet: {
+    enable: false,
+    inputImage: null,
+    model: null,
+    module: null
+  }
 };
-
+const getParameters = (jsonString) => {
+  return {
+    ...initParams,
+    ...(JSON.parse(jsonString) || {})
+  }
+}
 export default {
   name: "SDPattern",
   dicts: ['stable_diffusion_model', 'stable_diffusion_sampler'],
@@ -159,6 +205,8 @@ export default {
   },
   data() {
     return {
+      controlNetModels,
+      controlNetProcessor,
       // 遮罩层
       loading: true,
       // 选中数组
@@ -268,7 +316,7 @@ export default {
       getPattern(patternId).then(response => {
         this.form = {
           ...response.data,
-          parameters: JSON.parse(response.data.parametersJson) || {}
+          parameters: getParameters(row.parametersJson)
         };
         this.form.patternId = null;
         this.open = true;
@@ -299,7 +347,7 @@ export default {
       const patternStyle = row.patternStyle
       this.$modal.confirm('是否确认以"' + patternStyle + '"风格的数据项进行AI出图？').then(() => {
         const enable_hr = params.parameters.enable_hr
-        const seconds = enable_hr ? 60 : 10
+        const seconds = enable_hr ? 60 : 30
         this.$message({
           type: 'success',
           message: `调用成功，处理中，大概需要${seconds}秒，请勿跳转页面`
@@ -313,7 +361,7 @@ export default {
           });
           setTimeout(() => {
             const data = response.data
-            row.sampleImage = formatImgArrToSrc(data.patternImages)
+            row.sampleImage = formatImgArrToSrc(JSON.parse(data.sampleImage))
           }, 3000)
         });
       }).catch((e) => {
@@ -332,7 +380,7 @@ export default {
       getPattern(patternId).then(response => {
         this.form = {
           ...response.data,
-          parameters: JSON.parse(response.data.parametersJson) || {}
+          parameters: getParameters(row.parametersJson)
         };
         this.open = true;
         this.title = "修改Stable Diffusion 风格模板";

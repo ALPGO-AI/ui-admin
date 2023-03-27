@@ -1,7 +1,7 @@
 package cc.alpgo.sdtool.util.listener;
 
-import cc.alpgo.sdtool.util.CosUtil;
-import cc.alpgo.sdtool.util.event.UploadToCosEvent;
+import cc.alpgo.common.utils.CosUtil;
+import cc.alpgo.common.event.UploadToCosEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

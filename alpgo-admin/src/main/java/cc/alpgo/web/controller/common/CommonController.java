@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cc.alpgo.common.core.domain.AjaxResult;
+import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.file.FileUploadUtils;
 import cc.alpgo.common.utils.file.FileUtils;
@@ -18,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.constant.Constants;
 import cc.alpgo.framework.config.ServerConfig;
+import sun.misc.BASE64Encoder;
+
+import java.io.File;
 
 /**
  * 通用请求处理
@@ -30,7 +34,11 @@ public class CommonController
     private static final Logger log = LoggerFactory.getLogger(CommonController.class);
 
     @Autowired
+    private AlpgoConfig alpgoConfig;
+    @Autowired
     private ServerConfig serverConfig;
+    @Autowired
+    private CosUtil cosUtil;
 
     /**
      * 通用下载请求
@@ -70,13 +78,16 @@ public class CommonController
     @PostMapping("/common/upload")
     public AjaxResult uploadFile(MultipartFile file) throws Exception
     {
+        String fileName = null;
+        try {
+            fileName = cosUtil.upload(file);
+        } catch (Exception e) {
+            throw new Exception("文件上传失败");
+        }
         try
         {
-            // 上传文件路径
-            String filePath = AlpgoConfig.getUploadPath();
             // 上传并返回新文件名称
-            String fileName = FileUploadUtils.upload(filePath, file);
-            String url = serverConfig.getUrl() + fileName;
+            String url = cosUtil.getCosPrefix() + fileName;
             AjaxResult ajax = AjaxResult.success();
             ajax.put("fileName", fileName);
             ajax.put("url", url);

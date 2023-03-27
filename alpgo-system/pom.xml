@@ -92,23 +92,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.tencentcloudapi</groupId>
-            <artifactId>tencentcloud-sdk-java-nlp</artifactId>
-            <version>3.1.635</version>
-        </dependency>
-        <dependency>
-            <groupId>com.qcloud</groupId>
-            <artifactId>cos_api</artifactId>
-            <version>5.6.97</version>
-        </dependency>
-
-        <!-- 处理png类型的图片 -->
-        <dependency>
-            <groupId>org.jpedal</groupId>
-            <artifactId>OpenViewerFX</artifactId>
-            <version>6.6.14</version>
-        </dependency>
     </dependencies>
 
 </project>
