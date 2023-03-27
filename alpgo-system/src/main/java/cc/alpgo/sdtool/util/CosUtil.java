@@ -177,7 +177,7 @@ public class CosUtil {
         // 存储桶的命名格式为 BucketName-APPID，此处填写的存储桶名称必须为此格式
         String bucketName = alpgoConfig.getCosApiBucketName();
         // 本地文件路径
-        String localFilePath = alpgoConfig.getProfile() + key;
+        String localFilePath = alpgoConfig.getProfile() + "/" + key;
         File downloadFile = new File(localFilePath);
 
         GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
