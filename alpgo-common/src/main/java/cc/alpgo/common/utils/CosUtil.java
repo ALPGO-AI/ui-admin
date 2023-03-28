@@ -87,7 +87,7 @@ public class CosUtil {
             //上传出错，不一定失败
         }finally {
             //关闭客户端(关闭后台线程)
-            cosClient.shutdown();
+//            cosClient.shutdown(); // 实测关闭线程在复杂环境下容易出问题，注释掉关闭代码
         }
         return;
     }

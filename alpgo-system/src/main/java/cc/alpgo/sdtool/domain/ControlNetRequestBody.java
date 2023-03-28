@@ -7,7 +7,7 @@ public class ControlNetRequestBody {
     private String inputImage;
     private String model;
     private String module;
-
+    private boolean invertImage;
     public ControlNetRequestBody() {
     }
 
@@ -16,6 +16,7 @@ public class ControlNetRequestBody {
         this.inputImage = (String) controlnet.get("inputImage");
         this.model = (String) controlnet.get("model");
         this.module = (String) controlnet.get("module");
+        this.invertImage = (Boolean) controlnet.get("invertImage");
     }
 
     public Boolean getEnable() {
@@ -49,4 +50,14 @@ public class ControlNetRequestBody {
     public void setModule(String module) {
         this.module = module;
     }
+
+
+    public boolean isInvertImage() {
+        return invertImage;
+    }
+
+    public void setInvertImage(boolean invertImage) {
+        this.invertImage = invertImage;
+    }
+
 }

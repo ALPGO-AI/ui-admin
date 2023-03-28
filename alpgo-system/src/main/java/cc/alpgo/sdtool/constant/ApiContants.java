@@ -9,4 +9,7 @@ public class ApiContants {
     public static final String STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_GENERATE = "stablediffusionwebuifnindexforgenerate";
     public static final String STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_CONTROLNET = "stablediffusionwebuifnindexforcontrolnet";
     public static final String STABLE_DIFFUSION_WEBUI_IS_LORA_PLUGIN_INSTALLED = "stablediffusionwebuiisloraplugininstalled";
+    public static final String STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_IMG2IMG_GENERATE = "stablediffusionwebuifnindexforimg2imggenerate";
+    public static final String STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_IMG2IMG_CONTROLNET = "stablediffusionwebuifnindexforimg2imgcontrolnet";
+
 }

@@ -60,7 +60,7 @@
         </template>
       </el-table-column>
       <!-- <el-table-column label="参考原图地址" align="center" prop="referenceImageUrl" /> -->
-      <el-table-column label="使用的种子(默认-1表示随机)" align="center" prop="seed" />
+      <el-table-column label="使用的种子(默认-1表示随机)" align="center" prop="seed" width="150"/>
       <el-table-column label="类型" align="center" prop="type" width="150"/>
       <!-- <el-table-column label="参考输出图片id" align="center" prop="referenceOuputId" /> -->
       <!-- <el-table-column label="patternId" align="center" prop="patternId" /> -->

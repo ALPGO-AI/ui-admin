@@ -5,8 +5,16 @@ export const controlNetModels = [
       value: 'None'
     },
     {
+      label: 'control_sd15_canny [fef5e48e]',
+      value: 'control_sd15_canny [fef5e48e]'
+    },
+    {
       label: 'control_sd15_openpose [fef5e48e]',
       value: 'control_sd15_openpose [fef5e48e]'
+    },
+    {
+      label: 'control_sd15_scribble [fef5e48e]',
+      value: 'control_sd15_scribble [fef5e48e]'
     }
   ]
 export const controlNetProcessor = [

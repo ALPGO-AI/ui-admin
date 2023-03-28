@@ -1,6 +1,7 @@
 package cc.alpgo.sdtool.util.request;
 
 import cc.alpgo.sdtool.constant.ApiContants;
+import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import com.google.gson.Gson;
 
 import java.math.BigDecimal;
@@ -15,7 +16,7 @@ public class Txt2txtRequestParams {
     // Enable HR
     private boolean enable_hr;
     // Denoising strength
-    private float denoising_strength;
+    private double denoising_strength;
     // First phase width
     private int firstphase_width;
     // First phase height
@@ -97,8 +98,8 @@ public class Txt2txtRequestParams {
         Map<String, Object> map = new Gson().fromJson(parametersJson, HashMap.class);
         this.sampler_index = (String) map.getOrDefault("sampler", "Euler a");
         this.script_name = null;
-        this.enable_hr = true;
-        this.denoising_strength = 0.6f;
+        this.enable_hr = convertToBoolean(map.getOrDefault("enable_hr", false));;
+        this.denoising_strength = convertToDouble(map.getOrDefault("denoising_strength", 0.6f));
         this.firstphase_width = 0;
         this.firstphase_height = 0;
         this.hr_scale = 2;
@@ -199,10 +200,10 @@ public class Txt2txtRequestParams {
         data.add(false);
         data.add(this.height);
         data.add(this.width);
-        data.add(false);
-        data.add(0.7);
-        data.add(2);
-        data.add("Latent");
+        data.add(this.enable_hr);
+        data.add(this.denoising_strength);
+        data.add(this.hr_scale);
+        data.add(this.hr_upscaler);
         data.add(0);
         data.add(0);
         data.add(0);
@@ -301,157 +302,186 @@ public class Txt2txtRequestParams {
         return new Gson().toJson(params);
     }
 
-    public String toPreDictForSketch(String sessionHash, Map<String, String> headerParams) {
-        return "{\n" +
-                "    \"fn_index\": 349,\n" +
-                "    \"data\": [\n" +
-                "        \"task("+sessionHash+")\",\n" +
-                "        0,\n" +
-                "        \"masterpiece, best quality, master, monochrome, lineart, <lora:animeLineartStyle_v20Offset:1>\",\n" +
-                "        \"lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, bad feet\",\n" +
-                "        [],\n" +
-                "        \""+ ApiContants.whiteBgImg +"\",\n" +
-                "        null,\n" +
-                "        null,\n" +
-                "        null,\n" +
-                "        null,\n" +
-                "        null,\n" +
-                "        null,\n" +
-                "        80,\n" +
-                "        \""+this.sampler_index+"\",\n" +
-                "        4,\n" +
-                "        0,\n" +
-                "        \"original\",\n" +
-                "        false,\n" +
-                "        false,\n" +
-                "        1,\n" +
-                "        1,\n" +
-                "        "+this.cfg_scale+",\n" +
-                "        1.5,\n" +
-                "        0.99,\n" +
-                "        "+this.seed+",\n" +
-                "        -1,\n" +
-                "        0,\n" +
-                "        0,\n" +
-                "        0,\n" +
-                "        false,\n" +
-                "        " + this.height + ",\n" +
-                "        " + this.width + ",\n" +
-                "        \"Just resize\",\n" +
-                "        \"Whole picture\",\n" +
-                "        32,\n" +
-                "        \"Inpaint masked\",\n" +
-                "        \"\",\n" +
-                "        \"\",\n" +
-                "        \"\",\n" +
-                "        [],\n" +
-                "        \"None\",\n" +
-                "        false,\n" +
-                "        false,\n" +
-                "        \"LoRA\",\n" +
-                "        \"None\",\n" +
-                "        1,\n" +
-                "        1,\n" +
-                "        \"LoRA\",\n" +
-                "        \"None\",\n" +
-                "        1,\n" +
-                "        1,\n" +
-                "        \"LoRA\",\n" +
-                "        \"None\",\n" +
-                "        1,\n" +
-                "        1,\n" +
-                "        \"LoRA\",\n" +
-                "        \"None\",\n" +
-                "        1,\n" +
-                "        1,\n" +
-                "        \"LoRA\",\n" +
-                "        \"None\",\n" +
-                "        1,\n" +
-                "        1,\n" +
-                "        null,\n" +
-                "        \"Refresh models\",\n" +
-                "        null,\n" +
-                "        \"<ul>\\n<li><code>CFG Scale</code> should be 2 or lower.</li>\\n</ul>\\n\",\n" +
-                "        true,\n" +
-                "        true,\n" +
-                "        \"\",\n" +
-                "        \"\",\n" +
-                "        true,\n" +
-                "        50,\n" +
-                "        true,\n" +
-                "        1,\n" +
-                "        0,\n" +
-                "        false,\n" +
-                "        4,\n" +
-                "        1,\n" +
-                "        \"None\",\n" +
-                "        \"<p style=\\\"margin-bottom:0.75em\\\">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: 0.8</p>\",\n" +
-                "        128,\n" +
-                "        8,\n" +
-                "        [\n" +
-                "            \"left\",\n" +
-                "            \"right\",\n" +
-                "            \"up\",\n" +
-                "            \"down\"\n" +
-                "        ],\n" +
-                "        1,\n" +
-                "        0.05,\n" +
-                "        128,\n" +
-                "        4,\n" +
-                "        \"fill\",\n" +
-                "        [\n" +
-                "            \"left\",\n" +
-                "            \"right\",\n" +
-                "            \"up\",\n" +
-                "            \"down\"\n" +
-                "        ],\n" +
-                "        false,\n" +
-                "        false,\n" +
-                "        \"positive\",\n" +
-                "        \"comma\",\n" +
-                "        0,\n" +
-                "        false,\n" +
-                "        false,\n" +
-                "        \"\",\n" +
-                "        \"<p style=\\\"margin-bottom:0.75em\\\">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>\",\n" +
-                "        64,\n" +
-                "        \"None\",\n" +
-                "        2,\n" +
-                "        \"Seed\",\n" +
-                "        \"\",\n" +
-                "        \"Nothing\",\n" +
-                "        \"\",\n" +
-                "        \"Nothing\",\n" +
-                "        \"\",\n" +
-                "        true,\n" +
-                "        false,\n" +
-                "        false,\n" +
-                "        false,\n" +
-                "        0,\n" +
-                "        null,\n" +
-                "        false,\n" +
-                "        50,\n" +
-                "        [\n" +
-                "            {\n" +
-                "                \"name\": \"D:\\\\workspace\\\\novelai-webui\\\\sdwebui\\\\outputs\\\\img2img-images\\\\00029-169460550-{{line art, white and black_1.5}}, {{monochrome, screentones}}.png\",\n" +
-                "                \"data\": \"file=D:\\\\workspace\\\\novelai-webui\\\\sdwebui\\\\outputs\\\\img2img-images\\\\00029-169460550-{{line art, white and black_1.5}}, {{monochrome, screentones}}.png\",\n" +
-                "                \"is_file\": true\n" +
-                "            },\n" +
-                "            {\n" +
-                "                \"name\": \"C:\\\\Users\\\\Marcus\\\\AppData\\\\Local\\\\Temp\\\\tmpcadk45hc.png\",\n" +
-                "                \"data\": \"file=C:\\\\Users\\\\Marcus\\\\AppData\\\\Local\\\\Temp\\\\tmpcadk45hc.png\",\n" +
-                "                \"is_file\": true\n" +
-                "            }\n" +
-                "        ],\n" +
-                "        \"{\\\"prompt\\\": \\\"{{line art, white and black:1.5}}, {{monochrome, screentones}}\\\", \\\"all_prompts\\\": [\\\"{{line art, white and black:1.5}}, {{monochrome, screentones}}\\\"], \\\"negative_prompt\\\": \\\"lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, bad feet\\\", \\\"all_negative_prompts\\\": [\\\"lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, bad feet\\\"], \\\"seed\\\": 183406013, \\\"all_seeds\\\": [183406013], \\\"subseed\\\": 3859757024, \\\"all_subseeds\\\": [3859757024], \\\"subseed_strength\\\": 0, \\\"width\\\": 512, \\\"height\\\": 512, \\\"sampler_name\\\": \\\"Euler a\\\", \\\"cfg_scale\\\": 7, \\\"steps\\\": 80, \\\"batch_size\\\": 1, \\\"restore_faces\\\": false, \\\"face_restoration_model\\\": null, \\\"sd_model_hash\\\": \\\"a074b8864e\\\", \\\"seed_resize_from_w\\\": 0, \\\"seed_resize_from_h\\\": 0, \\\"denoising_strength\\\": 0.99, \\\"extra_generation_params\\\": {\\\"Mask blur\\\": 4, \\\"ControlNet Enabled\\\": true, \\\"ControlNet Module\\\": \\\"canny\\\", \\\"ControlNet Model\\\": \\\"control_sd15_canny [fef5e48e]\\\", \\\"ControlNet Weight\\\": 1, \\\"ControlNet Guidance Start\\\": 0, \\\"ControlNet Guidance End\\\": 1}, \\\"index_of_first_image\\\": 0, \\\"infotexts\\\": [\\\"{{line art, white and black:1.5}}, {{monochrome, screentones}}\\\\nNegative prompt: lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, bad feet\\\\nSteps: 80, Sampler: Euler a, CFG scale: 7, Seed: 183406013, Size: 512x512, Model hash: a074b8864e, Model: CounterfeitV25_25, Denoising strength: 0.99, Clip skip: 2, ENSD: 31337, Mask blur: 4, ControlNet Enabled: True, ControlNet Module: canny, ControlNet Model: control_sd15_canny [fef5e48e], ControlNet Weight: 1, ControlNet Guidance Start: 0, ControlNet Guidance End: 1\\\"], \\\"styles\\\": [], \\\"job_timestamp\\\": \\\"20230323065110\\\", \\\"clip_skip\\\": 2, \\\"is_using_inpainting_conditioning\\\": false}\",\n" +
-                "        \"<p>{{line art, white and black:1.5}}, {{monochrome, screentones}}<br>\\nNegative prompt: lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, bad feet<br>\\nSteps: 80, Sampler: Euler a, CFG scale: 7, Seed: 183406013, Size: 512x512, Model hash: a074b8864e, Model: CounterfeitV25_25, Denoising strength: 0.99, Clip skip: 2, ENSD: 31337, Mask blur: 4, ControlNet Enabled: True, ControlNet Module: canny, ControlNet Model: control_sd15_canny [fef5e48e], ControlNet Weight: 1, ControlNet Guidance Start: 0, ControlNet Guidance End: 1</p>\",\n" +
-                "        \"<p></p><div class='performance'><p class='time'>Time taken: <wbr>19.37s</p><p class='vram'>Torch active/reserved: 3886/4782 MiB, <wbr>Sys VRAM: 7384/8192 MiB (90.14%)</p></div>\"\n" +
-                "    ],\n" +
-                "    \"session_hash\": \""+sessionHash+"\"\n" +
-                "}";
+    public String toPreDictForImg2img(String sessionHash, String initImage, Map<String, String> headerParams) {
+        Integer fn_index = convertToInteger(headerParams.get(STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_IMG2IMG_GENERATE));
+        Boolean loraPluginInstalled = convertToBoolean(headerParams.get(STABLE_DIFFUSION_WEBUI_IS_LORA_PLUGIN_INSTALLED));
+        String keyUuid = UUID.randomUUID().toString();
+        Map<String, Object> params = new HashMap<>();
+        params.put("fn_index", fn_index);
+        List<Object> list = new ArrayList<>();
+        list.add("task("+keyUuid+")");
+        list.add(0);
+        list.add(this.prompt);
+        list.add(this.negative_prompt);
+        list.add(new ArrayList<>());
+        list.add("data:image/png;base64,"+initImage);
+        list.add(null);
+        list.add(null);
+        list.add(null);
+        list.add(null);
+        list.add(null);
+        list.add(null);
+        list.add(this.steps);
+        list.add(this.sampler_index);
+        list.add(4);
+        list.add(0);
+        list.add("original");
+        list.add(false);
+        list.add(false);
+        list.add(1);
+        list.add(1);
+        list.add(this.cfg_scale);
+        list.add(1.5);
+        list.add(this.denoising_strength);
+        list.add(-1);
+        list.add(-1);
+        list.add(0);
+        list.add(0);
+        list.add(0);
+        list.add(false);
+        list.add(this.height);
+        list.add(this.width);
+        list.add("Just resize");
+        list.add("Whole picture");
+        list.add(32);
+        list.add("Inpaint masked");
+        list.add("");
+        list.add("");
+        list.add("");
+        list.add(new ArrayList<>());
+        list.add("None");
+        if (loraPluginInstalled) {
+            list.add(false);
+            list.add(false);
+            list.add("LoRA");
+            list.add("None");
+            list.add(1);
+            list.add(1);
+            list.add("LoRA");
+            list.add("None");
+            list.add(1);
+            list.add(1);
+            list.add("LoRA");
+            list.add("None");
+            list.add(1);
+            list.add(1);
+            list.add("LoRA");
+            list.add("None");
+            list.add(1);
+            list.add(1);
+            list.add("LoRA");
+            list.add("None");
+            list.add(1);
+            list.add(1);
+            list.add(null);
+            list.add("Refresh models");
+        }
+        list.add(null);
+        list.add("");
+        list.add(true);
+        list.add(true);
+        list.add("");
+        list.add("");
+        list.add(true);
+        list.add(50);
+        list.add(true);
+        list.add(1);
+        list.add(0);
+        list.add(false);
+        list.add(4);
+        list.add(1);
+        list.add("None");
+        list.add("");
+        list.add(128);
+        list.add(8);
+        list.add(generateList("left","right","up","down"));
+        list.add(1);
+        list.add(0.05);
+        list.add(128);
+        list.add(4);
+        list.add("fill");
+        list.add(generateList("left","right","up","down"));
+        list.add(false);
+        list.add(false);
+        list.add("positive");
+        list.add("comma");
+        list.add(0);
+        list.add(false);
+        list.add(false);
+        list.add("");
+        list.add("");
+        list.add(64);
+        list.add("None");
+        list.add(2);
+        list.add("Seed");
+        list.add("");
+        list.add("Nothing");
+        list.add("");
+        list.add("Nothing");
+        list.add("");
+        list.add(true);
+        list.add(false);
+        list.add(false);
+        list.add(false);
+        list.add(0);
+        list.add(null);
+        list.add(false);
+        list.add(50);
+        List<Object> imageList = new ArrayList<>();
+        Map<String, Object> imageMap = new HashMap<>();
+        imageMap.put("name", "D:\\workspace\\novelai-webui\\novelai-webui-aki-v3\\outputs\\txt2img-images\\"+keyUuid+".png");
+        imageMap.put("data", "file=D:\\workspace\\novelai-webui\\novelai-webui-aki-v3\\outputs\\txt2img-images\\"+keyUuid+".png");
+        imageMap.put("is_file", true);
+        imageList.add(imageMap);
+        list.add(new Gson().toJson(imageList));
+        list.add("");
+        list.add("");
+        list.add("");
+        params.put("data", list);
+        params.put("session_hash", sessionHash);
+        return new Gson().toJson(params);
     }
-    public String toPreDictForControlNet(String sessionHash, Map<String, String> headerParams) {
+
+    private List<String> generateList(String ...args) {
+        List<String> result = new ArrayList<>();
+        for (String arg : args) {
+            result.add(arg);
+        }
+        return result;
+    }
+
+    public String toPreDictForControlNet(String sessionHash, Map<String, String> headerParams, ControlNetRequestBody controlNetRequestBody) {
+        return toPreDictForControlNet(sessionHash, headerParams, false, controlNetRequestBody);
+    }
+    public String toPreDictForControlNet(String sessionHash, Map<String, String> headerParams, boolean isImg2img, ControlNetRequestBody requestBody) {
         Integer fn_index = convertToInteger(headerParams.get(STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_CONTROLNET));
+        if (isImg2img) {
+            fn_index = convertToInteger(headerParams.get(STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_IMG2IMG_CONTROLNET));
+            return "{\n" +
+                    "  \"fn_index\": "+fn_index+",\n" +
+                    "  \"data\": [\n" +
+                    "    true,\n" +
+                    "        \"" + controlnet_module + "\",\n" +
+                    "        \"" + controlnet_model + "\",\n" +
+                    "    1,\n" +
+                    "        {\n" +
+                    "           \"image\": \"data:image/png;base64," + controlnet_input_image + "\"," +
+                    "            \"mask\": \"data:image/png;base64," + maskImg +"\"" +
+                    "        },\n" +
+                    "    "+requestBody.isInvertImage()+",\n" +
+                    "    \"Scale to Fit (Inner Fit)\",\n" +
+                    "    false,\n" +
+                    "    false,\n" +
+                    "    64,\n" +
+                    "    64,\n" +
+                    "    64,\n" +
+                    "    0,\n" +
+                    "    1,\n" +
+                    "    false\n" +
+                    "  ],\n" +
+                    "  \"session_hash\": \""+sessionHash+"\"\n" +
+                    "}\n";
+        }
         return "{\n" +
                 "    \"fn_index\": " + fn_index + ",\n" +
                 "    \"data\": [\n" +

@@ -24,8 +24,10 @@ export default {
         { label: 'webui地址', key: 'stablediffusionwebuidomain', type: 'input' },
         { label: 'webui用户名', key: 'stablediffusionwebuiusername', type: 'input' },
         { label: 'webui用户密码', key: 'stablediffusionwebuipassword', type: 'password' },
-        { label: 'webui生成按钮对应fn_index', key: 'stablediffusionwebuifnindexforgenerate', type: 'input' },
-        { label: 'webui启用controlnet对应fn_index', key: 'stablediffusionwebuifnindexforcontrolnet', type: 'input' },
+        { label: 'webui文生图生成按钮对应fn_index', key: 'stablediffusionwebuifnindexforgenerate', type: 'input' },
+        { label: 'webui图生图生成按钮对应fn_index', key: 'stablediffusionwebuifnindexforimg2imggenerate', type: 'input' },
+        { label: 'webui文生图启用controlnet对应fn_index', key: 'stablediffusionwebuifnindexforcontrolnet', type: 'input' },
+        { label: 'webui图生图启用controlnet对应fn_index', key: 'stablediffusionwebuifnindexforimg2imgcontrolnet', type: 'input' },
         { label: 'webui是否已安装lora插件', key: 'stablediffusionwebuiisloraplugininstalled', type: 'switch' },
       ]
     };
