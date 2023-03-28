@@ -53,7 +53,7 @@
     <el-table v-loading="loading" :data="patternList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="id" align="center" prop="patternId" width="55" />
-      <el-table-column label="模型" align="center" prop="model">
+      <el-table-column label="模型" align="center" prop="model" width="125">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.stable_diffusion_model" :value="scope.row.model" />
         </template>
@@ -65,7 +65,21 @@
           <image-preview :src="scope.row.sampleImage || ''" :width="128" :height="128" />
         </template>
       </el-table-column>
-      <el-table-column label="预设模板" align="center" prop="presetTemplate" />
+      <el-table-column label="预设模板" align="center" prop="presetTemplate" width="85">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.stable_diffusion_preset_template" :value="scope.row.presetTemplate"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="图生图初始图片" align="center" width="150">
+        <template slot-scope="scope">
+          <image-preview v-if="scope.row.presetTemplate === 'img2img'" :src="scope.row.parameters.init_images" :width="128" :height="128" />
+        </template>
+      </el-table-column>
+      <el-table-column label="ControlNet预处理" align="center" width="150">
+        <template slot-scope="scope">
+          <image-preview v-if="scope.row.parameters.controlnet.enable" :src="scope.row.parameters.controlnet.inputImage" :width="128" :height="128" />
+        </template>
+      </el-table-column>
       <el-table-column label="pattern风格" align="center" prop="patternStyle" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
@@ -108,7 +122,19 @@
           <el-input v-model="form.negativePrompt" placeholder="请输入负向提示" />
         </el-form-item>
         <el-form-item label="预设模板" prop="presetTemplate">
-          <el-input v-model="form.presetTemplate" placeholder="请输入预设模板" />
+          <el-radio-group v-model="form.presetTemplate">
+            <el-radio v-for="dict in dict.type.stable_diffusion_preset_template" :key="dict.value"
+              :label="dict.value">{{ dict.label }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="form.presetTemplate === 'img2img'">
+          <el-form-item label="图生图初始图片">
+            <image-upload :limit="1" v-model="form.parameters.init_images"/>
+          </el-form-item>
+          <el-form-item label="重绘幅度">
+            <el-input-number v-model="form.parameters.denoising_strength" :precision="2" :step="0.01" :max="1"></el-input-number>
+          </el-form-item>
+
         </el-form-item>
         <el-form-item label="pattern风格" prop="patternStyle">
           <el-input v-model="form.patternStyle" placeholder="请输入pattern风格" />
@@ -117,10 +143,14 @@
           <el-input-number v-model="form.parameters.CFG" :precision="1" :step="0.1" :max="20"></el-input-number>
         </el-form-item>
         <el-form-item label="Sampler">
-          <el-radio-group v-model="form.parameters.sampler">
-            <el-radio v-for="dict in dict.type.stable_diffusion_sampler" :key="dict.value"
-              :label="dict.value">{{ dict.label }}</el-radio>
-          </el-radio-group>
+          <el-select v-model="form.parameters.sampler" placeholder="请选择">
+            <el-option
+              v-for="item in dict.type.stable_diffusion_sampler"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="Steps">
           <el-input-number v-model="form.parameters.steps" :precision="0" :step="1" :max="100"></el-input-number>
@@ -159,7 +189,7 @@
             </el-radio-group>
           </el-form-item>
           <el-form-item label="预处理图片" prop="outputImageUrl">
-            <image-upload v-model="form.parameters.controlnet.inputImage"/>
+            <image-upload :limit="1" v-model="form.parameters.controlnet.inputImage"/>
           </el-form-item>
         </el-form-item>
       </el-form>
@@ -184,6 +214,8 @@ const initParams = {
   enable_hr: false,
   height: 512,
   width: 512,
+  init_images: [],
+  denoising_strength: 0.6,
   controlnet: {
     enable: false,
     inputImage: null,
@@ -199,12 +231,13 @@ const getParameters = (jsonString) => {
 }
 export default {
   name: "SDPattern",
-  dicts: ['stable_diffusion_model', 'stable_diffusion_sampler'],
+  dicts: ['stable_diffusion_model', 'stable_diffusion_sampler', 'stable_diffusion_preset_template'],
   components: {
     HeaderParams
   },
   data() {
     return {
+      formatImgArrToSrc,
       controlNetModels,
       controlNetProcessor,
       // 遮罩层
@@ -257,7 +290,8 @@ export default {
         this.patternList = rows.map(row => {
           return {
             ...row,
-            sampleImage: formatImgArrToSrc(JSON.parse(row.sampleImage))
+            sampleImage: formatImgArrToSrc(JSON.parse(row.sampleImage)),
+            parameters: getParameters(row.parametersJson)
           }
         });
         this.total = response.total;

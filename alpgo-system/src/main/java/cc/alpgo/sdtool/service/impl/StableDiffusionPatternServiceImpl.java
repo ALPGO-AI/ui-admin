@@ -141,7 +141,11 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
                     controlNetRequestBody.getModule(),
                     controlNetRequestBody.getModel()
             );
-            StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.apiPredict(params, txt2txtRequestParams.toPreDictForControlNet(sessionHash, params));
+            StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.apiPredict(
+                    params,
+                    txt2txtRequestParams.toPreDictForControlNet(sessionHash,
+                            params,
+                            stableDiffusionPattern.getPresetTemplate().equals("img2img")));
             log.info("predict controlnet response: {}", resultForSetControlNet);
         } else {
             txt2txtRequestParams = new Txt2txtRequestParams(
@@ -152,8 +156,20 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             );
         }
 
-        StableDiffusionApiResponse result = stableDiffusionApiUtil.apiPredict(params,
-                txt2txtRequestParams.toPreDict(sessionHash, params));
+        StableDiffusionApiResponse result = null;
+        if (stableDiffusionPattern.getPresetTemplate().equals("img2img")) {
+            Object init_images = parameters.get("init_images");
+            if (init_images == null) {
+                throw new Exception("请选择图生图初始图片");
+            }
+            result = stableDiffusionApiUtil.apiPredict(params,
+                    txt2txtRequestParams.toPreDictForImg2img(sessionHash,
+                            stableDiffusionApiUtil.convertToBase64((String) init_images),
+                            params));
+        } else {
+            result = stableDiffusionApiUtil.apiPredict(params,
+                    txt2txtRequestParams.toPreDict(sessionHash, params));
+        }
         List<String> imageUrls = stableDiffusionApiUtil.transToCos(params, result);
         if (CollectionUtils.isEmpty(imageUrls)) {
             throw new Exception("图片生成失败，请检查参数是否正确");
