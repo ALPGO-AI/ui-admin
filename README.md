@@ -3,6 +3,10 @@
 
 Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base on https://gitee.com/y_project/RuoYi-Vue
 
+## 团队主页
+
+如果你有兴趣参与开发或者有好的想法想要提出，也可以通过我们的[团队主页](alpgoai.com)找到我们的联系方式（QQ群）
+
 ## 功能介绍
 - 目前提供 `风格模板` 和 `输出图片` 的管理功能
 - 在 `webui` 地址处填写你的服务地址即可调用服务生成图片，比如`autodl`的自定义服务地址
