@@ -14,11 +14,6 @@ alpgo:
   addressEnabled: false
   # 验证码类型 math 数组计算 char 字符验证
   captchaType: math
-  # 腾讯云cos配置
-  cosApiSecretId: ${COS_API_SECRET_ID}
-  cosApiSecretKey: ${COS_API_SECRET_KEY}
-  cosApiBucketName: ${COS_API_BUCKET_NAME}
-  cosApiRegion: ${COS_API_REGION}
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080

@@ -32,42 +32,6 @@ public class AlpgoConfig
 
     /** 验证码类型 */
     private static String captchaType;
-    private String cosApiSecretId;
-    private String cosApiSecretKey;
-    private String cosApiBucketName;
-    private String cosApiRegion;
-
-    public String getCosApiSecretId() {
-        return cosApiSecretId;
-    }
-
-    public void setCosApiSecretId(String cosApiSecretId) {
-        this.cosApiSecretId = cosApiSecretId;
-    }
-
-    public String getCosApiSecretKey() {
-        return cosApiSecretKey;
-    }
-
-    public void setCosApiSecretKey(String cosApiSecretKey) {
-        this.cosApiSecretKey = cosApiSecretKey;
-    }
-
-    public String getCosApiBucketName() {
-        return cosApiBucketName;
-    }
-
-    public void setCosApiBucketName(String cosApiBucketName) {
-        this.cosApiBucketName = cosApiBucketName;
-    }
-
-    public String getCosApiRegion() {
-        return cosApiRegion;
-    }
-
-    public void setCosApiRegion(String cosApiRegion) {
-        this.cosApiRegion = cosApiRegion;
-    }
 
     public String getName()
     {

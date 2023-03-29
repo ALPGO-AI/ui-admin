@@ -1,19 +1,16 @@
 import { parseTime } from './ruoyi'
 
-export function formatImgArrToSrc(array) {
-  if (!array || array.length == 0) {
-    return "";
-  }
-  let prefix = process.env.VUE_APP_CDN;
-  let result = "";
-  for (let index = 0; index < array.length; index++) {
-    const key = array[index];
-    result += prefix + key;
-    if (index < array.length - 1) {
-      result += ",";
+export function formatImgArrToSrc(array, imageMap) {
+  if (array == null || array == "") return "";
+  let result = [];
+  for (let i = 0; i < array.length; i++) {
+    if (imageMap) {
+      result.push(imageMap[array[i]]);
+    } else {
+      result.push(array[i]);
     }
   }
-  return result;
+  return result.join(",");
 }
 
 /**
@@ -21,12 +18,12 @@ export function formatImgArrToSrc(array) {
  */
 export function formatDate(cellValue) {
   if (cellValue == null || cellValue == "") return "";
-  var date = new Date(cellValue) 
+  var date = new Date(cellValue)
   var year = date.getFullYear()
   var month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
-  var day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate() 
-  var hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours() 
-  var minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes() 
+  var day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
+  var hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours()
+  var minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()
   var seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()
   return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
 }
@@ -346,7 +343,7 @@ export function makeMap(str, expectsLowerCase) {
     ? val => map[val.toLowerCase()]
     : val => map[val]
 }
- 
+
 export const exportDefault = 'export default '
 
 export const beautifierConf = {
@@ -403,4 +400,3 @@ export function camelCase(str) {
 export function isNumberStr(str) {
   return /^[+-]?(0|([1-9]\d*))(\.\d+)?$/g.test(str)
 }
- 

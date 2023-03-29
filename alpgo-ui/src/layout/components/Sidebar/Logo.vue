@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      title: 'ALPGO-AI UI Admin',
+      title: process.env.VUE_APP_TITLE,
       logo: logoImg
     }
   }

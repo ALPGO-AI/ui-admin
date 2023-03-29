@@ -1,6 +1,5 @@
 package cc.alpgo.sdtool.controller;
 
-import java.io.IOException;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
@@ -9,7 +8,6 @@ import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.page.TableDataInfo;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.utils.poi.ExcelUtil;
-import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

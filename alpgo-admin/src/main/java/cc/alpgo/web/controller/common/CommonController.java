@@ -4,10 +4,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cc.alpgo.common.core.domain.AjaxResult;
+import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.file.FileUploadUtils;
 import cc.alpgo.common.utils.file.FileUtils;
+import cc.alpgo.system.domain.Image;
+import cc.alpgo.system.domain.ImageProvider;
+import cc.alpgo.system.service.IEnvironmentService;
+import cc.alpgo.system.service.IImageService;
+import cc.alpgo.system.utils.ImageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +21,21 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.constant.Constants;
 import cc.alpgo.framework.config.ServerConfig;
-import sun.misc.BASE64Encoder;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 /**
  * 通用请求处理
@@ -33,12 +47,27 @@ public class CommonController
 {
     private static final Logger log = LoggerFactory.getLogger(CommonController.class);
 
+    protected Map<String, String> getHeaderMap() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        Map<String, String> headerMap = new HashMap<>();
+        while (headerNames.hasMoreElements()) {
+            String key = headerNames.nextElement();
+            String value = request.getHeader(key);
+            headerMap.put(key, value);
+        }
+        return headerMap;
+    }
     @Autowired
     private AlpgoConfig alpgoConfig;
     @Autowired
     private ServerConfig serverConfig;
     @Autowired
     private CosUtil cosUtil;
+    @Autowired
+    private IImageService imageService;
+    @Autowired
+    private IEnvironmentService environmentService;
 
     /**
      * 通用下载请求
@@ -78,19 +107,29 @@ public class CommonController
     @PostMapping("/common/upload")
     public AjaxResult uploadFile(MultipartFile file) throws Exception
     {
-        String fileName = null;
-        try {
-            fileName = cosUtil.upload(file);
-        } catch (Exception e) {
-            throw new Exception("文件上传失败");
-        }
         try
         {
+            // 上传文件路径
+            String filePath = AlpgoConfig.getUploadPath();
             // 上传并返回新文件名称
-            String url = cosUtil.getCosPrefix() + fileName;
+            String fileName = FileUploadUtils.upload(filePath, file);
+            String url = serverConfig.getUrl() + fileName;
             AjaxResult ajax = AjaxResult.success();
             ajax.put("fileName", fileName);
             ajax.put("url", url);
+            Map<String, String> headerMap = getHeaderMap();
+            List<CosConfig> activeConfigs = environmentService.getActiveConfigs(headerMap);
+            if (isNotEmpty(activeConfigs)) {
+                File localFile = new File(AlpgoConfig.getProfile() + fileName.replace("/profile", "/"));
+                cosUtil.uploadAsync(new FileInputStream(localFile), CosUtil.toKey(fileName), activeConfigs, headerMap.get("wsid"));
+                Image image = ImageBuilder.build(activeConfigs, fileName);
+                imageService.insertImage(image);
+                List<ImageProvider> imageProviderList = image.getImageProviderList();
+                if (isNotEmpty(imageProviderList)) {
+                    ImageProvider imageProvider = imageProviderList.get(0);
+                    ajax.put("url", imageProvider.getUrl());
+                }
+            }
             return ajax;
         }
         catch (Exception e)

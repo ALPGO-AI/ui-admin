@@ -1,7 +1,9 @@
 package cc.alpgo.common.utils;
 
+import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.event.UploadToCosEvent;
+import cc.alpgo.common.event.UploadToCosInputStreamEvent;
 import cc.alpgo.common.utils.uuid.UUID;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
@@ -26,6 +28,7 @@ import sun.misc.BASE64Decoder;
 import com.idrsolutions.image.png.PngCompressor;
 
 import java.io.*;
+import java.net.URL;
 import java.util.Base64;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,98 +39,107 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static cc.alpgo.common.utils.sign.Md5Utils.hash;
+
 @Component
 public class CosUtil {
 
     @Autowired
+    private AlpgoConfig alpgoConfig;
+    @Autowired
     private TimeStringUtil timeStringUtil;
     @Autowired
     private ApplicationContext applicationContext;
-    @Autowired
-    private AlpgoConfig alpgoConfig;
     private static final Logger log = LoggerFactory.getLogger(CosUtil.class);
-    private COSClient cosClient = null;
+    private Map<String, COSClient> cosClientMap = new HashMap<>();
 
-    public List<String> upload(List<String> images) {
+    public static String getFullUrl(CosConfig cosConfig, String fileName) {
+        return "https://{bucketName}.cos.{bucketRegion}.myqcloud.com/"
+                .replace("{bucketName}", cosConfig.getCosApiBucketName())
+                .replace("{bucketRegion}", cosConfig.getCosApiRegion()) + fileName;
+    }
+
+    public static String toKey(String fileName) {
+        String[] split = fileName.split("\\.");
+        String ext = split[split.length - 1];
+        return hash(fileName) + "." + ext;
+    }
+
+    public List<String> upload(List<String> images, CosConfig cosConfig) {
         Map<String, String> dataMap = new HashMap<>();
         for (String image : images) {
             dataMap.put(generateFileName(), image);
         }
-        return uploadFileBase64(dataMap);
+        return uploadFileBase64(dataMap, cosConfig);
     }
 
-    public String upload(String image) {
+    public String upload(String image, CosConfig cosConfig) {
         Map<String, String> dataMap = new HashMap<>();
         String fileName = generateFileName();
         dataMap.put(fileName, image);
-        uploadFileBase64(dataMap);
+        uploadFileBase64(dataMap, cosConfig);
         return fileName;
     }
-    public String upload(MultipartFile file) {
+    public String upload(MultipartFile file, CosConfig cosConfig) {
         Map<String, MultipartFile> dataMap = new HashMap<>();
         String fileName = generateFileName();
         dataMap.put(fileName, file);
-        uploadFile(dataMap);
+        uploadFile(dataMap, cosConfig);
         return fileName;
     }
     public String generateFileName() {
         return timeStringUtil.getTimeString() + "_" + UUID.randomUUID().toString() + ".png";
     }
 
-    public void upload(InputStream is, String cosKey) throws IOException {
-        List<String> keys = new ArrayList<>();
-        cosClient = getClient();
-        String result = "";
-        if(cosClient == null) {
-            return;
+    public void uploadAsync(InputStream is, String cosKey, List<CosConfig> cosConfigs, String wsId) throws IOException {
+        for (CosConfig cosConfig : cosConfigs) {
+            applicationContext.publishEvent(new UploadToCosInputStreamEvent(cosKey, is, cosConfig, wsId));
         }
-        try {
-            result = uploadInputStreamSingle(is, cosKey);
-        } catch (Exception e) {
-            //上传出错，不一定失败
-        }finally {
-            //关闭客户端(关闭后台线程)
-//            cosClient.shutdown(); // 实测关闭线程在复杂环境下容易出问题，注释掉关闭代码
-        }
-        return;
     }
-    public List<String> uploadAsync(List<String> images) {
+    public List<String> uploadAsync(List<String> images, CosConfig cosConfig) {
         Map<String, String> dataMap = new HashMap<>();
         List<String> list = new ArrayList<>();
         for (String image : images) {
             String key = generateFileName();
             dataMap.put(key, image);
             list.add(key);
-            applicationContext.publishEvent(new UploadToCosEvent(key, image));
+            applicationContext.publishEvent(new UploadToCosEvent(key, image, cosConfig));
         }
         return list;
     }
 
-    public String uploadAsync(String image) {
+    public String uploadAsync(String image, CosConfig cosConfig) {
         String key = generateFileName();
-        applicationContext.publishEvent(new UploadToCosEvent(key, image));
+        applicationContext.publishEvent(new UploadToCosEvent(key, image, cosConfig));
         return key;
     }
-    public COSClient getClient() {
+    public COSClient getClient(CosConfig cosConfig) {
+        if (cosClientMap.containsKey(cosConfig.getHash())) {
+            COSClient cosClient = cosClientMap.get(cosConfig.getHash());
+            if (cosClient != null) {
+                return cosClient;
+            }
+        }
         Map<String, Object> map = new HashMap<>();
         // 1 初始化用户身份信息(secretId, secretKey)
-        COSCredentials cred = new BasicCOSCredentials(alpgoConfig.getCosApiSecretId(), alpgoConfig.getCosApiSecretKey());
+        COSCredentials cred = new BasicCOSCredentials(cosConfig.getCosApiSecretId(), cosConfig.getCosApiSecretKey());
         // 2 设置bucket的区域, COS地域在上面有提到
-        ClientConfig clientConfig = new ClientConfig(new Region(alpgoConfig.getCosApiRegion()));
+        ClientConfig clientConfig = new ClientConfig(new Region(cosConfig.getCosApiRegion()));
         // 3 生成cos客户端
         COSClient cosclient = new COSClient(cred, clientConfig);
+        cosClientMap.put(cosConfig.getHash(), cosclient);
         return cosclient;
     }
-    public List<String> uploadFileBase64(Map<String, String> dataMap) {
+    public List<String> uploadFileBase64(Map<String, String> dataMap, CosConfig cosConfig) {
         List<String> keys = new ArrayList<>();
-        cosClient = getClient();
+        COSClient cosClient = getClient(cosConfig);
         String result = "";
         if(cosClient == null) {
             return keys;
         }
         try {
             for (Map.Entry<String, String> stringStringEntry : dataMap.entrySet()) {
-                result = uploadFileBase64Single(stringStringEntry.getValue(), stringStringEntry.getKey());
+                result = uploadFileBase64Single(stringStringEntry.getValue(), stringStringEntry.getKey(), cosConfig);
                 keys.add(stringStringEntry.getKey());
             }
         } catch (Exception e) {
@@ -135,21 +147,21 @@ public class CosUtil {
             //上传失败
         }finally {
             //关闭客户端(关闭后台线程)
-            cosClient.shutdown();
+//            cosClient.shutdown();
         }
         return keys;
     }
 
-    public List<String> uploadFile(Map<String, MultipartFile> dataMap) {
+    public List<String> uploadFile(Map<String, MultipartFile> dataMap, CosConfig cosConfig) {
         List<String> keys = new ArrayList<>();
-        cosClient = getClient();
+        COSClient cosClient = getClient(cosConfig);
         String result = "";
         if(cosClient == null) {
             return keys;
         }
         try {
             for (Map.Entry<String, MultipartFile> stringStringEntry : dataMap.entrySet()) {
-                result = uploadFileSingle(stringStringEntry.getValue(), stringStringEntry.getKey());
+                result = uploadFileSingle(stringStringEntry.getValue(), stringStringEntry.getKey(), cosConfig);
                 keys.add(stringStringEntry.getKey());
             }
         } catch (Exception e) {
@@ -157,46 +169,47 @@ public class CosUtil {
             //上传失败
         }finally {
             //关闭客户端(关闭后台线程)
-            cosClient.shutdown();
+//            cosClient.shutdown();
         }
         return keys;
     }
 
-    private String uploadInputStreamSingle(InputStream inputStream, String key) throws IOException {
+    private String uploadInputStreamSingle(InputStream inputStream, String key, CosConfig cosConfig) throws IOException {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         // 设置 Content type, 默认是 application/octet-stream
+        COSClient cosClient = getClient(cosConfig);
         objectMetadata.setContentType("image/png");
         //对象键（Key）是对象在存储桶中的唯一标识。
         //例如，在对象的访问域名https://ba-189629.cos.ap-beijing.myqcloud.com/app/img/bb/profile_big.jpg
         //则把key设为app/img/bb/profile_big.jpg  //云控制台目录//ba-189629-->app-->img-->bb
         PutObjectResult putObjectResult = null;
         try {
-            cosClient.putObject(alpgoConfig.getCosApiBucketName(), key, inputStream, objectMetadata);
+            cosClient.putObject(cosConfig.getCosApiBucketName(), key, inputStream, objectMetadata);
         } catch (Exception e) {
             log.info(e.getMessage());
         }
-        String result = putObjectResult.getETag();  // 获取文件的 etag
-        log.info("uploadFile==result=======result:{}",result);
-        return result;
+        return "";
     }
-    private String uploadFileSingle(MultipartFile value, String key) throws IOException {
+    private String uploadFileSingle(MultipartFile value, String key, CosConfig cosConfig) throws IOException {
         //转化为输入流
         ByteArrayInputStream inputStream = new ByteArrayInputStream(value.getBytes());
         ObjectMetadata objectMetadata = new ObjectMetadata();
+        COSClient cosClient = getClient(cosConfig);
         // 设置 Content type, 默认是 application/octet-stream
         objectMetadata.setContentType("image/png");
         //对象键（Key）是对象在存储桶中的唯一标识。
         //例如，在对象的访问域名https://ba-189629.cos.ap-beijing.myqcloud.com/app/img/bb/profile_big.jpg
         //则把key设为app/img/bb/profile_big.jpg  //云控制台目录//ba-189629-->app-->img-->bb
-        PutObjectResult putObjectResult = cosClient.putObject(alpgoConfig.getCosApiBucketName(), key, inputStream, objectMetadata);
+        PutObjectResult putObjectResult = cosClient.putObject(cosConfig.getCosApiBucketName(), key, inputStream, objectMetadata);
         String result = putObjectResult.getETag();  // 获取文件的 etag
         log.info("uploadFile==result=======result:{}",result);
         return result;
     }
 
-    private String uploadFileBase64Single(String base64Str, String fileKey) throws Exception {
+    private String uploadFileBase64Single(String base64Str, String fileKey, CosConfig cosConfig) throws Exception {
         String base64compress = compressImageByFile(base64Str);
         byte[] bytes = new BASE64Decoder().decodeBuffer(base64compress.trim());
+        COSClient cosClient = getClient(cosConfig);
         //转化为输入流
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
         ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -205,7 +218,7 @@ public class CosUtil {
         //对象键（Key）是对象在存储桶中的唯一标识。
         //例如，在对象的访问域名https://ba-189629.cos.ap-beijing.myqcloud.com/app/img/bb/profile_big.jpg
         //则把key设为app/img/bb/profile_big.jpg  //云控制台目录//ba-189629-->app-->img-->bb
-        PutObjectResult putObjectResult = cosClient.putObject(alpgoConfig.getCosApiBucketName(), fileKey, inputStream, objectMetadata);
+        PutObjectResult putObjectResult = cosClient.putObject(cosConfig.getCosApiBucketName(), fileKey, inputStream, objectMetadata);
         String result = putObjectResult.getETag();  // 获取文件的 etag
         log.info("uploadFileBase64==result=======result:{}",result);
         return result;
@@ -233,10 +246,10 @@ public class CosUtil {
         }
     }// 创建 TransferManager 实例，这个实例用来后续调用高级接口
 
-    TransferManager createTransferManager() {
+    TransferManager createTransferManager(CosConfig config) {
         // 创建一个 COSClient 实例，这是访问 COS 服务的基础实例。
         // 详细代码参见本页: 简单操作 -> 创建 COSClient
-        COSClient cosClient = getClient();
+        COSClient cosClient = getClient(config);
         if(cosClient == null) {
             return null;
         }
@@ -255,36 +268,70 @@ public class CosUtil {
         // 指定参数为 false, 则不会关闭 transferManager 内部的 COSClient 实例。
         transferManager.shutdownNow(true);
     }
-    public String downloadToBase64(String key) {
+    public String downloadToBase64(String key, List<CosConfig> cosConfigs) throws Exception {
+        if (key.startsWith("http")) {
+            URL url = new URL(key);
+            InputStream is = url.openStream();
+            byte[] data = null;
+            try {
+                ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+                byte[] buff = new byte[100];
+                int rc = 0;
+                while ((rc = is.read(buff, 0, 100)) > 0) {
+                    swapStream.write(buff, 0, rc);
+                }
+                data = swapStream.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        throw new Exception("输入流关闭异常");
+                    }
+                }
+            }
+
+            return Base64.getEncoder().encodeToString(data);
+        }
         // 使用高级接口必须先保证本进程存在一个 TransferManager 实例，如果没有则创建
         // 详细代码参见本页：高级接口 -> 创建 TransferManager
-        TransferManager transferManager = createTransferManager();
-        // 存储桶的命名格式为 BucketName-APPID，此处填写的存储桶名称必须为此格式
-        String bucketName = alpgoConfig.getCosApiBucketName();
-        // 判断是否真实key
-        if (key.startsWith("http://") || key.startsWith("https://")) {
-            key = getFileName(key);
+        if (key.startsWith("/profile")) {
+            String localFilePath = alpgoConfig.getProfile() + key.replace("/profile", "");
+            File downloadFile = new File(localFilePath);
+            try {
+                String result = fileToBase64(downloadFile);
+                return result;
+            } catch (Exception e) {
+                log.info("本地未找到: {}", localFilePath);
+            }
         }
-        String localFilePath = alpgoConfig.getProfile() + "/" + key;
-        File downloadFile = new File(localFilePath);
+        File downloadFile = new File(alpgoConfig.getProfile() + key);
+        for (CosConfig cosConfig : cosConfigs) {
+            TransferManager transferManager = createTransferManager(cosConfig);
+            // 存储桶的命名格式为 BucketName-APPID，此处填写的存储桶名称必须为此格式
+            String bucketName = cosConfig.getCosApiBucketName();
 
-        GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
-        try {
-            // 返回一个异步结果 Download, 可同步的调用 waitForCompletion 等待下载结束, 成功返回 void, 失败抛出异常
-            Download download = transferManager.download(getObjectRequest, downloadFile);
-            download.waitForCompletion();
-        } catch (CosServiceException e) {
-            e.printStackTrace();
-        } catch (CosClientException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
+            try {
+                // 返回一个异步结果 Download, 可同步的调用 waitForCompletion 等待下载结束, 成功返回 void, 失败抛出异常
+                Download download = transferManager.download(getObjectRequest, downloadFile);
+                download.waitForCompletion();
+            } catch (CosServiceException e) {
+                e.printStackTrace();
+            } catch (CosClientException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            String result = fileToBase64(downloadFile);
+            // 确定本进程不再使用 transferManager 实例之后，关闭之
+            // 详细代码参见本页：高级接口 -> 关闭 TransferManager
+            shutdownTransferManager(transferManager);
+            return result;
         }
-        String result = fileToBase64(downloadFile);
-        // 确定本进程不再使用 transferManager 实例之后，关闭之
-        // 详细代码参见本页：高级接口 -> 关闭 TransferManager
-        shutdownTransferManager(transferManager);
-        return result;
+        throw new Exception("找不到对应文件，请检查文件路径: " + key);
     }
 
     private String getFileName(String key) {
@@ -308,12 +355,8 @@ public class CosUtil {
             throw new RuntimeException("文件路径无效\n" + e.getMessage());
         }
     }
-    public String getCosPrefixHttp() {
-        // http://xxxx-xxxxxx.cos.ap-shanghai.myqcloud.com/
-        return "http://" + alpgoConfig.getCosApiBucketName() + "." + alpgoConfig.getCosApiRegion() + ".myqcloud.com/";
-    }
-    public String getCosPrefix() {
-        // https://xxxx-xxxxxx.cos.ap-shanghai.myqcloud.com/
-        return "https://" + alpgoConfig.getCosApiBucketName() + "." + alpgoConfig.getCosApiRegion() + ".myqcloud.com/";
+
+    public void uploadStream(String key, InputStream inputStream, CosConfig cosConfig) throws IOException {
+        uploadInputStreamSingle(inputStream, key, cosConfig);
     }
 }

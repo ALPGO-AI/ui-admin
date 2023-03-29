@@ -60,9 +60,11 @@ service.interceptors.request.use(config => {
     }
   }
   const headerParams = cache.local.getJSON("headerParams")
+  const wsid = cache.local.get("wsId")
   config.headers = {
     ...config.headers,
-    ...headerParams
+    ...headerParams,
+    wsid
   }
   return config
 }, error => {

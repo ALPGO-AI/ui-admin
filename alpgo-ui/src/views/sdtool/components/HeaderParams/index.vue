@@ -7,12 +7,22 @@
         <el-switch @change="saveToLocal" v-if="item.type === 'switch'" v-model="headerParams[item.key]"
           active-color="#13ce66"
           inactive-color="#ff4949"/>
+        <el-select @change="saveToLocal" v-model="headerParams[item.key]" multiple :placeholder="`请选择${item.label}`">
+          <el-option
+            v-for="item in optionsMap[item.options]"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
       </el-form-item>
     </el-form>
   </div>
 </template>
 
 <script>
+import { listEnvironment } from "@/api/system/environment";
+
 export default {
   name: "HeaderParams",
   components: {
@@ -21,21 +31,37 @@ export default {
     return {
       headerParams: {},
       form: [
-        { label: 'webui地址', key: 'stablediffusionwebuidomain', type: 'input' },
-        { label: 'webui用户名', key: 'stablediffusionwebuiusername', type: 'input' },
-        { label: 'webui用户密码', key: 'stablediffusionwebuipassword', type: 'password' },
-        { label: 'webui文生图生成按钮对应fn_index', key: 'stablediffusionwebuifnindexforgenerate', type: 'input' },
-        { label: 'webui图生图生成按钮对应fn_index', key: 'stablediffusionwebuifnindexforimg2imggenerate', type: 'input' },
-        { label: 'webui文生图启用controlnet对应fn_index', key: 'stablediffusionwebuifnindexforcontrolnet', type: 'input' },
-        { label: 'webui图生图启用controlnet对应fn_index', key: 'stablediffusionwebuifnindexforimg2imgcontrolnet', type: 'input' },
-        { label: 'webui是否已安装lora插件', key: 'stablediffusionwebuiisloraplugininstalled', type: 'switch' },
-      ]
+        { label: '启用的WebUI环境', key: 'activewebuienvs', type: 'multiselect', options: 'stable_diffusion_webui'},
+        { label: '启用的腾讯云COS', key: 'activetencentcos', type: 'multiselect', options: 'tencent_cos'}
+      ],
+      optionsMap: {}
     };
   },
   created() {
   },
   mounted() {
     this.headerParams = this.$cache.local.getJSON("headerParams") || {};
+    listEnvironment({
+        pageNum: 1,
+        pageSize: 100,
+        name: null,
+        type: null,
+        description: null,
+        accessLevel: null,
+      }).then(response => {
+      const environmentList = response.rows;
+      const optionsMap = {};
+      for (let index = 0; index < environmentList.length; index++) {
+        const env = environmentList[index];
+        const type = env.type;
+        optionsMap[type] = optionsMap[type] || [];
+        optionsMap[type].push({
+          label: env.name,
+          value: env.environmentId
+        });
+        this.optionsMap = optionsMap;
+      }
+    });
   },
   methods: {
     saveToLocal () {

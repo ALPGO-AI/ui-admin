@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import cc.alpgo.common.utils.CosUtil;
-import cc.alpgo.common.utils.DateUtils;
+import cc.alpgo.common.enums.CosConfig;
+import cc.alpgo.common.event.SdToolGenerateByPatternIdEvent;
+import cc.alpgo.common.event.WebSocketSendMessageEvent;
+import cc.alpgo.common.utils.*;
+import cc.alpgo.sdtool.constant.ProgressInfoConstant;
 import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
@@ -13,16 +16,21 @@ import cc.alpgo.sdtool.service.IStableDiffusionOutputService;
 import cc.alpgo.sdtool.util.*;
 import cc.alpgo.sdtool.util.request.Txt2txtRequestParams;
 import cc.alpgo.sdtool.util.res.StableDiffusionApiResponse;
+import cc.alpgo.system.domain.Image;
+import cc.alpgo.system.service.IEnvironmentService;
+import cc.alpgo.system.service.IImageService;
+import cc.alpgo.system.utils.ImageBuilder;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import cc.alpgo.sdtool.mapper.StableDiffusionPatternMapper;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
-import org.springframework.util.CollectionUtils;
 
 import static cc.alpgo.sdtool.util.StableDiffusionApiUtil.generateSessionHash;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
  * stable_diffusion_patternService业务层处理
@@ -35,6 +43,8 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
 {
     private static final Logger log = LoggerFactory.getLogger(StableDiffusionPatternServiceImpl.class);
     @Autowired
+    private ApplicationContext applicationContext;
+    @Autowired
     private StableDiffusionPatternMapper stableDiffusionPatternMapper;
     @Autowired
     private StableDiffusionApiUtil stableDiffusionApiUtil;
@@ -42,6 +52,10 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     private CosUtil cosUtil;
     @Autowired
     private IStableDiffusionOutputService stableDiffusionOutputService;
+    @Autowired
+    private IEnvironmentService environmentService;
+    @Autowired
+    private IImageService imageService;
 
     /**
      * 查询stable_diffusion_pattern
@@ -119,6 +133,25 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
 
     @Override
     public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId) throws Exception {
+
+        List<CosConfig> cosConfigs = environmentService.getActiveConfigs(params);
+        List<StableDiffusionEnv> sdEnvs = environmentService.getActiveEnvs(params);
+        for (StableDiffusionEnv sdEnv : sdEnvs) {
+            applicationContext.publishEvent(
+                    new SdToolGenerateByPatternIdEvent(
+                            UUID.randomUUID().toString(),
+                            patternId,
+                            cosConfigs,
+                            sdEnv,
+                            params.get("wsid"))
+            );
+        }
+        return selectStableDiffusionPatternByPatternId(patternId);
+    }
+
+    @Override
+    public StableDiffusionPattern generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId) throws Exception {
+        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.START);
         StableDiffusionPattern stableDiffusionPattern = selectStableDiffusionPatternByPatternId(patternId);
         if (stableDiffusionPattern == null) {
             return null;
@@ -137,14 +170,15 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
                     negativePrompt,
                     stableDiffusionPattern.getParametersJson(),
                     "-1",
-                    stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage()),
+                    stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage(), cosConfigs, sdEnv),
                     controlNetRequestBody.getModule(),
                     controlNetRequestBody.getModel()
             );
+            sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_CONTROL_NET);
             StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.apiPredict(
-                    params,
+                    sdEnv,
                     txt2txtRequestParams.toPreDictForControlNet(sessionHash,
-                            params,
+                            sdEnv,
                             stableDiffusionPattern.getPresetTemplate().equals("img2img"),
                             controlNetRequestBody
                     ));
@@ -159,28 +193,65 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         }
 
         StableDiffusionApiResponse result = null;
+        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_GENERATE);
         if (stableDiffusionPattern.getPresetTemplate().equals("img2img")) {
             Object init_images = parameters.get("init_images");
             if (init_images == null) {
                 throw new Exception("请选择图生图初始图片");
             }
-            result = stableDiffusionApiUtil.apiPredict(params,
+            result = stableDiffusionApiUtil.apiPredict(sdEnv,
                     txt2txtRequestParams.toPreDictForImg2img(sessionHash,
-                            stableDiffusionApiUtil.convertToBase64((String) init_images),
-                            params));
+                            stableDiffusionApiUtil.convertToBase64((String) init_images, cosConfigs, sdEnv), sdEnv));
         } else {
-            result = stableDiffusionApiUtil.apiPredict(params,
-                    txt2txtRequestParams.toPreDict(sessionHash, params));
+            result = stableDiffusionApiUtil.apiPredict(sdEnv,
+                    txt2txtRequestParams.toPreDict(sessionHash, sdEnv));
         }
-        List<String> imageUrls = stableDiffusionApiUtil.transToCos(params, result);
-        if (CollectionUtils.isEmpty(imageUrls)) {
+        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.RECEIVE_IMAGE);
+        List<Long> imageIds = transToCosReturnImageIds(patternId, sdEnv, result, cosConfigs, wsId);
+        if (isEmpty(imageIds)) {
             throw new Exception("图片生成失败，请检查参数是否正确");
         }
-        stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result);
-        List<String> imageUrlsFromDb = selectAllRelatedOutputImageUrls(patternId);
-        stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrlsFromDb));
+        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.UPLOAD_TO_COS);
+        Map<Long, String> longStringMap = imageService.selectUrls(imageIds, cosConfigs);
+        stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(longStringMap.values()), "GENERATE_IMAGE", result);
+        stableDiffusionPattern.setSampleImage(new Gson().toJson(imageIds));
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
         return stableDiffusionPattern;
+    }
+
+    private void sendProgressInfo(String wsId, StableDiffusionEnv sdEnv, ProgressInfoConstant progressInfo) {
+        applicationContext.publishEvent(new WebSocketSendMessageEvent(wsId, sdEnv.getEnvName(), progressInfo.getMsg()));
+    }
+
+    private List<Long> transToCosReturnImageIds(Long patternId, StableDiffusionEnv sdEnv, StableDiffusionApiResponse result, List<CosConfig> cosConfigs, String wsId) throws IOException {
+        List<String> fileNames = new ArrayList<>();
+        List<Object> data = result.getData();
+        if (isEmpty(data)) {
+            return new ArrayList<>();
+        }
+        List<Object> objects = (List<Object>) data.get(0);
+        if (isEmpty(objects)) {
+            return new ArrayList<>();
+        }
+        for (Object object : objects) {
+            Map<String, Object> map = (Map<String, Object>) object;
+            if (map == null) {
+                continue;
+            }
+            Object isFileObj = map.get("is_file");
+            Boolean isFile = (Boolean) isFileObj;
+            if (isFile != null && isFile) {
+                Object fileNameObj = map.get("name");
+                String fileName = (String) fileNameObj;
+                fileNames.add(fileName);
+            }
+        }
+        List<Image> images = ImageBuilder.build(sdEnv, cosConfigs, fileNames);
+        for (Image image : images) {
+            imageService.insertImage(image);
+        }
+        stableDiffusionApiUtil.transToCos(sdEnv, result, cosConfigs, wsId);
+        return images.stream().map(Image::getImageId).collect(Collectors.toList());
     }
 
     @Override

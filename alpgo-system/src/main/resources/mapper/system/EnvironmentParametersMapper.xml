@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.alpgo.system.mapper.EnvironmentParametersMapper">
+    
+    <resultMap type="EnvironmentParameters" id="EnvironmentParametersResult">
+        <result property="parameterId"    column="parameter_id"    />
+        <result property="environmentId"    column="environment_id"    />
+        <result property="paramName"    column="param_name"    />
+        <result property="paramValue"    column="param_value"    />
+        <result property="paramType"    column="param_type"    />
+        <result property="description"    column="description"    />
+        <result property="accessLevel"    column="access_level"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectEnvironmentParametersVo">
+        select parameter_id, environment_id, param_name, param_value, param_type, description, access_level, create_time, create_by, update_time, update_by from environment_parameters
+    </sql>
+
+    <select id="selectEnvironmentParametersList" parameterType="EnvironmentParameters" resultMap="EnvironmentParametersResult">
+        <include refid="selectEnvironmentParametersVo"/>
+        <where>  
+            <if test="environmentId != null "> and environment_id = #{environmentId}</if>
+            <if test="paramName != null  and paramName != ''"> and param_name like concat('%', #{paramName}, '%')</if>
+            <if test="paramValue != null  and paramValue != ''"> and param_value = #{paramValue}</if>
+            <if test="paramType != null  and paramType != ''"> and param_type = #{paramType}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="accessLevel != null  and accessLevel != ''"> and access_level = #{accessLevel}</if>
+        </where>
+    </select>
+    
+    <select id="selectEnvironmentParametersByParameterId" parameterType="Long" resultMap="EnvironmentParametersResult">
+        <include refid="selectEnvironmentParametersVo"/>
+        where parameter_id = #{parameterId}
+    </select>
+        
+    <insert id="insertEnvironmentParameters" parameterType="EnvironmentParameters" useGeneratedKeys="true" keyProperty="parameterId">
+        insert into environment_parameters
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="environmentId != null">environment_id,</if>
+            <if test="paramName != null">param_name,</if>
+            <if test="paramValue != null">param_value,</if>
+            <if test="paramType != null">param_type,</if>
+            <if test="description != null">description,</if>
+            <if test="accessLevel != null">access_level,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateBy != null">update_by,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="environmentId != null">#{environmentId},</if>
+            <if test="paramName != null">#{paramName},</if>
+            <if test="paramValue != null">#{paramValue},</if>
+            <if test="paramType != null">#{paramType},</if>
+            <if test="description != null">#{description},</if>
+            <if test="accessLevel != null">#{accessLevel},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+         </trim>
+    </insert>
+
+    <update id="updateEnvironmentParameters" parameterType="EnvironmentParameters">
+        update environment_parameters
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="environmentId != null">environment_id = #{environmentId},</if>
+            <if test="paramName != null">param_name = #{paramName},</if>
+            <if test="paramValue != null">param_value = #{paramValue},</if>
+            <if test="paramType != null">param_type = #{paramType},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="accessLevel != null">access_level = #{accessLevel},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+        </trim>
+        where parameter_id = #{parameterId}
+    </update>
+
+    <delete id="deleteEnvironmentParametersByParameterId" parameterType="Long">
+        delete from environment_parameters where parameter_id = #{parameterId}
+    </delete>
+
+    <delete id="deleteEnvironmentParametersByParameterIds" parameterType="String">
+        delete from environment_parameters where parameter_id in 
+        <foreach item="parameterId" collection="array" open="(" separator="," close=")">
+            #{parameterId}
+        </foreach>
+    </delete>
+</mapper>

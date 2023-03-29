@@ -211,10 +211,11 @@
 </template>
 
 <script>
-import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, generateByImg } from "@/api/sdtool/pattern";
+import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern } from "@/api/sdtool/pattern";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
 import { controlNetModels, controlNetProcessor } from "@/utils/constant";
+import { mapImage } from "@/api/system/image";
 
 const initParams = {
   CFG: 7,
@@ -247,6 +248,7 @@ export default {
   },
   data() {
     return {
+      imageMap: {},
       formatImgArrToSrc,
       controlNetModels,
       controlNetProcessor,
@@ -293,10 +295,15 @@ export default {
   },
   methods: {
     setSampleImageToControlNetInputImage (form) {
+      const imageMap = this.imageMap;
       const { sampleImage } = form;
-      const sampleImageArr = JSON.parse(sampleImage);
-      if (sampleImageArr && sampleImageArr.length) {
-        form.parameters.controlnet.inputImage = formatImgArrToSrc([sampleImageArr[0]]);
+      if (sampleImage) {
+        const imageIds = JSON.parse(sampleImage);
+        const imageId = imageIds[0];
+        this.form.parameters.controlnet ={
+          ...form.parameters.controlnet,
+          inputImage: imageMap[imageId]
+        };
       }
     },
     /** 查询Stable Diffusion 风格模板列表 */
@@ -304,15 +311,32 @@ export default {
       this.loading = true;
       listPattern(this.queryParams).then(response => {
         const rows = response.rows || [];
-        this.patternList = rows.map(row => {
-          return {
+        const patternList = [];
+        const imageIds = [];
+        for (let index = 0; index < rows.length; index++) {
+          const row = rows[index];
+          patternList.push({
             ...row,
-            sampleImagePreviewUrl: formatImgArrToSrc(JSON.parse(row.sampleImage)),
             parameters: getParameters(row.parametersJson)
+          })
+          if (row.sampleImage) {
+            JSON.parse(row.sampleImage).forEach(imageId => {
+            if (imageIds.indexOf(imageId) === -1) {
+              imageIds.push(imageId);
+            }
+          })
           }
+          this.total = response.total;
+        }
+        mapImage(imageIds).then(response => {
+          const imageMap = response;
+          this.imageMap = imageMap;
+          patternList.forEach(pattern => {
+            pattern.sampleImagePreviewUrl = formatImgArrToSrc(JSON.parse(pattern.sampleImage), imageMap);
+          })
+          this.patternList = patternList;
+          this.loading = false;
         });
-        this.total = response.total;
-        this.loading = false;
       });
     },
     // 取消按钮
@@ -378,7 +402,7 @@ export default {
       if (!this.$cache.local.checkHadInputHeaderParams()) {
         this.$message({
           type: 'info',
-          message: '请先输入webui地址'
+          message: '请先选择WebUI环境'
         })
         return
       }
@@ -401,19 +425,15 @@ export default {
         const seconds = enable_hr ? 60 : 30
         this.$message({
           type: 'success',
-          message: `调用成功，处理中，大概需要${seconds}秒，请勿跳转页面`
+          message: `调用成功，处理中，大概需要${seconds}秒`
         });
         this.$progress.start(seconds)
         return generateByPattern(patternId).then(response => {
           this.$progress.success()
           this.$message({
-            type: 'success',
-            message: '处理完成，等待图片上传到COS'
+            type: 'info',
+            message: '等待图片上传到COS'
           });
-          setTimeout(() => {
-            const data = response.data
-            row.sampleImagePreviewUrl = formatImgArrToSrc(JSON.parse(data.sampleImage))
-          }, 3000)
         });
       }).catch((e) => {
         console.log(e)

@@ -1,10 +1,9 @@
 package cc.alpgo.sdtool.util.request;
 
-import cc.alpgo.sdtool.constant.ApiContants;
+import cc.alpgo.common.utils.StableDiffusionEnv;
 import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import com.google.gson.Gson;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 import static cc.alpgo.sdtool.constant.ApiContants.*;
@@ -148,8 +147,8 @@ public class Txt2txtRequestParams {
         if (steps instanceof Integer) {
             return (Integer) steps;
         }
-        double v = Double.parseDouble((String) steps);
-        return (int) v;
+        int v = Integer.parseInt((String) steps);
+        return v;
     }
     private boolean convertToBoolean(Object value) {
         if (value instanceof Boolean) {
@@ -174,9 +173,9 @@ public class Txt2txtRequestParams {
         this.controlnet_model = model;
     }
 
-    public String toPreDict(String sessionHash, Map<String, String> headerParams) {
-        Integer fn_index = convertToInteger(headerParams.get(STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_GENERATE));
-        Boolean loraPluginInstalled = convertToBoolean(headerParams.get(STABLE_DIFFUSION_WEBUI_IS_LORA_PLUGIN_INSTALLED));
+    public String toPreDict(String sessionHash, StableDiffusionEnv env) {
+        Integer fn_index = convertToInteger(env.getTxt2imgFnIndex());
+        Boolean loraPluginInstalled = convertToBoolean(env.getLoraPluginInstalled());
         String keyUuid = UUID.randomUUID().toString();
         Map<String, Object> params = new HashMap<>();
         params.put("fn_index", fn_index);
@@ -302,9 +301,9 @@ public class Txt2txtRequestParams {
         return new Gson().toJson(params);
     }
 
-    public String toPreDictForImg2img(String sessionHash, String initImage, Map<String, String> headerParams) {
-        Integer fn_index = convertToInteger(headerParams.get(STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_IMG2IMG_GENERATE));
-        Boolean loraPluginInstalled = convertToBoolean(headerParams.get(STABLE_DIFFUSION_WEBUI_IS_LORA_PLUGIN_INSTALLED));
+    public String toPreDictForImg2img(String sessionHash, String initImage, StableDiffusionEnv env) {
+        Integer fn_index = convertToInteger(env.getImg2imgFnIndex());
+        Boolean loraPluginInstalled = convertToBoolean(env.getLoraPluginInstalled());
         String keyUuid = UUID.randomUUID().toString();
         Map<String, Object> params = new HashMap<>();
         params.put("fn_index", fn_index);
@@ -450,13 +449,13 @@ public class Txt2txtRequestParams {
         return result;
     }
 
-    public String toPreDictForControlNet(String sessionHash, Map<String, String> headerParams, ControlNetRequestBody controlNetRequestBody) {
-        return toPreDictForControlNet(sessionHash, headerParams, false, controlNetRequestBody);
+    public String toPreDictForControlNet(String sessionHash, StableDiffusionEnv env, ControlNetRequestBody controlNetRequestBody) {
+        return toPreDictForControlNet(sessionHash, env, false, controlNetRequestBody);
     }
-    public String toPreDictForControlNet(String sessionHash, Map<String, String> headerParams, boolean isImg2img, ControlNetRequestBody requestBody) {
-        Integer fn_index = convertToInteger(headerParams.get(STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_CONTROLNET));
+    public String toPreDictForControlNet(String sessionHash, StableDiffusionEnv env, boolean isImg2img, ControlNetRequestBody requestBody) {
+        Integer fn_index = convertToInteger(env.getTxt2imgControlNetFnIndex());
         if (isImg2img) {
-            fn_index = convertToInteger(headerParams.get(STABLE_DIFFUSION_WEBUI_FN_INDEX_FOR_IMG2IMG_CONTROLNET));
+            fn_index = convertToInteger(env.getImg2imgControlNetFnIndex());
             return "{\n" +
                     "  \"fn_index\": "+fn_index+",\n" +
                     "  \"data\": [\n" +

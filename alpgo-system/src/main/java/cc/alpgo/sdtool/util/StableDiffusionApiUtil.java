@@ -1,10 +1,12 @@
 package cc.alpgo.sdtool.util;
 
+import cc.alpgo.common.config.AlpgoConfig;
+import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.uuid.UUID;
-import cc.alpgo.sdtool.constant.ApiContants;
 import cc.alpgo.sdtool.domain.ControlNetRequestBody;
+import cc.alpgo.common.utils.StableDiffusionEnv;
 import cc.alpgo.sdtool.util.res.StableDiffusionApiResponse;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
@@ -13,9 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sun.misc.BASE64Encoder;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +31,6 @@ public class StableDiffusionApiUtil {
 
     @Autowired
     private CosUtil cosUtil;
-
     private static final Logger log = LoggerFactory.getLogger(CosUtil.class);
     private String token = null;
     private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
@@ -37,9 +38,11 @@ public class StableDiffusionApiUtil {
     public static String generateSessionHash() {
         return UUID.randomUUID().toString();
     }
-    public StableDiffusionApiResponse apiPredict(Map<String, String> params, String content) throws Exception {
+
+
+    public StableDiffusionApiResponse apiPredict(StableDiffusionEnv params, String content) throws Exception {
         OkHttpClient client = getClient(params);
-        String domain = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_DOMAIN);
+        String domain = params.getDomain();
         String url = domain + "/api/predict";
         url = url.replace("//api", "/api");
         log.info("request stable diffusion domain {} ,api: {}", domain, url);
@@ -53,7 +56,6 @@ public class StableDiffusionApiUtil {
         String string = response.body().string();
         Gson gson = new Gson();
         StableDiffusionApiResponse result = null;
-        log.info("response: {}", string);
         try {
             result = gson.fromJson(string, StableDiffusionApiResponse.class);
         } catch (Exception e) {
@@ -62,10 +64,10 @@ public class StableDiffusionApiUtil {
         }
         return result;
     }
-    private OkHttpClient getClient(Map<String, String> params) throws IOException {
-        String username = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_USERNAME);
-        String password = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_PASSWORD);
-        String domain = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_DOMAIN);
+    private OkHttpClient getClient(StableDiffusionEnv env) throws IOException {
+        String username = env.getUsername();
+        String password = env.getPassword();
+        String domain = env.getDomain();
         String url = domain + "/login";
         url = url.replace("//login", "/login");
         OkHttpClient client = new OkHttpClient.Builder()
@@ -100,10 +102,10 @@ public class StableDiffusionApiUtil {
         return client;
     }
 
-    public List<String> transToCos(Map<String, String> params, StableDiffusionApiResponse result) throws IOException {
+    public List<String> transToCos(StableDiffusionEnv env, StableDiffusionApiResponse result, List<CosConfig> cosConfigs, String wsId) throws IOException {
         List<String> results = new ArrayList<>();
         List<Object> data = result.getData();
-        String domain = params.get(ApiContants.STABLE_DIFFUSION_WEBUI_DOMAIN);
+        String domain = env.getDomain();
         if (isEmpty(data)) {
             return results;
         }
@@ -121,19 +123,43 @@ public class StableDiffusionApiUtil {
             if (isFile != null && isFile) {
                 Object fileNameObj = map.get("name");
                 String fileName = (String) fileNameObj;
-                String url = domain + "/file=";
-                url = url.replace("//file", "/file");
-                url = url + fileName;
-                String cosKey = cosUtil.generateFileName();
-                downloadImage(params, url, cosKey);
-                results.add(cosKey);
+                String url = getWebUIDownloadUrl(env, fileName);
+                if (isEmpty(cosConfigs)) {
+                    results.add(url);
+                } else {
+                    downloadImageAsync(env, url, CosUtil.toKey(fileName), cosConfigs, wsId);
+                    results.add(url);
+                }
             }
         }
         return results;
     }
-    // 下载网络图片
-    private void downloadImage(Map<String, String> params, String imageUrl, String cosKey) throws IOException {
-        OkHttpClient client = getClient(params); // 创建一个okhttp客户端对象
+
+    private String downloadImage(StableDiffusionEnv env, String imageUrl) throws IOException {
+        OkHttpClient client = getClient(env); // 创建一个okhttp客户端对象
+        // 创建一个GET方式的请求结构
+        Request request = new Request.Builder().url(getWebUIDownloadUrl(env, imageUrl)).build();
+        Call call = client.newCall(request); // 根据请求结构创建调用对象
+        Response response = call.execute();
+        byte[] bytes = response.body().bytes();
+        BASE64Encoder encoder = new BASE64Encoder();
+        String data = encoder.encode(bytes);
+        return data;
+    }
+
+    public static String getWebUIDownloadUrl(StableDiffusionEnv env, String imageUrl) throws UnsupportedEncodingException {
+        String url = env.getDomain() + "/file=";
+        url = url.replace("//file", "/file");
+        url = url + imageUrl;
+        return url;
+    }
+
+    // 下载网络图片并上传到cos
+    private void downloadImageAsync(StableDiffusionEnv env, String imageUrl, String cosKey, List<CosConfig> configs, String wsId) throws IOException {
+        if (isEmpty(configs)) {
+            return;
+        }
+        OkHttpClient client = getClient(env); // 创建一个okhttp客户端对象
         // 创建一个GET方式的请求结构
         Request request = new Request.Builder().url(imageUrl).build();
         Call call = client.newCall(request); // 根据请求结构创建调用对象
@@ -146,10 +172,47 @@ public class StableDiffusionApiUtil {
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException { // 请求成功
-                InputStream is = response.body().byteStream();
-                String mediaType = response.body().contentType().toString();
-                long length = response.body().contentLength();
-                cosUtil.upload(is, cosKey);
+                InputStream is = null;
+                byte[] buf = new byte[2048];
+                int len = 0;
+                FileOutputStream fos = null;
+
+                //储存下载文件的目录
+                File dir = new File(AlpgoConfig.getProfile());
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                File file = new File(dir, cosKey);
+
+                try {
+
+                    is = response.body().byteStream();
+                    long total = response.body().contentLength();
+                    fos = new FileOutputStream(file);
+                    long sum = 0;
+                    while ((len = is.read(buf)) != -1) {
+                        fos.write(buf, 0, len);
+                        sum += len;
+                        int progress = (int) (sum * 1.0f / total * 100);
+                        //下载中更新进度条
+                    }
+                    fos.flush();
+                    //下载完成
+                } catch (Exception e) {
+                }finally {
+
+                    try {
+                        if (is != null) {
+                            is.close();
+                        }
+                        if (fos != null) {
+                            fos.close();
+                        }
+                    } catch (IOException e) {
+
+                    }
+                }
+                cosUtil.uploadAsync(new FileInputStream(file), cosKey, configs, wsId);
             }
         });
     }
@@ -173,10 +236,16 @@ public class StableDiffusionApiUtil {
         LinkedTreeMap controlnet = (LinkedTreeMap) parameters.get("controlnet");
         return new ControlNetRequestBody(controlnet);
     }
-    public String convertToBase64(String imageUrl) throws IOException {
+    public String convertToBase64(String imageUrl, List<CosConfig> cosConfigs, StableDiffusionEnv env) throws IOException {
         if (StringUtils.isEmpty(imageUrl)) {
             return null;
         }
-        return cosUtil.downloadToBase64(imageUrl);
+        try {
+            return cosUtil.downloadToBase64(imageUrl, cosConfigs);
+        } catch (Exception e) {
+            log.info("本地和cos中找不到文件，尝试在webui环境中寻找该文件");
+        }
+        return downloadImage(env, imageUrl);
     }
+
 }

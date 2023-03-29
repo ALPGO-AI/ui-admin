@@ -26,9 +26,9 @@ public class FileUploadUtils
     public static final long DEFAULT_MAX_SIZE = 50 * 1024 * 1024;
 
     /**
-     * 默认的文件名最大长度 100
+     * 默认的文件名最大长度 2000
      */
-    public static final int DEFAULT_FILE_NAME_LENGTH = 100;
+    public static final int DEFAULT_FILE_NAME_LENGTH = 2000;
 
     /**
      * 默认上传的地址
