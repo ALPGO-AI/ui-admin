@@ -39,6 +39,11 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
 
 本项目使用 Coding 进行构建和部署，https://alpgo.coding.net/p/alpgo-ai/ci/job
 
+| Service | Status |
+| ------- | ------ |
+| Frontend| [![Frontend 构建状态](https://alpgo.coding.net/badges/alpgo-ai/job/2255081/build.svg)](https://alpgo.coding.net/p/alpgo-ai/ci/job)|
+| Backend | [![Backend 构建状态](https://alpgo.coding.net/badges/alpgo-ai/job/2255249/build.svg)](https://alpgo.coding.net/p/alpgo-ai/ci/job)|
+
 ## 本地开发
 
 ### 前端启动
