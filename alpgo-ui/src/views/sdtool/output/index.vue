@@ -60,7 +60,7 @@
         </template>
       </el-table-column>
       <!-- <el-table-column label="参考原图地址" align="center" prop="referenceImageUrl" /> -->
-      <el-table-column label="使用的种子(默认-1表示随机)" align="center" prop="seed" />
+      <el-table-column label="使用的种子(默认-1表示随机)" align="center" prop="seed" width="150"/>
       <el-table-column label="类型" align="center" prop="type" width="150"/>
       <!-- <el-table-column label="参考输出图片id" align="center" prop="referenceOuputId" /> -->
       <!-- <el-table-column label="patternId" align="center" prop="patternId" /> -->
@@ -84,13 +84,13 @@
             @click="handleGenerate(scope.row)"
             v-hasPermi="['sdtool:output:edit']"
           >使用相同模板再次生成</el-button>
-          <el-button
+          <!-- <el-button
             size="mini"
             type="text"
             icon="el-icon-cloud"
-            @click="handleGenerateByImg(scope.row)"
+            @click="handleOpenControlNetSetting(scope.row)"
             v-hasPermi="['sdtool:output:edit']"
-          >以此样图进行生成</el-button>
+          >以此样图参数进行生成</el-button> -->
           <el-button
             size="mini"
             type="text"
@@ -141,6 +141,34 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <!-- Control Net -->
+    <el-dialog :title="'图片生成设置'" :visible.sync="openControlNet" width="800px" append-to-body>
+      <el-form ref="formControlNet" :model="formControlNet" :rules="rules" label-width="180px">
+        <el-form-item label="使用的ControlNet预处理器（模式图或草稿选择无即可）">
+          <el-select v-model="formControlNet.module" placeholder="请选择">
+            <el-option
+              v-for="item in controlNetProcessor"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="使用的ControlNet模型">
+          <el-radio-group v-model="formControlNet.model">
+            <el-radio v-for="dict in controlNetModels" :key="dict.value"
+              :label="dict.value">{{ dict.label }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="预处理图片" prop="outputImageUrl">
+          <image-upload v-model="formControlNet.inputImage"/>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleGenerateByImg(formControlNet.row)">确 定</el-button>
+        <el-button @click="cancelOpenControlNet">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -150,6 +178,7 @@ import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils";
+import { controlNetModels, controlNetProcessor } from "@/utils/constant";
 
 export default {
   name: "Output",
@@ -159,6 +188,8 @@ export default {
   },
   data() {
     return {
+      controlNetModels,
+      controlNetProcessor,
       // 遮罩层
       loading: true,
       // 显示搜索条件
@@ -173,6 +204,7 @@ export default {
       total: 0,
       // 是否显示弹出层
       open: false,
+      openControlNet: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -186,6 +218,7 @@ export default {
       },
       // 表单参数
       form: {},
+      formControlNet: {},
       // 表单校验
       rules: {
         referenceOuputId: [
@@ -210,6 +243,11 @@ export default {
       }
       return result;
     },
+    handleOpenControlNetSetting (row) {
+      this.resetControlNet()
+      this.openControlNet = true;
+      this.formControlNet.row = row;
+    },
     handleGenerateByImg (row) {
       if (!this.$cache.local.checkHadInputHeaderParams()) {
         this.$message({
@@ -225,6 +263,14 @@ export default {
         });
         return
       }
+      const formControlNet = this.formControlNet
+      if (!formControlNet.inputImage) {
+        this.$message({
+          type: 'info',
+          message: '请先选择预处理图片'
+        })
+        return
+      }
       const outputId = row.outputId
       const patternstyle = row.patternStyle
       this.$modal.confirm('是否确认以风格为"' + patternstyle + '"的数据项进行AI出图？').then(() => {
@@ -233,7 +279,7 @@ export default {
           message: '调用成功，处理中，大概需要60秒，请勿跳转页面'
         });
         this.$progress.start(60)
-        return generateByImg(outputId).then(data => {
+        return generateByImg(outputId, formControlNet).then(data => {
           this.$progress.success()
           this.$message({
             type: 'info',
@@ -241,6 +287,7 @@ export default {
           });
           setTimeout(() => {
             this.getList()
+            this.cancelOpenControlNet()
           }, 3000)
         });
       }).catch(() => {
@@ -271,9 +318,9 @@ export default {
       this.$modal.confirm('是否确认以风格为"' + patternstyle + '"的数据项进行AI出图？').then(() => {
         this.$message({
           type: 'success',
-          message: '调用成功，处理中，大概需要10秒，请勿跳转页面'
+          message: '调用成功，处理中，大概需要30秒，请勿跳转页面'
         });
-        this.$progress.start(10)
+        this.$progress.start(30)
         return generateByPattern(outputId).then(data => {
           this.$progress.success()
           this.$message({
@@ -313,6 +360,10 @@ export default {
       this.open = false;
       this.reset();
     },
+    cancelOpenControlNet () {
+      this.openControlNet = false;
+      this.resetControlNet();
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -330,6 +381,15 @@ export default {
         updateTime: null
       };
       this.resetForm("form");
+    },
+    // 表单重置
+    resetControlNet() {
+      this.formControlNet = {
+        inputImage: null,
+        model: null,
+        module: null
+      };
+      this.resetForm("formControlNet");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -392,6 +452,8 @@ export default {
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {});
     }
+  },
+  computed: {
   }
 };
 </script>

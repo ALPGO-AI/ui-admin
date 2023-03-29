@@ -1,12 +1,12 @@
 package cc.alpgo.sdtool.service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
-import cc.alpgo.sdtool.util.StableDiffusionApiResponse;
+import cc.alpgo.sdtool.util.res.StableDiffusionApiResponse;
 
 /**
  * stable_diffusion_outputService接口
@@ -64,9 +64,9 @@ public interface IStableDiffusionOutputService
      */
     public int deleteStableDiffusionOutputByOutputId(Long outputId);
 
-    StableDiffusionOutput generateOutput(StableDiffusionPattern pattern, String imageUrl, String type, Map<String, Object> params);
+    StableDiffusionOutput generateOutput(StableDiffusionPattern pattern, String imageUrl, String type, StableDiffusionApiResponse params);
 
-    StableDiffusionOutput generateByPatternId(Map<String, String> params, Long outputId) throws IOException;
+    StableDiffusionPattern generateByPatternId(Map<String, String> params, Long outputId) throws Exception;
 
-    StableDiffusionOutput generateByImgFromOutput(Map<String, String> params, Long outputId) throws IOException;
+    StableDiffusionPattern generateByImgFromOutput(Map<String, String> params, Long outputId, ControlNetRequestBody controlNetRequestBody) throws Exception;
 }

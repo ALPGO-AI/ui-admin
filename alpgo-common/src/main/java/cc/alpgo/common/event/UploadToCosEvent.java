@@ -1,4 +1,4 @@
-package cc.alpgo.sdtool.util.event;
+package cc.alpgo.common.event;
 
 import org.springframework.context.ApplicationEvent;
 

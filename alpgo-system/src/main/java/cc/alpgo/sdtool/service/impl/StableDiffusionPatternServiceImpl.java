@@ -1,24 +1,28 @@
 package cc.alpgo.sdtool.service.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.common.utils.DateUtils;
+import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import cc.alpgo.sdtool.service.IStableDiffusionOutputService;
 import cc.alpgo.sdtool.util.*;
-import cc.alpgo.sdtool.util.request.Txt2txtControlNetRequestParams;
 import cc.alpgo.sdtool.util.request.Txt2txtRequestParams;
+import cc.alpgo.sdtool.util.res.StableDiffusionApiResponse;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import cc.alpgo.sdtool.mapper.StableDiffusionPatternMapper;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
+import org.springframework.util.CollectionUtils;
+
+import static cc.alpgo.sdtool.util.StableDiffusionApiUtil.generateSessionHash;
 
 /**
  * stable_diffusion_patternService业务层处理
@@ -29,6 +33,7 @@ import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 @Service
 public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatternService
 {
+    private static final Logger log = LoggerFactory.getLogger(StableDiffusionPatternServiceImpl.class);
     @Autowired
     private StableDiffusionPatternMapper stableDiffusionPatternMapper;
     @Autowired
@@ -113,28 +118,69 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     }
 
     @Override
-    public StableDiffusionApiResponse generateByPatternId(Map<String, String> params, Long patternId) throws IOException {
+    public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId) throws Exception {
         StableDiffusionPattern stableDiffusionPattern = selectStableDiffusionPatternByPatternId(patternId);
         if (stableDiffusionPattern == null) {
             return null;
         }
-        String negativeprompt = stableDiffusionPattern.getNegativePrompt();
-        String positiveprompt = stableDiffusionPattern.getPositivePrompt();
-        StableDiffusionApiResponse result = stableDiffusionApiUtil.txt2img(params,
-                new Txt2txtRequestParams(
-                        positiveprompt,
-                        negativeprompt,
-                        stableDiffusionPattern.getParametersJson(),
-                        "-1").toRequestBody());
-        List<String> images = result.getImages();
-        List<String> imageUrls = cosUtil.uploadAsync(images);
-        result.setImages(imageUrls);
-        stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result.getParameters());
+        String negativePrompt = stableDiffusionPattern.getNegativePrompt();
+        String positivePrompt = stableDiffusionPattern.getPositivePrompt();
+
+        String sessionHash = generateSessionHash();
+        String parametersJson = stableDiffusionPattern.getParametersJson();
+        Map<String, Object> parameters = new Gson().fromJson(parametersJson, HashMap.class);
+        Txt2txtRequestParams txt2txtRequestParams = null;
+        if (stableDiffusionApiUtil.isEnableControlNet(parameters)) {
+            ControlNetRequestBody controlNetRequestBody = stableDiffusionApiUtil.getControlNetRequestBody(parameters);
+            txt2txtRequestParams = new Txt2txtRequestParams(
+                    positivePrompt,
+                    negativePrompt,
+                    stableDiffusionPattern.getParametersJson(),
+                    "-1",
+                    stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage()),
+                    controlNetRequestBody.getModule(),
+                    controlNetRequestBody.getModel()
+            );
+            StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.apiPredict(
+                    params,
+                    txt2txtRequestParams.toPreDictForControlNet(sessionHash,
+                            params,
+                            stableDiffusionPattern.getPresetTemplate().equals("img2img"),
+                            controlNetRequestBody
+                    ));
+            log.info("predict controlnet response: {}", resultForSetControlNet);
+        } else {
+            txt2txtRequestParams = new Txt2txtRequestParams(
+                    positivePrompt,
+                    negativePrompt,
+                    stableDiffusionPattern.getParametersJson(),
+                    "-1"
+            );
+        }
+
+        StableDiffusionApiResponse result = null;
+        if (stableDiffusionPattern.getPresetTemplate().equals("img2img")) {
+            Object init_images = parameters.get("init_images");
+            if (init_images == null) {
+                throw new Exception("请选择图生图初始图片");
+            }
+            result = stableDiffusionApiUtil.apiPredict(params,
+                    txt2txtRequestParams.toPreDictForImg2img(sessionHash,
+                            stableDiffusionApiUtil.convertToBase64((String) init_images),
+                            params));
+        } else {
+            result = stableDiffusionApiUtil.apiPredict(params,
+                    txt2txtRequestParams.toPreDict(sessionHash, params));
+        }
+        List<String> imageUrls = stableDiffusionApiUtil.transToCos(params, result);
+        if (CollectionUtils.isEmpty(imageUrls)) {
+            throw new Exception("图片生成失败，请检查参数是否正确");
+        }
+        stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(imageUrls), "GENERATE_IMAGE", result);
         List<String> imageUrlsFromDb = selectAllRelatedOutputImageUrls(patternId);
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageUrlsFromDb));
-        result.setPatternImages(imageUrlsFromDb);
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
-        return result;
+        return stableDiffusionPattern;
     }
 
     @Override

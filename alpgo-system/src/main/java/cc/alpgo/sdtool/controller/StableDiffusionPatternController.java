@@ -9,6 +9,7 @@ import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.page.TableDataInfo;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.utils.poi.ExcelUtil;
+import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -109,7 +110,7 @@ public class StableDiffusionPatternController extends BaseController
     @PreAuthorize("@ss.hasPermi('sdtool:pattern:edit')")
     @Log(title = "stable_diffusion_pattern", businessType = BusinessType.OTHER)
     @PostMapping("/{patternId}/generate")
-    public AjaxResult generate(@PathVariable("patternId") Long patternId) throws IOException {
+    public AjaxResult generate(@PathVariable("patternId") Long patternId) throws Exception {
 
         return AjaxResult.success(stableDiffusionPatternService.generateByPatternId(getHeaderMap(), patternId));
     }

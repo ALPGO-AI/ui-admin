@@ -49,9 +49,10 @@ export function generateByPattern(outputId) {
   })
 }
 
-export function generateByImg(outputId) {
+export function generateByImg(outputId, formControlNet) {
   return request({
     url: '/sdtool/output/' + outputId + `/generateByImg`,
-    method: 'post'
+    method: 'post',
+    data: formControlNet
   })
 }

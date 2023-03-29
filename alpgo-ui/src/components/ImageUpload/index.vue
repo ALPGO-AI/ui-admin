@@ -43,6 +43,7 @@
 
 <script>
 import { getToken } from "@/utils/auth";
+import { formatImgArrToSrc } from "@/utils";
 
 export default {
   props: {
@@ -73,7 +74,6 @@ export default {
       dialogImageUrl: "",
       dialogVisible: false,
       hideUpload: false,
-      baseUrl: process.env.VUE_APP_BASE_API,
       uploadImgUrl: process.env.VUE_APP_BASE_API + "/common/upload", // 上传的图片服务器地址
       headers: {
         Authorization: "Bearer " + getToken(),
@@ -90,11 +90,7 @@ export default {
           // 然后将数组转为对象数组
           this.fileList = list.map(item => {
             if (typeof item === "string") {
-              if (item.indexOf(this.baseUrl) === -1) {
-                  item = { name: this.baseUrl + item, url: this.baseUrl + item };
-              } else {
-                  item = { name: item, url: item };
-              }
+              item = { name: item, url: item };
             }
             return item;
           });
@@ -119,13 +115,13 @@ export default {
       const findex = this.fileList.map(f => f.name).indexOf(file.name);
       if(findex > -1) {
         this.fileList.splice(findex, 1);
-        this.$emit("input", this.listToString(this.fileList));
+        this.$emit("input", formatImgArrToSrc(this.fileList.map(item => item.name)));
       }
     },
     // 上传成功回调
     handleUploadSuccess(res) {
-      this.fileList.push({ name: res.fileName, url: res.fileName });
-      this.$emit("input", this.listToString(this.fileList));
+      this.fileList.push({ name: res.fileName, url: res.url });
+      this.$emit("input", formatImgArrToSrc(this.fileList.map(item => item.name)));
       this.loading.close();
     },
     // 上传前loading加载
@@ -180,15 +176,6 @@ export default {
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
-    },
-    // 对象转成指定字符串分隔
-    listToString(list, separator) {
-      let strs = "";
-      separator = separator || ",";
-      for (let i in list) {
-        strs += list[i].url.replace(this.baseUrl, "") + separator;
-      }
-      return strs != '' ? strs.substr(0, strs.length - 1) : '';
     }
   }
 };

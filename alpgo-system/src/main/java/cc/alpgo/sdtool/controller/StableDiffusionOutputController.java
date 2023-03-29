@@ -9,6 +9,7 @@ import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.page.TableDataInfo;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.utils.poi.ExcelUtil;
+import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -106,7 +107,7 @@ public class StableDiffusionOutputController extends BaseController
     @PreAuthorize("@ss.hasPermi('sdtool:output:edit')")
     @Log(title = "stable_diffusion_output", businessType = BusinessType.OTHER)
     @PostMapping("/{outputId}/generate")
-    public AjaxResult generateByOutputId(@PathVariable("outputId") Long outputId) throws IOException {
+    public AjaxResult generateByOutputId(@PathVariable("outputId") Long outputId) throws Exception {
 
         return AjaxResult.success(stableDiffusionOutputService.generateByPatternId(getHeaderMap(), outputId));
     }
@@ -114,7 +115,7 @@ public class StableDiffusionOutputController extends BaseController
     @PreAuthorize("@ss.hasPermi('sdtool:output:edit')")
     @Log(title = "stable_diffusion_output", businessType = BusinessType.OTHER)
     @PostMapping("/{outputId}/generateByImg")
-    public AjaxResult generateByImgFromOutput(@PathVariable("outputId") Long outputId) throws IOException {
-        return AjaxResult.success(stableDiffusionOutputService.generateByImgFromOutput(getHeaderMap(), outputId));
+    public AjaxResult generateByImgFromOutput(@PathVariable("outputId") Long outputId, @RequestBody ControlNetRequestBody controlNetRequestBody) throws Exception {
+        return AjaxResult.success(stableDiffusionOutputService.generateByImgFromOutput(getHeaderMap(), outputId, controlNetRequestBody));
     }
 }

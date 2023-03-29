@@ -1,4 +1,4 @@
-package cc.alpgo.sdtool.util;
+package cc.alpgo.common.utils;
 
 import org.springframework.stereotype.Component;
 

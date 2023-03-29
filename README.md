@@ -3,6 +3,10 @@
 
 Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base on https://gitee.com/y_project/RuoYi-Vue
 
+## 团队主页
+
+如果你有兴趣参与开发或者有好的想法想要提出，也可以通过我们的[团队主页](alpgoai.com)找到我们的联系方式（QQ群）
+
 ## 功能介绍
 - 目前提供 `风格模板` 和 `输出图片` 的管理功能
 - 在 `webui` 地址处填写你的服务地址即可调用服务生成图片，比如`autodl`的自定义服务地址
@@ -10,7 +14,8 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
 
 ### Stable Diffustion 风格模板管理
 - 创建一个风格模板，填写参数，保存
-- 点击以此模板生成图片，后端会调用对应服务的 `/sdapi/v1/txt2img` api，进行文转图功能的使用
+- 上方的WebUI相关信息需要填写，fn_index的值可以在WebUI页面上点击按钮时发送的API请求参数中找到，目前暂时没有自动获取的方案，请先手动填写
+- 点击以此模板生成图片，后端会调用对应服务的 `/api/predict` api，进行文转图功能的使用
 - `api` 返回生产的图片后，会异步上传到`腾讯云COS`，相关配置请配置环境变量或修改配置文件 `alpgo-admin/src/main/resources/application.yml` 中的参数，目前暂未支持其他图床服务
 
 - ![Preview](images/ui-admin-sdtool-pattern.png)
