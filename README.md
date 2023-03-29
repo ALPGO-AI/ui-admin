@@ -14,9 +14,13 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
 
 ### Stable Diffustion 风格模板管理
 - 创建一个风格模板，填写参数，保存
+  - 目前只支持部分参数，其他参数计划后续支持，你可以在 [Issue](https://github.com/ALPGO-AI/ui-admin/issues) 中提 [Feature Request](https://github.com/ALPGO-AI/ui-admin/issues/new?assignees=&labels=&template=ISSUE_TEMPLATE_1.md) 让我们知道哪些参数应该优先支持
+  - 如果图片生成时报错，请在[Issue](https://github.com/ALPGO-AI/ui-admin/issues) 中提 [Bug Report](https://github.com/ALPGO-AI/ui-admin/issues/new?assignees=&labels=&template=ISSUE_TEMPLATE_2.md) 并尽可能提供详细的复现步骤，以便让开发更快更好的定位问题
+  - 如果你有兴趣参与开发，也可以通过我们的[团队主页](alpgoai.com)找到我们的联系方式（QQ群）
+  - 目前支持ControlNet，但是要求使用的WebUI服务需要已经安装好ControlNet插件
 - 上方的WebUI相关信息需要填写，fn_index的值可以在WebUI页面上点击按钮时发送的API请求参数中找到，目前暂时没有自动获取的方案，请先手动填写
 - 点击以此模板生成图片，后端会调用对应服务的 `/api/predict` api，进行文转图功能的使用
-- `api` 返回生产的图片后，会异步上传到`腾讯云COS`，相关配置请配置环境变量或修改配置文件 `alpgo-admin/src/main/resources/application.yml` 中的参数，目前暂未支持其他图床服务
+- `api` 返回生成的图片后，会异步上传到`腾讯云COS`，相关配置请配置环境变量或修改配置文件 `alpgo-admin/src/main/resources/application.yml` 中的参数，目前暂未支持其他图床服务
 
 - ![Preview](images/ui-admin-sdtool-pattern.png)
 
@@ -62,7 +66,7 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
     druid:
         # 主库数据源
         master:
-            url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/ui_admin?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+            url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB_NAME}?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
             username: ${MYSQL_USERNAME}
             password: ${MYSQL_PASSWORD}
         # 从库数据源
