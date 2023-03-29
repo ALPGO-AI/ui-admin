@@ -15,7 +15,7 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
 ### Stable Diffustion 风格模板管理
 - 创建一个风格模板，填写参数，保存
   - 目前只支持部分参数，其他参数计划后续支持，你可以在 [Issue](https://github.com/ALPGO-AI/ui-admin/issues) 中提 [Feature Request](https://github.com/ALPGO-AI/ui-admin/issues/new?assignees=&labels=&template=ISSUE_TEMPLATE_1.md) 让我们知道哪些参数应该优先支持
-  - 如果图片生成时报错，请在[Issue](https://github.com/ALPGO-AI/ui-admin/issues) 中提 [Bug Report](https://github.com/ALPGO-AI/ui-admin/issues/new?assignees=&labels=&template=ISSUE_TEMPLATE_2.md) 并尽可能提供详细的复现步骤，以便让开发更快更好的定位问题
+  - 如果图片生成时报错，请在 [Issue](https://github.com/ALPGO-AI/ui-admin/issues) 中提 [Bug Report](https://github.com/ALPGO-AI/ui-admin/issues/new?assignees=&labels=&template=ISSUE_TEMPLATE_2.md) 并尽可能提供详细的复现步骤，以便让开发更快更好的定位问题
   - 如果你有兴趣参与开发，也可以通过我们的[团队主页](http://alpgoai.com/)找到我们的联系方式（QQ群）
   - 目前支持ControlNet，但是要求使用的WebUI服务需要已经安装好ControlNet插件
 - 上方的WebUI相关信息需要填写，fn_index的值可以在WebUI页面上点击按钮时发送的API请求参数中找到，目前暂时没有自动获取的方案，请先手动填写
@@ -27,6 +27,7 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
 ### Stable Diffustion 输出图片管理
 
 - 风格模板生成的图片会展示在这里，也可以快速使用相同模板再次生成，使用方法同上
+- 目前输出图片中点击再次生成只会使用风格模板最新的配置，而非对应输出图片当时的配置
 
 - ![Preview](images/ui-admin-sdtool-output.png)
 
