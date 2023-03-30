@@ -6,6 +6,8 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
 ## 团队主页
 
 如果你有兴趣参与开发或者有好的想法想要提出，也可以通过我们的[团队主页](http://alpgoai.com/)找到我们的联系方式（QQ群）
+- [团队主页 Notion Site](http://alpgoai.com/)
+- [团队主页 HK Site](https://doc.alpgoai.com/)
 
 ## 功能介绍
 - 目前提供 `风格模板` 和 `输出图片` 的管理功能
