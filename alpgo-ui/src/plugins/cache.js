@@ -1,3 +1,4 @@
+
 const sessionCache = {
   set (key, value) {
     if (!sessionStorage) {
@@ -34,8 +35,8 @@ const sessionCache = {
 const localCache = {
   checkHadInputHeaderParams () {
     const headerParams = this.getJSON("headerParams") || {}
-    const domain = headerParams.stablediffusionwebuidomain
-    if (!domain) {
+    const envs = headerParams.activewebuienvs
+    if (!envs) {
       return false
     }
     return true

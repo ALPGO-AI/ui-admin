@@ -6,7 +6,7 @@
     :preview-src-list="realSrcList"
   >
     <div slot="error" class="image-slot">
-      <i class="el-icon-picture-outline"></i>
+      <el-link type="primary" :href="realSrc" target="_blank">图片地址</el-link>
     </div>
   </el-image>
 </template>

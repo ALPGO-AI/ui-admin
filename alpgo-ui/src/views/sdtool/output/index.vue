@@ -56,7 +56,7 @@
       </el-table-column>
       <el-table-column label="输出图片地址" align="center" prop="outputImageUrl" width="150">
         <template slot-scope="scope">
-          <el-link type="primary" :href="scope.row.outputImageUrl" target="_blank">图片地址</el-link>
+          <el-link type="primary" :href="scope.row.outputImageUrl.split(',')[0]" target="_blank">图片地址</el-link>
         </template>
       </el-table-column>
       <!-- <el-table-column label="参考原图地址" align="center" prop="referenceImageUrl" /> -->
@@ -252,7 +252,7 @@ export default {
       if (!this.$cache.local.checkHadInputHeaderParams()) {
         this.$message({
           type: 'info',
-          message: '请先输入webui地址'
+          message: '请先选择WebUI环境'
         })
         return
       }
@@ -276,14 +276,14 @@ export default {
       this.$modal.confirm('是否确认以风格为"' + patternstyle + '"的数据项进行AI出图？').then(() => {
         this.$message({
           type: 'success',
-          message: '调用成功，处理中，大概需要60秒，请勿跳转页面'
+          message: '调用成功，处理中，大概需要60秒'
         });
         this.$progress.start(60)
         return generateByImg(outputId, formControlNet).then(data => {
           this.$progress.success()
           this.$message({
             type: 'info',
-            message: '等待图片上传到COS'
+            message: '等待图片上传到COS，上传完成后点击搜索按钮查看最新数据'
           });
           setTimeout(() => {
             this.getList()
@@ -302,7 +302,7 @@ export default {
       if (!this.$cache.local.checkHadInputHeaderParams()) {
         this.$message({
           type: 'info',
-          message: '请先输入webui地址'
+          message: '请先选择WebUI环境'
         })
         return
       }
@@ -325,7 +325,7 @@ export default {
           this.$progress.success()
           this.$message({
             type: 'info',
-            message: '等待图片上传到COS'
+            message: '等待图片上传到COS，上传完成后点击搜索按钮查看最新数据'
           });
           setTimeout(() => {
             this.getList()

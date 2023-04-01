@@ -6,10 +6,10 @@
 
 <script>
 export default {
-  name: 'RuoYiGit',
+  name: 'ALPGO-AI-Git',
   data() {
     return {
-      url: 'https://gitee.com/y_project/RuoYi-Vue'
+      url: 'https://github.com/ALPGO-AI/ui-admin'
     }
   },
   methods: {

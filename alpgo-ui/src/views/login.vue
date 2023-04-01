@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
-      <h3 class="title">ALPGO-AI UI Admin</h3>
+      <h3 class="title">{{VUE_APP_TITLE}}</h3>
       <el-form-item prop="username">
         <el-input
           v-model="loginForm.username"
@@ -70,6 +70,7 @@ export default {
   name: "Login",
   data() {
     return {
+      VUE_APP_TITLE: process.env.VUE_APP_TITLE,
       VUE_APP_BACKUP_NO: process.env.VUE_APP_BACKUP_NO,
       codeUrl: "",
       loginForm: {
