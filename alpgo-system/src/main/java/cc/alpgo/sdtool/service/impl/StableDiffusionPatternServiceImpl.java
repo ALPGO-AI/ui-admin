@@ -169,7 +169,6 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
                     positivePrompt,
                     negativePrompt,
                     stableDiffusionPattern.getParametersJson(),
-                    "-1",
                     stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage(), cosConfigs, sdEnv),
                     controlNetRequestBody.getModule(),
                     controlNetRequestBody.getModel()
@@ -187,8 +186,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             txt2txtRequestParams = new Txt2txtRequestParams(
                     positivePrompt,
                     negativePrompt,
-                    stableDiffusionPattern.getParametersJson(),
-                    "-1"
+                    stableDiffusionPattern.getParametersJson()
             );
         }
 

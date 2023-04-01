@@ -179,7 +179,8 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         output.setOutputImageUrl(imageUrl);
         output.setPatternId(pattern.getPatternId());
         output.setReferenceImageUrl(imageUrl);
-        output.setSeed("-1");
+        Map<String, Object> map = new Gson().fromJson(pattern.getParametersJson(), HashMap.class);
+        output.setSeed((String) map.get("seed"));
         output.setStraightParameter(new Gson().toJson(params));
         output.setType(type);
         output.setReferenceOuputId(-1l);

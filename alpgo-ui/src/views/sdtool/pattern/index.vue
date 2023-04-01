@@ -135,6 +135,9 @@
         <el-form-item label="pattern风格" prop="patternStyle">
           <el-input v-model="form.patternStyle" placeholder="请输入pattern风格" />
         </el-form-item>
+        <el-form-item label="Seed">
+          <el-input v-model="form.parameters.seed" placeholder="请输入种子" />
+        </el-form-item>
         <el-form-item label="CFG">
           <el-input-number v-model="form.parameters.CFG" :precision="1" :step="0.1" :max="20"></el-input-number>
         </el-form-item>
@@ -226,6 +229,7 @@ const initParams = {
   width: 512,
   init_images: [],
   denoising_strength: 0.6,
+  seed: '-1',
   controlnet: {
     enable: false,
     inputImage: null,

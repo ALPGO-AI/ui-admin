@@ -35,7 +35,7 @@ public class Txt2txtRequestParams {
     // Styles
     private List<String> styles;
     // Seed
-    private int seed;
+    private long seed;
     // Subseed
     private int subseed;
     // Subseed strength
@@ -93,7 +93,7 @@ public class Txt2txtRequestParams {
     /**
      * Constructor for StableDiffusionApiParamsBuilder.
      */
-    public Txt2txtRequestParams(String positiveprompt, String negativeprompt, String parametersJson, String seed) {
+    public Txt2txtRequestParams(String positiveprompt, String negativeprompt, String parametersJson) {
         Map<String, Object> map = new Gson().fromJson(parametersJson, HashMap.class);
         this.sampler_index = (String) map.getOrDefault("sampler", "Euler a");
         this.script_name = null;
@@ -108,7 +108,7 @@ public class Txt2txtRequestParams {
         this.hr_resize_y = 0;
         this.prompt = positiveprompt;
         this.styles = new ArrayList<>();
-        this.seed = Integer.parseInt(seed);
+        this.seed = convertToLong(map.getOrDefault("seed", -1));
         this.subseed = -1;
         this.subseed_strength = 0;
         this.seed_resize_from_h = -1;
@@ -131,6 +131,13 @@ public class Txt2txtRequestParams {
         this.override_settings = new Object();
         this.override_settings_restore_afterwards = true;
         this.script_args = new ArrayList<>();
+    }
+
+    private long convertToLong(Object cfg) {
+        if (cfg instanceof Long) {
+            return (Long) cfg;
+        }
+        return Long.parseLong((String) cfg);
     }
 
     private double convertToDouble(Object cfg) {
@@ -163,11 +170,10 @@ public class Txt2txtRequestParams {
     public Txt2txtRequestParams(String positivePrompt,
                                 String negativePrompt,
                                 String parametersJson,
-                                String seed,
                                 String image,
                                 String module,
                                 String model) {
-        this(positivePrompt, negativePrompt, parametersJson, seed);
+        this(positivePrompt, negativePrompt, parametersJson);
         this.controlnet_input_image = image;
         this.controlnet_module = module;
         this.controlnet_model = model;
@@ -332,7 +338,7 @@ public class Txt2txtRequestParams {
         list.add(this.cfg_scale);
         list.add(1.5);
         list.add(this.denoising_strength);
-        list.add(-1);
+        list.add(this.seed);
         list.add(-1);
         list.add(0);
         list.add(0);
