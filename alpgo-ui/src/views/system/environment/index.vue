@@ -168,7 +168,7 @@
                 active-color="#13ce66"
                 inactive-color="#ff4949"/>
               <el-input v-if="scope.row.paramType === 'string'" v-model="scope.row.paramValue" placeholder="请输入参数值" />
-              <el-input-number v-if="scope.row.paramType === 'integer'" v-model="scope.row.paramValue" placeholder="请输入参数值" />
+              <el-input-number v-if="scope.row.paramType === 'int'" v-model="scope.row.paramValue" placeholder="请输入参数值" />
               <el-input-number v-if="scope.row.paramType === 'double'" v-model="scope.row.paramValue" placeholder="请输入参数值" />
             </template>
           </el-table-column>
@@ -176,7 +176,7 @@
             <template slot-scope="scope">
               <el-select v-model="scope.row.paramType" placeholder="请选择环境类型">
                 <el-option
-                  v-for="dict in dict.type.environment_parameters_type"
+                  v-for="dict in dict.type.environment_param_type"
                   :key="dict.value"
                   :label="dict.label"
                   :value="dict.value"
@@ -204,7 +204,7 @@ import { listEnvironment, getEnvironment, delEnvironment, addEnvironment, update
 
 export default {
   name: "Environment",
-  dicts: ['environment_type', 'environment_parameters_type'],
+  dicts: ['environment_type', 'environment_param_type'],
   data() {
     return {
       // 遮罩层
@@ -272,10 +272,12 @@ export default {
           this.addEnvParam('domain', 'string', 'WebUI 地址');
           this.addEnvParam('username', 'string', 'WebUI 用户名');
           this.addEnvParam('password', 'string', 'WebUI 用户密码');
-          this.addEnvParam('txt2imgFnIndex', 'integer', 'WebUI 文生图生成按钮对应fn_index');
-          this.addEnvParam('img2imgFnIndex', 'integer', 'WebUI 图生图生成按钮对应fn_index');
-          this.addEnvParam('txt2imgControlNetFnIndex', 'integer', 'WebUI 文生图启用controlnet对应fn_index');
-          this.addEnvParam('img2imgControlNetFnIndex', 'integer', 'WebUI 图生图启用controlnet对应fn_index');
+          this.addEnvParam('txt2imgFnIndex', 'int', 'WebUI 文生图生成按钮对应fn_index');
+          this.addEnvParam('img2imgFnIndex', 'int', 'WebUI 图生图生成按钮对应fn_index');
+          this.addEnvParam('txt2imgControlNetFnIndex', 'int', 'WebUI 文生图启用controlnet对应fn_index');
+          this.addEnvParam('img2imgControlNetFnIndex', 'int', 'WebUI 图生图启用controlnet对应fn_index');
+          this.addEnvParam('fetchModelListFnIndex', 'int', 'WebUI 获取models列表的fn_index');
+          this.addEnvParam('switchModelFnIndex', 'int', 'WebUI 切换model的fn_index');
           this.addEnvParam('isLoraPluginInstalled', 'boolean', 'WebUI 是否已安装lora插件');
           break;
       }
