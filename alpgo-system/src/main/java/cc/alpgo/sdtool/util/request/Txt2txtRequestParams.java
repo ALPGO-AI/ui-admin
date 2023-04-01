@@ -137,6 +137,9 @@ public class Txt2txtRequestParams {
         if (cfg instanceof Long) {
             return (Long) cfg;
         }
+        if (cfg instanceof Integer) {
+            return ((Integer) cfg).longValue();
+        }
         return Long.parseLong((String) cfg);
     }
 
