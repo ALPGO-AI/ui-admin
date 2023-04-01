@@ -1,5 +1,6 @@
 package cc.alpgo.system.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +14,7 @@ import cc.alpgo.common.utils.poi.ExcelUtil;
 import cc.alpgo.system.service.IEnvironmentService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -46,6 +48,9 @@ public class ImageController extends BaseController
     @PostMapping("/map")
     public Map<Long, String> selectUrls(@RequestBody List<Long> ids)
     {
+        if (CollectionUtils.isEmpty(ids)) {
+            return new HashMap<>();
+        }
         return imageService.selectUrls(ids, environmentService.getActiveConfigs(getHeaderMap()));
     }
 
