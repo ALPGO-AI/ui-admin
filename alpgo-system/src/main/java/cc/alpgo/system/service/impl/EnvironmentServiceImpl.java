@@ -36,6 +36,10 @@ public class EnvironmentServiceImpl implements IEnvironmentService
     private EnvironmentMapper environmentMapper;
 
     private List<Long> convertToIds(String listString) {
+        if (StringUtils.isEmpty(listString)) {
+            return new ArrayList<>();
+        }
+
         List<Long> result = new ArrayList<>();
         for (String str : listString.split(",")) {
             result.add(Long.parseLong(str));
