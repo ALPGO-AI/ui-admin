@@ -1,9 +1,6 @@
 <template>
   <div class="gallery">
-    <el-image 
-      fit="cover"
-      style="width: 256px; height: 256px" 
-      v-for="url in images" :key="url" :src="url" lazy></el-image>
+    <image-preview v-for="url in images" :key="url" :src="url" :width="256" :height="256" />
   </div>
 </template>
 
