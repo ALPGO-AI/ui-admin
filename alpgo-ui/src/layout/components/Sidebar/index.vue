@@ -37,19 +37,28 @@
                                 </el-table-column>
                                 <el-table-column
                                     prop="envName"
-                                    width="250"
+                                    width="150"
                                     label="环境">
                                 </el-table-column>
                                 <el-table-column
                                     prop="taskName"
-                                    width="500"
+                                    width="300"
                                     label="任务">
+                                </el-table-column>
+                                <el-table-column
+                                    prop="createTime"
+                                    width="250"
+                                    label="创建时间">
                                 </el-table-column>
                             </el-table>
                         </template>
                         </el-table-column>
-                    <el-table-column width="250" property="env" label="环境"></el-table-column>
-                    <el-table-column width="500" property="count" label="任务"></el-table-column>
+                    <el-table-column width="150" property="env" label="环境"></el-table-column>
+                    <el-table-column width="600" property="count" label="任务">
+                        <template slot-scope="scope">
+                            <el-button type="info" @click="removeEnvTasks(scope.row.envKey)">清空任务</el-button>
+                        </template>
+                    </el-table-column>
                 </el-table>
                 <el-button
                     :style="{
@@ -73,6 +82,11 @@ import variables from "@/assets/styles/variables.scss";
 
 export default {
     components: { SidebarItem, Logo },
+    methods: {
+        removeEnvTasks(env) {
+            this.$store.dispatch("task/removeEnvTasks", env);
+        }
+    },
     computed: {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar", "taskList"]),

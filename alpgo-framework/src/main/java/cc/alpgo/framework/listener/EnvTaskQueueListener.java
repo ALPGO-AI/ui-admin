@@ -85,6 +85,7 @@ public class EnvTaskQueueListener implements ApplicationListener<ApplicationEven
         ConcurrentLinkedQueue<StartEnvApplicationEvent> taskQueue = environmentTaskQueues.get(environment);
         if (taskQueue != null) {
             taskQueue.clear();
+            updateStatus(environment, EnvTaskExecutionStatus.Idle);
             environmentTaskQueues.remove(environment);
             updateTaskList();
         }

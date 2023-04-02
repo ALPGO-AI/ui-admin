@@ -2,19 +2,40 @@ package cc.alpgo.common.domain;
 
 import cc.alpgo.common.event.StartEnvApplicationEvent;
 
+import java.util.Date;
+
 public class EnvTaskVO {
 
     public EnvTaskVO() {
     }
     public EnvTaskVO(StartEnvApplicationEvent event) {
+        this.uuid = event.getUuid();
         this.envKey = event.getEnvKey();
         this.taskName = event.getTaskName();
         this.envName = event.getEnvName();
+        this.createTime = event.getCreateTime();
     }
+    private Date createTime;
+    private String uuid;
     private String envKey;
     private String envName;
     private String taskName;
 
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
     public String getEnvKey() {
         return envKey;
     }

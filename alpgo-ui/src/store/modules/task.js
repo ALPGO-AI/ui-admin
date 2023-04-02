@@ -15,6 +15,24 @@ const mutations = {
 }
 
 const actions = {
+  removeEnvTasks({ dispatch, commit }, envKey) {
+    return new Promise(resolve => {
+      const headerParams = cache.local.getJSON("headerParams") || {};
+      var url = baseURL + `/common/removeTask`;
+      const self = this;
+      axios({
+        method: 'post',
+        url: url,
+        data: envKey,
+        headers: {
+          'Authorization': 'Bearer ' + getToken(),
+          activewebuienvs: headerParams.activewebuienvs
+        }
+      }).then(async (res) => {
+        resolve(dispatch('task/updateList'));
+      })
+    })
+  },
   updateList({ dispatch, commit, state }) {
     return new Promise(resolve => {
       const headerParams = cache.local.getJSON("headerParams") || {};
@@ -32,6 +50,7 @@ const actions = {
         const taskList = [];
         Object.keys(taskMap).forEach(key => {
             taskList.push({
+                envKey: key,
                 env: key.split(":")[2],
                 list: taskMap[key],
                 count: taskMap[key].length

@@ -138,11 +138,10 @@
             placeholder="请输入正向提示" />
         </el-form-item>
         <el-form-item
-            type="textarea"
             :rows="5"
             label="负向提示"
             prop="negativePrompt">
-          <el-input v-model="form.negativePrompt" placeholder="请输入负向提示" />
+          <el-input type="textarea" v-model="form.negativePrompt" placeholder="请输入负向提示" />
         </el-form-item>
         <el-form-item label="预设模板" prop="presetTemplate">
           <el-radio-group v-model="form.presetTemplate">

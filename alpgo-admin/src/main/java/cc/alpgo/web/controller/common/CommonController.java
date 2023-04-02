@@ -23,9 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +36,7 @@ import java.io.FileInputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 /**
@@ -92,9 +91,18 @@ public class CommonController
         }
         return result;
     }
+    @PostMapping("common/removeTask")
+    public Map<String, List<EnvTaskVO>> removeTasks(@RequestBody String envKey)
+    {
+        envTaskQueueListener.closeEnvironmentQueue(envKey);
+        return new HashMap<>();
+    }
 
     private List<EnvTaskVO> convertToVo(ConcurrentLinkedQueue<StartEnvApplicationEvent> events) {
         List<EnvTaskVO> vo = new ArrayList<>();
+        if (isEmpty(events)) {
+            return new ArrayList<>();
+        }
         for (StartEnvApplicationEvent event : events) {
             vo.add(new EnvTaskVO(event));
         }

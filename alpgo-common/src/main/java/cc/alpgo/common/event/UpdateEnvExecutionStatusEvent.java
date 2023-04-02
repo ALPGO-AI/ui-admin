@@ -12,7 +12,6 @@ public class UpdateEnvExecutionStatusEvent extends ApplicationEvent {
         this.key = key;
         this.status = status;
     }
-
     public String getKey() {
         return key;
     }
