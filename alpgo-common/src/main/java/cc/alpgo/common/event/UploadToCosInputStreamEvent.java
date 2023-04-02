@@ -4,27 +4,28 @@ import cc.alpgo.common.enums.CosConfig;
 import org.springframework.context.ApplicationEvent;
 
 import java.io.InputStream;
+import java.util.List;
 
 public class UploadToCosInputStreamEvent extends ApplicationEvent {
     private final InputStream inputStream;
     private final String key;
-    private final CosConfig cosConfig;
-    private final String wsId;
+    private final List<CosConfig> cosConfigs;
+    private final String envKey;
 
-    public UploadToCosInputStreamEvent(String key, InputStream inputStream, CosConfig cosConfig, String wsId) {
+    public UploadToCosInputStreamEvent(String key, InputStream inputStream, List<CosConfig> cosConfigs, String envKey) {
         super(key);
         this.inputStream = inputStream;
         this.key = key;
-        this.cosConfig = cosConfig;
-        this.wsId = wsId;
+        this.cosConfigs = cosConfigs;
+        this.envKey = envKey;
     }
 
-    public String getWsId() {
-        return wsId;
+    public String getEnvKey() {
+        return envKey;
     }
 
-    public CosConfig getCosConfig() {
-        return cosConfig;
+    public List<CosConfig> getCosConfigs() {
+        return cosConfigs;
     }
 
     public InputStream getInputStream() {

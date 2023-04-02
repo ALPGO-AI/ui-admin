@@ -6,8 +6,8 @@ import org.springframework.context.ApplicationEvent;
 
 import java.util.List;
 
-public class SdToolGenerateByPatternIdEvent extends ApplicationEvent {
-    public SdToolGenerateByPatternIdEvent(String uuid, Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId) {
+public class SdToolExecuteGenerateByPatternIdEvent extends ApplicationEvent implements EnvTaskEvent {
+    public SdToolExecuteGenerateByPatternIdEvent(String uuid, Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId) {
         super(uuid);
         this.uuid = uuid;
         this.patternId = patternId;
@@ -50,5 +50,10 @@ public class SdToolGenerateByPatternIdEvent extends ApplicationEvent {
                 ", cosConfigs=" + cosConfigs +
                 ", sdEnv=" + sdEnv +
                 '}';
+    }
+
+    @Override
+    public String getEnvKey() {
+        return sdEnv.getEnvKey();
     }
 }

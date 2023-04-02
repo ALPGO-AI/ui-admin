@@ -17,6 +17,7 @@ export default  {
   },
   mounted() {
     this.join();
+    this.$store.dispatch('task/updateList');
   },
   metaInfo() {
     return {
@@ -45,10 +46,14 @@ export default  {
       };
     },
     notify (msg) {
+      this.$store.dispatch('task/updateList');
       if (msg.startsWith("连接成功:")) {
         const wsId = msg.split(':')[1];
         msg = msg.split(':')[0];
         this.$cache.local.set('wsId', wsId);
+      }
+      if (msg === 'TASK_LIST_UPDATED') {
+        return;
       }
       this.$notify({
         title: '成功',

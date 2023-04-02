@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Component
@@ -105,6 +106,7 @@ public class StableDiffusionApiUtil {
     public List<String> transToCos(StableDiffusionEnv env, StableDiffusionApiResponse result, List<CosConfig> cosConfigs, String wsId) throws IOException {
         List<String> results = new ArrayList<>();
         List<Object> data = result.getData();
+        Map<String, String> keyUrlMap = new HashMap<>();
         String domain = env.getDomain();
         if (isEmpty(data)) {
             return results;
@@ -124,13 +126,12 @@ public class StableDiffusionApiUtil {
                 Object fileNameObj = map.get("name");
                 String fileName = (String) fileNameObj;
                 String url = getWebUIDownloadUrl(env, fileName);
-                if (isEmpty(cosConfigs)) {
-                    results.add(url);
-                } else {
-                    downloadImageAsync(env, url, CosUtil.toKey(fileName), cosConfigs, wsId);
-                    results.add(url);
-                }
+                results.add(url);
+                keyUrlMap.put(CosUtil.toKey(fileName), url);
             }
+        }
+        if (isNotEmpty(cosConfigs)) {
+            downloadImageAsync(env, keyUrlMap, cosConfigs);
         }
         return results;
     }
@@ -155,66 +156,69 @@ public class StableDiffusionApiUtil {
     }
 
     // 下载网络图片并上传到cos
-    private void downloadImageAsync(StableDiffusionEnv env, String imageUrl, String cosKey, List<CosConfig> configs, String wsId) throws IOException {
+    private void downloadImageAsync(StableDiffusionEnv env, Map<String, String> keyUrlMap, List<CosConfig> configs) throws IOException {
         if (isEmpty(configs)) {
             return;
         }
-        OkHttpClient client = getClient(env); // 创建一个okhttp客户端对象
-        // 创建一个GET方式的请求结构
-        Request request = new Request.Builder().url(imageUrl).build();
-        Call call = client.newCall(request); // 根据请求结构创建调用对象
-        // 加入HTTP请求队列。异步调用，并设置接口应答的回调方法
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) { // 请求失败
-                log.error("下载失败 {}", e);
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException { // 请求成功
-                InputStream is = null;
-                byte[] buf = new byte[2048];
-                int len = 0;
-                FileOutputStream fos = null;
-
-                //储存下载文件的目录
-                File dir = new File(AlpgoConfig.getProfile());
-                if (!dir.exists()) {
-                    dir.mkdirs();
+        for (String key : keyUrlMap.keySet()) {
+            String imageUrl = keyUrlMap.get(key);
+            OkHttpClient client = getClient(env); // 创建一个okhttp客户端对象
+            // 创建一个GET方式的请求结构
+            Request request = new Request.Builder().url(imageUrl).build();
+            Call call = client.newCall(request); // 根据请求结构创建调用对象
+            // 加入HTTP请求队列。异步调用，并设置接口应答的回调方法
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) { // 请求失败
+                    log.error("下载失败 {}", e);
                 }
-                File file = new File(dir, cosKey);
 
-                try {
+                @Override
+                public void onResponse(Call call, final Response response) throws IOException { // 请求成功
+                    InputStream is = null;
+                    byte[] buf = new byte[2048];
+                    int len = 0;
+                    FileOutputStream fos = null;
 
-                    is = response.body().byteStream();
-                    long total = response.body().contentLength();
-                    fos = new FileOutputStream(file);
-                    long sum = 0;
-                    while ((len = is.read(buf)) != -1) {
-                        fos.write(buf, 0, len);
-                        sum += len;
-                        int progress = (int) (sum * 1.0f / total * 100);
-                        //下载中更新进度条
+                    //储存下载文件的目录
+                    File dir = new File(AlpgoConfig.getProfile());
+                    if (!dir.exists()) {
+                        dir.mkdirs();
                     }
-                    fos.flush();
-                    //下载完成
-                } catch (Exception e) {
-                }finally {
+                    File file = new File(dir, key);
 
                     try {
-                        if (is != null) {
-                            is.close();
-                        }
-                        if (fos != null) {
-                            fos.close();
-                        }
-                    } catch (IOException e) {
 
+                        is = response.body().byteStream();
+                        long total = response.body().contentLength();
+                        fos = new FileOutputStream(file);
+                        long sum = 0;
+                        while ((len = is.read(buf)) != -1) {
+                            fos.write(buf, 0, len);
+                            sum += len;
+                            int progress = (int) (sum * 1.0f / total * 100);
+                            //下载中更新进度条
+                        }
+                        fos.flush();
+                        //下载完成
+                    } catch (Exception e) {
+                    }finally {
+
+                        try {
+                            if (is != null) {
+                                is.close();
+                            }
+                            if (fos != null) {
+                                fos.close();
+                            }
+                        } catch (IOException e) {
+
+                        }
                     }
+                    cosUtil.uploadAsync(new FileInputStream(file), key, configs, env.getEnvKey());
                 }
-                cosUtil.uploadAsync(new FileInputStream(file), cosKey, configs, wsId);
-            }
-        });
+            });
+        }
     }
 
     public boolean isEnableControlNet(Map<String, Object> parameters) {

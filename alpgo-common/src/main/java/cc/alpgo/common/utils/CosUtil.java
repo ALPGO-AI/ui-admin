@@ -91,10 +91,8 @@ public class CosUtil {
         return timeStringUtil.getTimeString() + "_" + UUID.randomUUID().toString() + ".png";
     }
 
-    public void uploadAsync(InputStream is, String cosKey, List<CosConfig> cosConfigs, String wsId) throws IOException {
-        for (CosConfig cosConfig : cosConfigs) {
-            applicationContext.publishEvent(new UploadToCosInputStreamEvent(cosKey, is, cosConfig, wsId));
-        }
+    public void uploadAsync(InputStream is, String cosKey, List<CosConfig> cosConfigs, String envKey) throws IOException {
+        applicationContext.publishEvent(new UploadToCosInputStreamEvent(cosKey, is, cosConfigs, envKey));
     }
     public List<String> uploadAsync(List<String> images, CosConfig cosConfig) {
         Map<String, String> dataMap = new HashMap<>();
@@ -356,7 +354,9 @@ public class CosUtil {
         }
     }
 
-    public void uploadStream(String key, InputStream inputStream, CosConfig cosConfig) throws IOException {
-        uploadInputStreamSingle(inputStream, key, cosConfig);
+    public void uploadStream(String key, InputStream inputStream, List<CosConfig> cosConfigs) throws IOException {
+        for (CosConfig cosConfig : cosConfigs) {
+            uploadInputStreamSingle(inputStream, key, cosConfig);
+        }
     }
 }

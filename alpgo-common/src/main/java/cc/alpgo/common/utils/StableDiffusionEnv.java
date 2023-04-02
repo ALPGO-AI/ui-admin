@@ -1,5 +1,7 @@
 package cc.alpgo.common.utils;
 
+import static java.util.Objects.hash;
+
 public class StableDiffusionEnv {
     private Long envId;
     private String domain;
@@ -63,5 +65,9 @@ public class StableDiffusionEnv {
 
     public Integer getImg2imgControlNetFnIndex() {
         return img2imgControlNetFnIndex;
+    }
+
+    public String getEnvKey() {
+        return this.getEnvId() + ":WebUI:" + this.getEnvName();
     }
 }

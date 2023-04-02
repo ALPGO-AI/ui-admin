@@ -4,11 +4,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cc.alpgo.common.core.domain.AjaxResult;
+import cc.alpgo.common.domain.EnvTaskVO;
 import cc.alpgo.common.enums.CosConfig;
+import cc.alpgo.common.event.StartEnvApplicationEvent;
 import cc.alpgo.common.utils.CosUtil;
+import cc.alpgo.common.utils.StableDiffusionEnv;
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.file.FileUploadUtils;
 import cc.alpgo.common.utils.file.FileUtils;
+import cc.alpgo.framework.listener.EnvTaskQueueListener;
 import cc.alpgo.system.domain.Image;
 import cc.alpgo.system.domain.ImageProvider;
 import cc.alpgo.system.service.IEnvironmentService;
@@ -17,6 +21,7 @@ import cc.alpgo.system.utils.ImageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,10 +35,8 @@ import cc.alpgo.framework.config.ServerConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -46,6 +49,9 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 public class CommonController
 {
     private static final Logger log = LoggerFactory.getLogger(CommonController.class);
+
+    @Autowired
+    private EnvTaskQueueListener envTaskQueueListener;
 
     protected Map<String, String> getHeaderMap() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
@@ -68,6 +74,32 @@ public class CommonController
     private IImageService imageService;
     @Autowired
     private IEnvironmentService environmentService;
+
+    /**
+     * 环境任务列表
+     */
+    @GetMapping("common/envTaskList")
+    public Map<String, List<EnvTaskVO>> listEnvTasks()
+    {
+        Map<String, String> headerMap = getHeaderMap();
+        List<StableDiffusionEnv> activeEnvs = environmentService.getActiveEnvs(headerMap);
+        Map<String, ConcurrentLinkedQueue<StartEnvApplicationEvent>> environmentTaskQueues = envTaskQueueListener.getEnvironmentTaskQueues();
+        Map<String, List<EnvTaskVO>> result = new HashMap<>();
+        for (StableDiffusionEnv activeEnv : activeEnvs) {
+            String envKey = activeEnv.getEnvKey();
+            ConcurrentLinkedQueue<StartEnvApplicationEvent> events = environmentTaskQueues.get(envKey);
+            result.put(envKey, convertToVo(events));
+        }
+        return result;
+    }
+
+    private List<EnvTaskVO> convertToVo(ConcurrentLinkedQueue<StartEnvApplicationEvent> events) {
+        List<EnvTaskVO> vo = new ArrayList<>();
+        for (StartEnvApplicationEvent event : events) {
+            vo.add(new EnvTaskVO(event));
+        }
+        return vo;
+    }
 
     /**
      * 通用下载请求
@@ -121,7 +153,7 @@ public class CommonController
             List<CosConfig> activeConfigs = environmentService.getActiveConfigs(headerMap);
             if (isNotEmpty(activeConfigs)) {
                 File localFile = new File(AlpgoConfig.getProfile() + fileName.replace("/profile", "/"));
-                cosUtil.uploadAsync(new FileInputStream(localFile), CosUtil.toKey(fileName), activeConfigs, headerMap.get("wsid"));
+                cosUtil.uploadAsync(new FileInputStream(localFile), CosUtil.toKey(fileName), activeConfigs, null);
                 Image image = ImageBuilder.build(activeConfigs, fileName);
                 imageService.insertImage(image);
                 List<ImageProvider> imageProviderList = image.getImageProviderList();

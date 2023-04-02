@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import cc.alpgo.common.enums.EnvTaskExecutionStatus;
 import cc.alpgo.common.utils.uuid.UUID;
+import eu.bitwalker.useragentutils.Application;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -198,6 +201,11 @@ public class RedisCache
         redisTemplate.opsForHash().put(key, hKey, value);
     }
 
+
+    public void setCacheEnvironmentExecutionStatusMapValue(final String hKey, final EnvTaskExecutionStatus value)
+    {
+        redisTemplate.opsForHash().put("environmentExecutionStatus", hKey, value.name());
+    }
     /**
      * 获取Hash中的数据
      *
@@ -209,6 +217,12 @@ public class RedisCache
     {
         HashOperations<String, String, T> opsForHash = redisTemplate.opsForHash();
         return opsForHash.get(key, hKey);
+    }
+
+    public EnvTaskExecutionStatus getCacheEnvironmentExecutionStatusMapValue(final String hKey)
+    {
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
+        return EnvTaskExecutionStatus.valueOf(opsForHash.get("environmentExecutionStatus", hKey));
     }
 
     /**

@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import cc.alpgo.common.core.redis.RedisCache;
 import cc.alpgo.common.enums.CosConfig;
-import cc.alpgo.common.event.SdToolGenerateByPatternIdEvent;
+import cc.alpgo.common.enums.EnvTaskExecutionStatus;
+import cc.alpgo.common.event.SdToolAddGenerateByPatternIdEvent;
+import cc.alpgo.common.event.SdToolExecuteGenerateByPatternIdEvent;
+import cc.alpgo.common.event.UpdateEnvExecutionStatusEvent;
 import cc.alpgo.common.event.WebSocketSendMessageEvent;
 import cc.alpgo.common.utils.*;
 import cc.alpgo.sdtool.constant.ProgressInfoConstant;
@@ -42,6 +46,8 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatternService
 {
     private static final Logger log = LoggerFactory.getLogger(StableDiffusionPatternServiceImpl.class);
+    @Autowired
+    private RedisCache redisCache;
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
@@ -133,17 +139,20 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
 
     @Override
     public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId) throws Exception {
-
+        StableDiffusionPattern stableDiffusionPattern = selectStableDiffusionPatternByPatternId(patternId);
         List<CosConfig> cosConfigs = environmentService.getActiveConfigs(params);
         List<StableDiffusionEnv> sdEnvs = environmentService.getActiveEnvs(params);
         for (StableDiffusionEnv sdEnv : sdEnvs) {
             applicationContext.publishEvent(
-                    new SdToolGenerateByPatternIdEvent(
+                    new SdToolAddGenerateByPatternIdEvent(new SdToolExecuteGenerateByPatternIdEvent(
                             UUID.randomUUID().toString(),
                             patternId,
                             cosConfigs,
                             sdEnv,
-                            params.get("wsid"))
+                            params.get("wsid")),
+                            sdEnv.getEnvName(),
+                            sdEnv.getUsername() + ":" + stableDiffusionPattern.getPresetTemplate() + "生成" + stableDiffusionPattern.getPatternStyle()
+                    )
             );
         }
         return selectStableDiffusionPatternByPatternId(patternId);
@@ -163,6 +172,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         String parametersJson = stableDiffusionPattern.getParametersJson();
         Map<String, Object> parameters = new Gson().fromJson(parametersJson, HashMap.class);
         Txt2txtRequestParams txt2txtRequestParams = null;
+        updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.Processing);
         if (stableDiffusionApiUtil.isEnableControlNet(parameters)) {
             ControlNetRequestBody controlNetRequestBody = stableDiffusionApiUtil.getControlNetRequestBody(parameters);
             txt2txtRequestParams = new Txt2txtRequestParams(
@@ -205,6 +215,8 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
                     txt2txtRequestParams.toPreDict(sessionHash, sdEnv));
         }
         sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.RECEIVE_IMAGE);
+
+        updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.ImageUploading);
         List<Long> imageIds = transToCosReturnImageIds(patternId, sdEnv, result, cosConfigs, wsId);
         if (isEmpty(imageIds)) {
             throw new Exception("图片生成失败，请检查参数是否正确");
@@ -215,6 +227,10 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageIds));
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
         return stableDiffusionPattern;
+    }
+
+    private void updateStatus(String envKey, EnvTaskExecutionStatus processing) {
+        applicationContext.publishEvent(new UpdateEnvExecutionStatusEvent(envKey, processing));
     }
 
     private void sendProgressInfo(String wsId, StableDiffusionEnv sdEnv, ProgressInfoConstant progressInfo) {

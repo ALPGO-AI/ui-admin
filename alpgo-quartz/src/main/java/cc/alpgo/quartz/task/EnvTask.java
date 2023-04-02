@@ -1,6 +1,6 @@
 package cc.alpgo.quartz.task;
 
-import cc.alpgo.quartz.event.NLPLineArchivedStartEvent;
+import cc.alpgo.quartz.event.EnvTaskCheckEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +12,15 @@ import org.springframework.stereotype.Component;
  *
  * @author alpgo
  */
-@Component("novelTask")
-public class NovelTask
+@Component("envTask")
+public class EnvTask
 {
-    private static final Logger logger = LoggerFactory.getLogger(NovelTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(EnvTask.class);
 
     @Autowired
     private ApplicationContext applicationContext;
 
-    public void novelArchivedLines() {
-        applicationContext.publishEvent(new NLPLineArchivedStartEvent(this));
+    public void checkEnvTask() {
+        applicationContext.publishEvent(new EnvTaskCheckEvent(this));
     }
 }
