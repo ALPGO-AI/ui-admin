@@ -58,8 +58,31 @@
           <dict-tag :options="dict.type.stable_diffusion_model" :value="scope.row.model" />
         </template>
       </el-table-column>
-      <el-table-column label="正向提示" align="center" prop="positivePrompt" />
-      <el-table-column label="负向提示" align="center" prop="negativePrompt" />
+
+      <el-table-column label="正向提示" align="center" prop="positivePrompt" >
+        <template slot-scope="scope">
+          <el-popover
+            placement="top-start"
+            title="正向提示"
+            width="300"
+            trigger="hover"
+            :content="scope.row.positivePrompt">
+            <el-link @click="copyText(scope.row.positivePrompt)" slot="reference" type="info">{{ formatPrompt(scope.row.positivePrompt) }}</el-link>
+          </el-popover>
+        </template>
+      </el-table-column>
+      <el-table-column label="负向提示" align="center" prop="negativePrompt" >
+        <template slot-scope="scope">
+          <el-popover
+            placement="top-start"
+            title="负向提示"
+            width="300"
+            trigger="hover"
+            :content="scope.row.negativePrompt">
+            <el-link @click="copyText(scope.row.negativePrompt)" slot="reference" type="info">{{ formatPrompt(scope.row.negativePrompt) }}</el-link>
+          </el-popover>
+        </template>
+      </el-table-column>
       <el-table-column label="样例图片" align="center" prop="sampleImagePreviewUrl" width="150">
         <template slot-scope="scope">
           <image-preview :src="scope.row.sampleImagePreviewUrl || ''" :width="128" :height="128" />
@@ -210,6 +233,7 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <input id="copyNode" type="hidden">
   </div>
 </template>
 
@@ -219,6 +243,7 @@ import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
 import { controlNetModels, controlNetProcessor } from "@/utils/constant";
 import { mapImage } from "@/api/system/image";
+import ClipboardJS from 'clipboard'
 
 const initParams = {
   CFG: 7,
@@ -238,6 +263,16 @@ const initParams = {
     invertImage: false
   }
 };
+const formatPrompt = (str) => {
+  if (!str) {
+    return "";
+  }
+  // 超过50个字符，截取前50个字符，后面加...
+  if (str.length > 50) {
+    return str.substring(0, 50) + "...";
+  }
+  return str;
+}
 const getParameters = (jsonString) => {
   return {
     ...initParams,
@@ -252,6 +287,8 @@ export default {
   },
   data() {
     return {
+      copyValue: "",
+      formatPrompt,
       imageMap: {},
       formatImgArrToSrc,
       controlNetModels,
@@ -297,7 +334,30 @@ export default {
   created() {
     this.getList();
   },
+  mounted() {
+    const clipboard = new ClipboardJS('#copyNode', {
+      text: trigger => {
+        const codeStr = this.generateContent()
+        this.$notify({
+          title: '成功',
+          message: '已复制到剪切板，可粘贴。',
+          type: 'success'
+        })
+        return codeStr
+      }
+    })
+    clipboard.on('error', e => {
+      this.$message.error('复制失败')
+    })
+  },
   methods: {
+    generateContent () {
+      return this.copyValue
+    },
+    copyText (text) {
+      this.copyValue = text
+      document.getElementById('copyNode').click()
+    },
     setSampleImageToControlNetInputImage (form) {
       const imageMap = this.imageMap;
       const { sampleImage } = form;

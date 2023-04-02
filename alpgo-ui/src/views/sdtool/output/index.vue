@@ -37,16 +37,23 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
+        <el-switch v-model="showGallery"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="图库显示"
+            inactive-text="表格显示"/>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
+    <gallery v-show="showGallery" :images="images"></gallery>
     <el-table
       v-loading="loading"
       :data="outputList"
       row-key="outputId"
       default-expand-all
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      v-show="!showGallery"
     >
       <el-table-column label="id" align="center" prop="outputId" width="55"/>
       <el-table-column label="输出图片缩略图" align="center" prop="outputImageUrl" width="150">
@@ -188,6 +195,7 @@ export default {
   },
   data() {
     return {
+      showGallery: true,
       controlNetModels,
       controlNetProcessor,
       // 遮罩层
@@ -347,6 +355,7 @@ export default {
         this.outputList = rows.map(row => {
           return {
             ...row,
+            outputImageUrls: JSON.parse(row.outputImageUrl),
             outputImageUrl: formatImgArrToSrc(JSON.parse(row.outputImageUrl)),
             referenceImageUrl: formatImgArrToSrc(JSON.parse(row.referenceImageUrl)),
           }
@@ -454,6 +463,19 @@ export default {
     }
   },
   computed: {
+    images () {
+      const outputList = this.outputList
+      const outputImageUrls = []
+      for (let index = 0; index < outputList.length; index++) {
+        const element = outputList[index];
+        if (element.outputImageUrls) {
+          element.outputImageUrls.forEach(item => {
+            outputImageUrls.push(item)
+          })
+        }
+      }
+      return outputImageUrls
+    }
   }
 };
 </script>

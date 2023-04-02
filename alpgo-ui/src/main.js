@@ -37,6 +37,7 @@ import DictTag from '@/components/DictTag'
 import VueMeta from 'vue-meta'
 // 字典数据组件
 import DictData from '@/components/DictData'
+import Gallery from "@/components/Gallery"
 import JsonViewer from 'vue-json-viewer'
 Vue.use(JsonViewer)
 // 全局方法挂载
@@ -58,6 +59,7 @@ Vue.component('Editor', Editor)
 Vue.component('FileUpload', FileUpload)
 Vue.component('ImageUpload', ImageUpload)
 Vue.component('ImagePreview', ImagePreview)
+Vue.component('Gallery', Gallery)
 
 Vue.use(directive)
 Vue.use(plugins)
