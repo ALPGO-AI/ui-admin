@@ -210,14 +210,18 @@ public class EnvironmentServiceImpl implements IEnvironmentService
 
     @Override
     public Map<String, List<String>> webuiModelOptions(Map<String, String> headerMap, Boolean refresh) throws Exception {
+        List<StableDiffusionEnv> activeEnvs = getActiveEnvs(headerMap);
         if (!refresh) {
-            Map<String, List<String>> webuiModelOptions = redisCache.getCacheMap("webuiModelOptions");
+            Map<String, List<String>> webuiModelOptions = new HashMap<>();
+            for (StableDiffusionEnv activeEnv : activeEnvs) {
+                webuiModelOptions.put(activeEnv.getEnvId().toString(), redisCache.getCacheList("webuiModelOptions"+activeEnv.getEnvId().toString()));
+            }
             if (webuiModelOptions != null) {
                 return webuiModelOptions;
             }
         }
         Map<String, List<String>> result = new HashMap<>();
-        for (StableDiffusionEnv activeEnv : getActiveEnvs(headerMap)) {
+        for (StableDiffusionEnv activeEnv : activeEnvs) {
             StableDiffusionApiResponse res = stableDiffusionApiUtil.apiPredict(activeEnv, new ModelListRequestParams(activeEnv).toPreDict());
             for (Object datum : res.getData()) {
                 if (datum instanceof LinkedTreeMap) {
@@ -226,11 +230,11 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                     if (choices instanceof List) {
                         ArrayList choicesList = (ArrayList) choices;
                         result.put(activeEnv.getEnvId().toString(), choicesList);
+                        redisCache.setCacheList("webuiModelOptions"+activeEnv.getEnvId().toString(), choicesList);
                     }
                 }
             }
         }
-        redisCache.setCacheMap("webuiModelOptions", result);
         return result;
     }
 
