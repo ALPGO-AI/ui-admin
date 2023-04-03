@@ -76,6 +76,7 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
                 updateStatus(sdEvent.getSdEnv().getEnvKey(), EnvTaskExecutionStatus.Finished);
             } catch (Exception e) {
                 log.error("SDToolListener execute {} error", ((SdToolExecuteGenerateByPatternIdEvent) event).toString());
+                updateStatus(sdEvent.getSdEnv().getEnvKey(), EnvTaskExecutionStatus.Idle);
                 throw new RuntimeException(e);
             }
             log.info("SDToolListener execute {} finished", ((SdToolExecuteGenerateByPatternIdEvent) event).toString());
