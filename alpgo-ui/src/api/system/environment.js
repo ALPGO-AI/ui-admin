@@ -9,6 +9,13 @@ export function listEnvironment(query) {
   })
 }
 
+export function listWebUIModelOptions(refresh = false) {
+  return request({
+    url: '/system/environment/webuiModelOptions',
+    method: 'post',
+    data: {refresh: refresh}
+  })
+}
 // 查询environments详细
 export function getEnvironment(environmentId) {
   return request({

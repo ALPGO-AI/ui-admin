@@ -1,6 +1,7 @@
 package cc.alpgo.system.controller;
 
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import cc.alpgo.common.annotation.Log;
@@ -9,6 +10,7 @@ import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.page.TableDataInfo;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.utils.poi.ExcelUtil;
+import cc.alpgo.system.domain.request.WebUIModelOptionsRequestBody;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +37,15 @@ public class EnvironmentController extends BaseController
     @Autowired
     private IEnvironmentService environmentService;
 
+    /**
+     * 查询webuiModelOptions列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:environment:list')")
+    @PostMapping("/webuiModelOptions")
+    public AjaxResult webuiModelOptions(@RequestBody WebUIModelOptionsRequestBody refresh) throws Exception {
+        Map<String, List<String>> map = environmentService.webuiModelOptions(getHeaderMap(), refresh.getRefresh());
+        return AjaxResult.success(map);
+    }
     /**
      * 查询environments列表
      */

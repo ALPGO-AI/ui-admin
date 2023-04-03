@@ -125,10 +125,29 @@
     <el-dialog :title="title" :visible.sync="open" width="1000px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="180px">
         <el-form-item label="模型">
-          <el-radio-group v-model="form.model">
-            <el-radio v-for="dict in dict.type.stable_diffusion_model" :key="dict.value"
-              :label="dict.value">{{ dict.label }}</el-radio>
-          </el-radio-group>
+          <el-select v-model="form.model" placeholder="请选择">
+            <el-option
+              v-for="item in dict.type.stable_diffusion_model"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <template slot="label">
+            <el-button @click="fetchModelVersions" icon="el-icon-refresh" size="mini" circle></el-button>
+          </template>
+          <el-form-item v-for="env in selectedWebUIList" :key="env.environmentId" :label="`${env.name}模型`">
+            <el-select v-model="form.parameters.modelVersionMap[env.environmentId]" placeholder="请选择">
+              <el-option
+                v-for="item in modelVersionMapOptions[env.environmentId]"
+                :key="item"
+                :label="item"
+                :value="item">
+              </el-option>
+            </el-select>
+          </el-form-item>
         </el-form-item>
         <el-form-item label="正向提示" prop="positivePrompt">
           <el-input
@@ -256,7 +275,8 @@ import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
 import { controlNetModels, controlNetProcessor } from "@/utils/constant";
 import { mapImage } from "@/api/system/image";
-import ClipboardJS from 'clipboard'
+import ClipboardJS from 'clipboard';
+import { mapState } from "vuex";
 
 const initParams = {
   CFG: 7,
@@ -270,6 +290,7 @@ const initParams = {
   seed: '-1',
   batch_size: 1,
   n_iter: 1,
+  modelVersionMap: {},
   controlnet: {
     enable: false,
     inputImage: null,
@@ -369,6 +390,9 @@ export default {
     })
   },
   methods: {
+    fetchModelVersions () {
+      this.$store.dispatch('task/fetchEnvs', true);
+    },
     cancelGenerate() {
       this.generateFormVisible = false;
       this.generateForm = {};
@@ -590,6 +614,12 @@ export default {
         ...this.queryParams
       }, `pattern_${new Date().getTime()}.xlsx`)
     }
+  },
+  computed: {
+    ...mapState({
+      selectedWebUIList: state => state.task.selectedWebUIList,
+      modelVersionMapOptions: state => state.task.modelVersionMapOptions
+    })
   }
 };
 </script>

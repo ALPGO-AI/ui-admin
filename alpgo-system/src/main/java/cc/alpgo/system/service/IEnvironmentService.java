@@ -68,4 +68,5 @@ public interface IEnvironmentService
      */
     public int deleteEnvironmentByEnvironmentId(Long environmentId);
 
+    Map<String, List<String>> webuiModelOptions(Map<String, String> headerMap, Boolean refresh) throws Exception;
 }

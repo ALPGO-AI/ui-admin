@@ -13,8 +13,10 @@ public class StableDiffusionEnv {
     private Integer img2imgControlNetFnIndex;
     private Boolean isLoraPluginInstalled;
 
+    private Integer switchModelFnIndex;
+
     private String envName;
-    public StableDiffusionEnv(String envName, Long environmentId, String domain, String username, String password, Integer txt2imgFnIndex, Integer img2imgFnIndex, Integer txt2imgControlNetFnIndex, Integer img2imgControlNetFnIndex, Boolean isLoraPluginInstalled) {
+    public StableDiffusionEnv(String envName, Long environmentId, String domain, String username, String password, Integer txt2imgFnIndex, Integer img2imgFnIndex, Integer txt2imgControlNetFnIndex, Integer img2imgControlNetFnIndex, Boolean isLoraPluginInstalled, Integer switchModelFnIndex) {
         this.envName = envName;
         this.envId = environmentId;
         this.domain = domain;
@@ -25,6 +27,11 @@ public class StableDiffusionEnv {
         this.txt2imgControlNetFnIndex = txt2imgControlNetFnIndex;
         this.img2imgControlNetFnIndex = img2imgControlNetFnIndex;
         this.isLoraPluginInstalled = isLoraPluginInstalled;
+        this.switchModelFnIndex = switchModelFnIndex;
+    }
+
+    public Integer getSwitchModelFnIndex() {
+        return switchModelFnIndex;
     }
 
     public String getEnvName() {

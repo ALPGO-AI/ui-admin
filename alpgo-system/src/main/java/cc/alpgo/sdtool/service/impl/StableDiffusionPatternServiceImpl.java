@@ -188,6 +188,14 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             }
         }
         Txt2txtRequestParams txt2txtRequestParams = null;
+        String switchModelRequestContent = new Txt2txtRequestParams(
+                positivePrompt,
+                negativePrompt,
+                parameters
+        ).toPreDictSwitchModel(sessionHash, sdEnv);
+        if (StringUtils.isNotEmpty(switchModelRequestContent)) {
+            stableDiffusionApiUtil.apiPredict(sdEnv, switchModelRequestContent);
+        }
         updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.Processing);
         if (stableDiffusionApiUtil.isEnableControlNet(parameters)) {
             ControlNetRequestBody controlNetRequestBody = stableDiffusionApiUtil.getControlNetRequestBody(parameters);

@@ -38,6 +38,7 @@ export default {
     };
   },
   created() {
+    this.$store.dispatch('task/fetchEnvs');
   },
   mounted() {
     this.headerParams = this.$cache.local.getJSON("headerParams") || {};
@@ -65,6 +66,7 @@ export default {
   },
   methods: {
     saveToLocal () {
+      this.$store.dispatch('task/fetchEnvs');
       this.$cache.local.setJSON("headerParams", this.headerParams);
     }
   },

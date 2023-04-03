@@ -3,11 +3,16 @@ package cc.alpgo.system.service.impl;
 import java.util.HashMap;
 import java.util.List;
 
+import cc.alpgo.common.core.redis.RedisCache;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.DateUtils;
 import cc.alpgo.common.utils.StableDiffusionEnv;
 import cc.alpgo.common.utils.StringUtils;
+import cc.alpgo.sdtool.util.StableDiffusionApiUtil;
+import cc.alpgo.sdtool.util.res.StableDiffusionApiResponse;
+import cc.alpgo.system.domain.request.ModelListRequestParams;
 import cc.alpgo.system.service.IEnvironmentService;
+import com.google.gson.internal.LinkedTreeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -33,7 +38,11 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 public class EnvironmentServiceImpl implements IEnvironmentService
 {
     @Autowired
+    private StableDiffusionApiUtil stableDiffusionApiUtil;
+    @Autowired
     private EnvironmentMapper environmentMapper;
+    @Autowired
+    private RedisCache redisCache;
 
     private List<Long> convertToIds(String listString) {
         if (StringUtils.isEmpty(listString)) {
@@ -106,7 +115,8 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                 Integer.parseInt(map.get("img2imgFnIndex")),
                 Integer.parseInt(map.get("txt2imgControlNetFnIndex")),
                 Integer.parseInt(map.get("img2imgControlNetFnIndex")),
-                Boolean.valueOf(map.get("isLoraPluginInstalled"))
+                Boolean.valueOf(map.get("isLoraPluginInstalled")),
+                Integer.parseInt(map.get("switchModelFnIndex"))
         );
     }
     /**
@@ -196,6 +206,32 @@ public class EnvironmentServiceImpl implements IEnvironmentService
     {
         environmentMapper.deleteEnvironmentParametersByEnvironmentId(environmentId);
         return environmentMapper.deleteEnvironmentByEnvironmentId(environmentId);
+    }
+
+    @Override
+    public Map<String, List<String>> webuiModelOptions(Map<String, String> headerMap, Boolean refresh) throws Exception {
+        if (!refresh) {
+            Map<String, List<String>> webuiModelOptions = redisCache.getCacheMap("webuiModelOptions");
+            if (webuiModelOptions != null) {
+                return webuiModelOptions;
+            }
+        }
+        Map<String, List<String>> result = new HashMap<>();
+        for (StableDiffusionEnv activeEnv : getActiveEnvs(headerMap)) {
+            StableDiffusionApiResponse res = stableDiffusionApiUtil.apiPredict(activeEnv, new ModelListRequestParams(activeEnv).toPreDict());
+            for (Object datum : res.getData()) {
+                if (datum instanceof LinkedTreeMap) {
+                    Map datumMap = (LinkedTreeMap) datum;
+                    Object choices = datumMap.get("choices");
+                    if (choices instanceof List) {
+                        ArrayList choicesList = (ArrayList) choices;
+                        result.put(activeEnv.getEnvId().toString(), choicesList);
+                    }
+                }
+            }
+        }
+        redisCache.setCacheMap("webuiModelOptions", result);
+        return result;
     }
 
     /**

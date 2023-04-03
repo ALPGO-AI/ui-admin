@@ -90,11 +90,14 @@ public class Txt2txtRequestParams {
     private String controlnet_module;
     // Script name
     private String controlnet_model;
+    // modelVersionMap
+    private Map<String, String> modelVersionMap;
     /**
      * Constructor for StableDiffusionApiParamsBuilder.
      */
     public Txt2txtRequestParams(String positiveprompt, String negativeprompt,
                                 Map<String, Object> map) {
+        this.modelVersionMap = (LinkedHashMap) map.getOrDefault("modelVersionMap", new LinkedHashMap<>());
         this.sampler_index = (String) map.getOrDefault("sampler", "Euler a");
         this.script_name = null;
         this.enable_hr = convertToBoolean(map.getOrDefault("enable_hr", false));;
@@ -517,5 +520,21 @@ public class Txt2txtRequestParams {
                 "    ],\n" +
                 "    \"session_hash\": \""+sessionHash+"\"\n" +
                 "}";
+    }
+
+    public String toPreDictSwitchModel(String sessionHash, StableDiffusionEnv env){
+        if (modelVersionMap != null) {
+            String modelVersionMapValue = modelVersionMap.get(env.getEnvId().toString());
+            return "data\n" +
+                    ": \n" +
+                    "[\"" + modelVersionMapValue + "\"]\n" +
+                    "fn_index\n" +
+                    ": \n" +
+                    ""+env.getSwitchModelFnIndex()+"\n" +
+                    "session_hash\n" +
+                    ": \n" +
+                    "\""+sessionHash+"\"";
+        }
+        return null;
     }
 }

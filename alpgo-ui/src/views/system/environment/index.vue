@@ -276,7 +276,6 @@ export default {
           this.addEnvParam('img2imgFnIndex', 'int', 'WebUI 图生图生成按钮对应fn_index');
           this.addEnvParam('txt2imgControlNetFnIndex', 'int', 'WebUI 文生图启用controlnet对应fn_index');
           this.addEnvParam('img2imgControlNetFnIndex', 'int', 'WebUI 图生图启用controlnet对应fn_index');
-          this.addEnvParam('fetchModelListFnIndex', 'int', 'WebUI 获取models列表的fn_index');
           this.addEnvParam('switchModelFnIndex', 'int', 'WebUI 切换model的fn_index');
           this.addEnvParam('isLoraPluginInstalled', 'boolean', 'WebUI 是否已安装lora插件');
           break;
