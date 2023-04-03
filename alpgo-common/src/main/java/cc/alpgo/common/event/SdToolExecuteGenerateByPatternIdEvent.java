@@ -5,17 +5,22 @@ import cc.alpgo.common.utils.StableDiffusionEnv;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.List;
+import java.util.Map;
 
 public class SdToolExecuteGenerateByPatternIdEvent extends ApplicationEvent implements EnvTaskEvent {
-    public SdToolExecuteGenerateByPatternIdEvent(String uuid, Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId) {
+    public SdToolExecuteGenerateByPatternIdEvent(String uuid, Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId, Map<String, Object> extraGenerateParams) {
         super(uuid);
         this.uuid = uuid;
         this.patternId = patternId;
         this.cosConfigs = cosConfigs;
         this.sdEnv = sdEnv;
         this.wsId = wsId;
+        this.extraGenerateParams = extraGenerateParams;
     }
 
+    public Map<String, Object> getExtraGenerateParams() {
+        return extraGenerateParams;
+    }
     public String getWsId() {
         return wsId;
     }
@@ -36,6 +41,7 @@ public class SdToolExecuteGenerateByPatternIdEvent extends ApplicationEvent impl
         return sdEnv;
     }
 
+    private Map<String, Object> extraGenerateParams;
     private String uuid;
     private Long patternId;
     private List<CosConfig> cosConfigs;

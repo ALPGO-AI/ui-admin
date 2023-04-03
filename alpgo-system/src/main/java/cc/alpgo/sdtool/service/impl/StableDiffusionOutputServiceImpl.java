@@ -198,7 +198,7 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         if (stableDiffusionPattern == null) {
             return null;
         }
-        return stableDiffusionPatternService.generateByPatternId(params, stableDiffusionPattern.getPatternId());
+        return stableDiffusionPatternService.generateByPatternId(params, stableDiffusionPattern.getPatternId(), null);
     }
 
     @Override
@@ -211,7 +211,7 @@ public class StableDiffusionOutputServiceImpl implements IStableDiffusionOutputS
         if (stableDiffusionPattern == null) {
             return null;
         }
-        return stableDiffusionPatternService.generateByPatternId(params, stableDiffusionPattern.getPatternId());
+        return stableDiffusionPatternService.generateByPatternId(params, stableDiffusionPattern.getPatternId(), null);
     }
 
 

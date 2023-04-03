@@ -2,6 +2,9 @@ package cc.alpgo.sdtool.domain;
 
 import com.google.gson.internal.LinkedTreeMap;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class ControlNetRequestBody {
     private Boolean enable;
     private String inputImage;
@@ -9,9 +12,10 @@ public class ControlNetRequestBody {
     private String module;
     private boolean invertImage;
     public ControlNetRequestBody() {
+        this.enable = false;
     }
 
-    public ControlNetRequestBody(LinkedTreeMap controlnet) {
+    public ControlNetRequestBody(Map controlnet) {
         this.enable = (Boolean) controlnet.get("enable");
         this.inputImage = (String) controlnet.get("inputImage");
         this.model = (String) controlnet.get("model");

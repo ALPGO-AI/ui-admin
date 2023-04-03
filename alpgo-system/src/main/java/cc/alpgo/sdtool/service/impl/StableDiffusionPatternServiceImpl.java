@@ -138,28 +138,37 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     }
 
     @Override
-    public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId) throws Exception {
+    public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId, List<Map<String, Object>> extraGenerateParamsList) throws Exception {
         StableDiffusionPattern stableDiffusionPattern = selectStableDiffusionPatternByPatternId(patternId);
         List<CosConfig> cosConfigs = environmentService.getActiveConfigs(params);
         List<StableDiffusionEnv> sdEnvs = environmentService.getActiveEnvs(params);
-        for (StableDiffusionEnv sdEnv : sdEnvs) {
-            applicationContext.publishEvent(
-                    new SdToolAddGenerateByPatternIdEvent(new SdToolExecuteGenerateByPatternIdEvent(
-                            UUID.randomUUID().toString(),
-                            patternId,
-                            cosConfigs,
-                            sdEnv,
-                            params.get("wsid")),
-                            sdEnv.getEnvName(),
-                            sdEnv.getUsername() + ":" + stableDiffusionPattern.getPresetTemplate() + "生成" + stableDiffusionPattern.getPatternStyle()
-                    )
-            );
+        if (extraGenerateParamsList == null) {
+            extraGenerateParamsList = new ArrayList<>();
+            extraGenerateParamsList.add(new HashMap<>());
         }
+        for (Map<String, Object> extraGenerateParams : extraGenerateParamsList) {
+            for (StableDiffusionEnv sdEnv : sdEnvs) {
+                applicationContext.publishEvent(
+                        new SdToolAddGenerateByPatternIdEvent(
+                                new SdToolExecuteGenerateByPatternIdEvent(
+                                        UUID.randomUUID().toString(),
+                                        patternId,
+                                        cosConfigs,
+                                        sdEnv,
+                                        params.get("wsid"),
+                                        extraGenerateParams),
+                                sdEnv.getEnvName(),
+                                sdEnv.getUsername() + ":" + stableDiffusionPattern.getPresetTemplate() + "生成" + stableDiffusionPattern.getPatternStyle()
+                        )
+                );
+            }
+        }
+
         return selectStableDiffusionPatternByPatternId(patternId);
     }
 
     @Override
-    public StableDiffusionPattern generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId) throws Exception {
+    public StableDiffusionPattern generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId, Map<String, Object> extraGenerateParams) throws Exception {
         sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.START);
         StableDiffusionPattern stableDiffusionPattern = selectStableDiffusionPatternByPatternId(patternId);
         if (stableDiffusionPattern == null) {
@@ -171,6 +180,13 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         String sessionHash = generateSessionHash();
         String parametersJson = stableDiffusionPattern.getParametersJson();
         Map<String, Object> parameters = new Gson().fromJson(parametersJson, HashMap.class);
+        // 本次生成参数覆盖
+        if (extraGenerateParams != null) {
+            Set<String> strings = extraGenerateParams.keySet();
+            for (String string : strings) {
+                parameters.put(string, extraGenerateParams.get(string));
+            }
+        }
         Txt2txtRequestParams txt2txtRequestParams = null;
         updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.Processing);
         if (stableDiffusionApiUtil.isEnableControlNet(parameters)) {
@@ -178,7 +194,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             txt2txtRequestParams = new Txt2txtRequestParams(
                     positivePrompt,
                     negativePrompt,
-                    stableDiffusionPattern.getParametersJson(),
+                    parameters,
                     stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage(), cosConfigs, sdEnv),
                     controlNetRequestBody.getModule(),
                     controlNetRequestBody.getModel()
@@ -196,7 +212,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             txt2txtRequestParams = new Txt2txtRequestParams(
                     positivePrompt,
                     negativePrompt,
-                    stableDiffusionPattern.getParametersJson()
+                    parameters
             );
         }
 

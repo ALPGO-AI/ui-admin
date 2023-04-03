@@ -1,6 +1,7 @@
 package cc.alpgo.sdtool.controller;
 
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import cc.alpgo.common.core.controller.BaseController;
@@ -108,8 +109,8 @@ public class StableDiffusionPatternController extends BaseController
     @PreAuthorize("@ss.hasPermi('sdtool:pattern:edit')")
     @Log(title = "stable_diffusion_pattern", businessType = BusinessType.OTHER)
     @PostMapping("/{patternId}/generate")
-    public AjaxResult generate(@PathVariable("patternId") Long patternId) throws Exception {
+    public AjaxResult generate(@PathVariable("patternId") Long patternId, @RequestBody List<Map<String, Object>> extraGenerateParams) throws Exception {
 
-        return AjaxResult.success(stableDiffusionPatternService.generateByPatternId(getHeaderMap(), patternId));
+        return AjaxResult.success(stableDiffusionPatternService.generateByPatternId(getHeaderMap(), patternId, extraGenerateParams));
     }
 }

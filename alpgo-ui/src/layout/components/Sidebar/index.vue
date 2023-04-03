@@ -47,14 +47,15 @@
                                 </el-table-column>
                                 <el-table-column
                                     prop="createTime"
-                                    width="250"
+                                    :formatter="(value) => {return formatterTime(value)}"
+                                    width="270"
                                     label="创建时间">
                                 </el-table-column>
                             </el-table>
                         </template>
                         </el-table-column>
                     <el-table-column width="150" property="env" label="环境"></el-table-column>
-                    <el-table-column width="600" property="count" label="任务">
+                    <el-table-column width="575" property="count" label="任务">
                         <template slot-scope="scope">
                             <el-button type="info" @click="removeEnvTasks(scope.row.envKey)">清空任务</el-button>
                         </template>
@@ -79,12 +80,16 @@ import { mapGetters, mapState } from "vuex";
 import Logo from "./Logo";
 import SidebarItem from "./SidebarItem";
 import variables from "@/assets/styles/variables.scss";
+import { formatDate } from "@/utils";
 
 export default {
     components: { SidebarItem, Logo },
     methods: {
         removeEnvTasks(env) {
             this.$store.dispatch("task/removeEnvTasks", env);
+        },
+        formatterTime (value) {
+            return formatDate(value.createTime)
         }
     },
     computed: {

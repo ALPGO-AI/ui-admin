@@ -65,9 +65,9 @@ public interface IStableDiffusionPatternService
      */
     public int deleteStableDiffusionPatternByPatternId(Long patternId);
 
-    public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId) throws Exception;
+    public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId, List<Map<String, Object>> extraGenerateParams) throws Exception;
 
-    StableDiffusionPattern generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId) throws Exception;
+    StableDiffusionPattern generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId, Map<String, Object> extraGenerateParams) throws Exception;
 
     List<String> selectAllRelatedOutputImageUrls(Long patternId);
 

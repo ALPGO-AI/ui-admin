@@ -18,10 +18,7 @@ import org.springframework.stereotype.Component;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
@@ -237,8 +234,14 @@ public class StableDiffusionApiUtil {
     }
 
     public ControlNetRequestBody getControlNetRequestBody(Map<String, Object> parameters) {
-        LinkedTreeMap controlnet = (LinkedTreeMap) parameters.get("controlnet");
-        return new ControlNetRequestBody(controlnet);
+        Object controlnetObj = parameters.get("controlnet");
+        if (controlnetObj instanceof LinkedTreeMap) {
+            return new ControlNetRequestBody((LinkedTreeMap) controlnetObj);
+        }
+        if (controlnetObj instanceof LinkedHashMap) {
+            return new ControlNetRequestBody((LinkedHashMap) controlnetObj);
+        }
+        return new ControlNetRequestBody();
     }
     public String convertToBase64(String imageUrl, List<CosConfig> cosConfigs, StableDiffusionEnv env) throws IOException {
         if (StringUtils.isEmpty(imageUrl)) {

@@ -232,6 +232,20 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <el-dialog title="生成图片" :visible.sync="generateFormVisible">
+      <el-form v-if="generateForm.parameters" ref="generateForm" :model="generateForm">
+        <el-form-item label="出图数量" :label-width="formLabelWidth">
+          <el-input-number v-model="generateForm.parameters.batch_size" :precision="0" :step="1" :max="8" />
+        </el-form-item>
+        <el-form-item label="重复次数" :label-width="formLabelWidth">
+          <el-input-number v-model="generateForm.parameters.n_iter" :precision="0" :step="1" :max="20" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancelGenerate()">取 消</el-button>
+        <el-button type="primary" @click="confirmGenerate()">确 定</el-button>
+      </div>
+    </el-dialog>
     <input id="copyNode" type="hidden">
   </div>
 </template>
@@ -254,6 +268,8 @@ const initParams = {
   init_images: [],
   denoising_strength: 0.6,
   seed: '-1',
+  batch_size: 1,
+  n_iter: 1,
   controlnet: {
     enable: false,
     inputImage: null,
@@ -286,6 +302,9 @@ export default {
   },
   data() {
     return {
+      generateFormVisible: false,
+      formLabelWidth: '120px',
+      generateForm: {},
       copyValue: "",
       formatPrompt,
       imageMap: {},
@@ -350,6 +369,40 @@ export default {
     })
   },
   methods: {
+    cancelGenerate() {
+      this.generateFormVisible = false;
+      this.generateForm = {};
+      this.resetForm("generateForm");
+    },
+    async confirmGenerate() {
+      const row = this.generateForm;
+      const patternId = row.patternId;
+      const patternStyle = row.patternStyle;
+      const totalCount = row.parameters.n_iter;
+      const extraGenerateParams = row.parameters;
+      const extraGenerateParamsList = [];
+
+      for (let index = 0; index < totalCount; index++) {
+        extraGenerateParamsList.push(extraGenerateParams);
+      }
+
+      this.$modal.confirm('是否确认以"' + patternStyle + '"风格的数据项进行AI出图？').then(() => {
+        generateByPattern(patternId, extraGenerateParamsList).then((res) => {
+          this.$message({
+            type: 'success',
+            message: `任务添加成功 total: ${totalCount}`
+          });
+        })
+      }).catch((e) => {
+        console.log(e)
+        this.$progress.failed()
+        this.$message({
+          type: 'info',
+          message: '取消输入'
+        });
+      });
+      this.cancelGenerate();
+    },
     generateContent () {
       return this.copyValue
     },
@@ -481,31 +534,11 @@ export default {
           ...row,
           parameters: JSON.parse(row.parametersJson) || {}
       }
-      const patternId = row.patternId
-      const patternStyle = row.patternStyle
-      this.$modal.confirm('是否确认以"' + patternStyle + '"风格的数据项进行AI出图？').then(() => {
-        const enable_hr = params.parameters.enable_hr
-        const seconds = enable_hr ? 60 : 30
-        this.$message({
-          type: 'success',
-          message: `调用成功，处理中，大概需要${seconds}秒`
-        });
-        this.$progress.start(seconds)
-        return generateByPattern(patternId).then(response => {
-          this.$progress.success()
-          this.$message({
-            type: 'info',
-            message: '等待图片上传到COS'
-          });
-        });
-      }).catch((e) => {
-        console.log(e)
-        this.$progress.failed()
-        this.$message({
-          type: 'info',
-          message: '取消输入'
-        });
-      });
+      this.resetGenerateForm(params);
+    },
+    resetGenerateForm(params) {
+      this.generateForm = params;
+      this.generateFormVisible = true;
     },
     /** 修改按钮操作 */
     handleUpdate(row) {

@@ -93,8 +93,8 @@ public class Txt2txtRequestParams {
     /**
      * Constructor for StableDiffusionApiParamsBuilder.
      */
-    public Txt2txtRequestParams(String positiveprompt, String negativeprompt, String parametersJson) {
-        Map<String, Object> map = new Gson().fromJson(parametersJson, HashMap.class);
+    public Txt2txtRequestParams(String positiveprompt, String negativeprompt,
+                                Map<String, Object> map) {
         this.sampler_index = (String) map.getOrDefault("sampler", "Euler a");
         this.script_name = null;
         this.enable_hr = convertToBoolean(map.getOrDefault("enable_hr", false));;
@@ -114,7 +114,7 @@ public class Txt2txtRequestParams {
         this.seed_resize_from_h = -1;
         this.seed_resize_from_w = -1;
         this.sampler_name = (String) map.getOrDefault("sampler", "Euler a");
-        this.batch_size = 1;
+        this.batch_size = convertToInteger(map.getOrDefault("batch_size", 1));
         this.n_iter = 1;
         this.steps = convertToInteger(map.getOrDefault("steps", 30));
         this.cfg_scale = convertToDouble(map.getOrDefault("CFG", 7));
@@ -147,6 +147,9 @@ public class Txt2txtRequestParams {
         if (cfg instanceof Double) {
             return (Double) cfg;
         }
+        if (cfg instanceof Integer) {
+            return ((Integer) cfg).doubleValue();
+        }
         return Double.parseDouble((String) cfg);
     }
 
@@ -172,11 +175,11 @@ public class Txt2txtRequestParams {
 
     public Txt2txtRequestParams(String positivePrompt,
                                 String negativePrompt,
-                                String parametersJson,
+                                Map<String, Object> parametersJsonMap,
                                 String image,
                                 String module,
                                 String model) {
-        this(positivePrompt, negativePrompt, parametersJson);
+        this(positivePrompt, negativePrompt, parametersJsonMap);
         this.controlnet_input_image = image;
         this.controlnet_module = module;
         this.controlnet_model = model;
@@ -197,8 +200,8 @@ public class Txt2txtRequestParams {
         data.add(this.sampler_index); // sampler
         data.add(false);
         data.add(false);
-        data.add(1);
-        data.add(1);
+        data.add(1); // 批次固定为1，防止bug，需要多批次通过多次api调用来实现
+        data.add(this.batch_size); // 每批数量
         data.add(this.cfg_scale); // cfg scale
         data.add(this.seed);
         data.add(-1);
@@ -336,8 +339,8 @@ public class Txt2txtRequestParams {
         list.add("original");
         list.add(false);
         list.add(false);
-        list.add(1);
-        list.add(1);
+        list.add(1); // 批次固定为1，防止bug，需要多批次通过多次api调用来实现
+        list.add(this.batch_size); // 每批数量
         list.add(this.cfg_scale);
         list.add(1.5);
         list.add(this.denoising_strength);

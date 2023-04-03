@@ -42,9 +42,10 @@ export function delPattern(patternId) {
     method: 'delete'
   })
 }
-export async function generateByPattern(patternId) {
+export async function generateByPattern(patternId, data = []) {
   return request({
     url: '/sdtool/pattern/' + patternId + `/generate`,
-    method: 'post'
+    method: 'post',
+    data: data
   })
 }

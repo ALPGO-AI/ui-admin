@@ -71,7 +71,7 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
 
                 updateStatus(sdEvent.getSdEnv().getEnvKey(), EnvTaskExecutionStatus.Start);
                 stableDiffusionPatternService.generateByPatternIdAsync(
-                        sdEvent.getPatternId(), sdEvent.getCosConfigs(), sdEvent.getSdEnv(), sdEvent.getWsId()
+                        sdEvent.getPatternId(), sdEvent.getCosConfigs(), sdEvent.getSdEnv(), sdEvent.getWsId(), sdEvent.getExtraGenerateParams()
                 );
                 updateStatus(sdEvent.getSdEnv().getEnvKey(), EnvTaskExecutionStatus.Finished);
             } catch (Exception e) {

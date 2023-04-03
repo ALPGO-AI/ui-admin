@@ -13,19 +13,19 @@ public class EnvTaskVO {
         this.envKey = event.getEnvKey();
         this.taskName = event.getTaskName();
         this.envName = event.getEnvName();
-        this.createTime = event.getCreateTime();
+        this.createTime = event.getCreateTime().getTime();
     }
-    private Date createTime;
+    private Long createTime;
     private String uuid;
     private String envKey;
     private String envName;
     private String taskName;
 
-    public Date getCreateTime() {
+    public Long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(Long createTime) {
         this.createTime = createTime;
     }
 

@@ -61,7 +61,10 @@ public class EnvTaskQueueListener implements ApplicationListener<ApplicationEven
     }
 
     private void updateTaskList() {
-        WebSocketUsers.sendMessageToUsersByText("TASK_LIST_UPDATED");
+        try {
+            WebSocketUsers.sendMessageToUsersByText("TASK_LIST_UPDATED");
+        } catch (Exception e) {
+        }
     }
 
     public boolean hasNextTaskFromEnvironmentQueue(String environment) {
