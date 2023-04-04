@@ -116,7 +116,8 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                 Integer.parseInt(map.get("txt2imgControlNetFnIndex")),
                 Integer.parseInt(map.get("img2imgControlNetFnIndex")),
                 Boolean.valueOf(map.get("isLoraPluginInstalled")),
-                Integer.parseInt(map.get("switchModelFnIndex"))
+                Integer.parseInt(map.get("switchModelFnIndex")),
+                Boolean.valueOf(map.get("isUltimateUpscalePluginInstalled"))
         );
     }
     /**

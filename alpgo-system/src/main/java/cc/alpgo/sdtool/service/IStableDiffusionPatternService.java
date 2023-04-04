@@ -6,6 +6,7 @@ import java.util.Map;
 
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.StableDiffusionEnv;
+import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import cc.alpgo.sdtool.util.res.StableDiffusionApiResponse;
 
@@ -67,7 +68,7 @@ public interface IStableDiffusionPatternService
 
     public StableDiffusionPattern generateByPatternId(Map<String, String> params, Long patternId, List<Map<String, Object>> extraGenerateParams) throws Exception;
 
-    StableDiffusionPattern generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId, Map<String, Object> extraGenerateParams) throws Exception;
+    StableDiffusionOutput generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId, Map<String, Object> extraGenerateParams) throws Exception;
 
     List<String> selectAllRelatedOutputImageUrls(Long patternId);
 

@@ -2,6 +2,7 @@ package cc.alpgo.sdtool.util;
 
 import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.enums.CosConfig;
+import cc.alpgo.common.utils.BASE64Encoder;
 import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.uuid.UUID;
@@ -15,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import sun.misc.BASE64Encoder;
 
 import java.io.*;
 import java.util.*;

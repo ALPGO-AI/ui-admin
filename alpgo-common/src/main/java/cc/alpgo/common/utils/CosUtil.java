@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import sun.misc.BASE64Decoder;
 
 import com.idrsolutions.image.png.PngCompressor;
 
@@ -206,7 +205,7 @@ public class CosUtil {
 
     private String uploadFileBase64Single(String base64Str, String fileKey, CosConfig cosConfig) throws Exception {
         String base64compress = compressImageByFile(base64Str);
-        byte[] bytes = new BASE64Decoder().decodeBuffer(base64compress.trim());
+        byte[] bytes = Base64.getDecoder().decode(base64compress.trim());
         COSClient cosClient = getClient(cosConfig);
         //转化为输入流
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
@@ -227,7 +226,7 @@ public class CosUtil {
      * sourceFile: 源文件;
      */
     public static String compressImageByFile(String inString) throws Exception {
-        byte[] bytes = new BASE64Decoder().decodeBuffer(inString.trim());
+        byte[] bytes = Base64.getDecoder().decode(inString.trim());
         //转化为输入流
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream out = null;

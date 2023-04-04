@@ -6,6 +6,8 @@ import cc.alpgo.common.event.*;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.framework.websocket.WebSocketUsers;
+import cc.alpgo.neo4j.service.INeo4jService;
+import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,8 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
     private CosUtil cosUtil;
     @Autowired
     private IStableDiffusionPatternService stableDiffusionPatternService;
+    @Autowired
+    private INeo4jService neo4jService;
     public void onApplicationEvent(ApplicationEvent event) {
         // 判断事件类型，执行特定处理逻辑
         if (event instanceof UploadToCosEvent) {
@@ -70,9 +74,10 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
             try {
 
                 updateStatus(sdEvent.getSdEnv().getEnvKey(), EnvTaskExecutionStatus.Start);
-                stableDiffusionPatternService.generateByPatternIdAsync(
+                StableDiffusionOutput stableDiffusionOutput = stableDiffusionPatternService.generateByPatternIdAsync(
                         sdEvent.getPatternId(), sdEvent.getCosConfigs(), sdEvent.getSdEnv(), sdEvent.getWsId(), sdEvent.getExtraGenerateParams()
                 );
+                neo4jService.createOutput(stableDiffusionOutput);
                 updateStatus(sdEvent.getSdEnv().getEnvKey(), EnvTaskExecutionStatus.Finished);
             } catch (Exception e) {
                 log.error("SDToolListener execute {} error", ((SdToolExecuteGenerateByPatternIdEvent) event).toString());

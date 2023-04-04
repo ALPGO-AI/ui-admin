@@ -16,7 +16,9 @@ public class StableDiffusionEnv {
     private Integer switchModelFnIndex;
 
     private String envName;
-    public StableDiffusionEnv(String envName, Long environmentId, String domain, String username, String password, Integer txt2imgFnIndex, Integer img2imgFnIndex, Integer txt2imgControlNetFnIndex, Integer img2imgControlNetFnIndex, Boolean isLoraPluginInstalled, Integer switchModelFnIndex) {
+
+    private Boolean isUltimateUpscalePluginInstalled;
+    public StableDiffusionEnv(String envName, Long environmentId, String domain, String username, String password, Integer txt2imgFnIndex, Integer img2imgFnIndex, Integer txt2imgControlNetFnIndex, Integer img2imgControlNetFnIndex, Boolean isLoraPluginInstalled, Integer switchModelFnIndex, Boolean isUltimateUpscalePluginInstalled) {
         this.envName = envName;
         this.envId = environmentId;
         this.domain = domain;
@@ -28,6 +30,11 @@ public class StableDiffusionEnv {
         this.img2imgControlNetFnIndex = img2imgControlNetFnIndex;
         this.isLoraPluginInstalled = isLoraPluginInstalled;
         this.switchModelFnIndex = switchModelFnIndex;
+        this.isUltimateUpscalePluginInstalled = isUltimateUpscalePluginInstalled;
+    }
+
+    public Boolean getUltimateUpscalePluginInstalled() {
+        return isUltimateUpscalePluginInstalled;
     }
 
     public Integer getSwitchModelFnIndex() {
