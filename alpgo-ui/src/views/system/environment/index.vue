@@ -278,6 +278,7 @@ export default {
           this.addEnvParam('img2imgControlNetFnIndex', 'int', 'WebUI 图生图启用controlnet对应fn_index');
           this.addEnvParam('switchModelFnIndex', 'int', 'WebUI 切换model的fn_index');
           this.addEnvParam('isLoraPluginInstalled', 'boolean', 'WebUI 是否已安装lora插件');
+          this.addEnvParam('isUltimateUpscalePluginInstalled', 'boolean', 'WebUI 是否已安装UltimateUpscale插件');
           break;
       }
     },

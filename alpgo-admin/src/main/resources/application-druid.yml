@@ -1,5 +1,15 @@
 # 数据源配置
 spring:
+    #集成neo4j
+    data:
+        neo4j:
+            ##配置地址
+            uri: bolt://${NEO4J_HOST}:${NEO4J_PORT}
+            ## 账号
+            username: ${NEO4J_USERNAME}
+            ## 密码
+            password: ${NEO4J_PASSWORD}
+    # 服务模块
     # 配置flyway数据版本管理
     flyway:
         enabled: true

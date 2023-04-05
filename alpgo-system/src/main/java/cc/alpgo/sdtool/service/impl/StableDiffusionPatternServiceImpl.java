@@ -168,7 +168,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     }
 
     @Override
-    public StableDiffusionPattern generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId, Map<String, Object> extraGenerateParams) throws Exception {
+    public StableDiffusionOutput generateByPatternIdAsync(Long patternId, List<CosConfig> cosConfigs, StableDiffusionEnv sdEnv, String wsId, Map<String, Object> extraGenerateParams) throws Exception {
         sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.START);
         StableDiffusionPattern stableDiffusionPattern = selectStableDiffusionPatternByPatternId(patternId);
         if (stableDiffusionPattern == null) {
@@ -247,10 +247,10 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         }
         sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.UPLOAD_TO_COS);
         Map<Long, String> longStringMap = imageService.selectUrls(imageIds, cosConfigs);
-        stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(longStringMap.values()), "GENERATE_IMAGE", result);
+        StableDiffusionOutput output = stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(longStringMap.values()), "GENERATE_IMAGE", result);
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageIds));
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
-        return stableDiffusionPattern;
+        return output;
     }
 
     private void updateStatus(String envKey, EnvTaskExecutionStatus processing) {

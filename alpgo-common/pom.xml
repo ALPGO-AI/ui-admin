@@ -107,6 +107,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <!-- neo4j 图数据库 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-neo4j</artifactId>
+        </dependency>
+
         <!-- pool 对象池 -->
         <dependency>
             <groupId>org.apache.commons</groupId>

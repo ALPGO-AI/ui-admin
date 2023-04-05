@@ -3,6 +3,7 @@ package cc.alpgo.sdtool.util.request;
 import cc.alpgo.common.utils.StableDiffusionEnv;
 import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.*;
 
@@ -319,6 +320,7 @@ public class Txt2txtRequestParams {
     public String toPreDictForImg2img(String sessionHash, String initImage, StableDiffusionEnv env) {
         Integer fn_index = convertToInteger(env.getImg2imgFnIndex());
         Boolean loraPluginInstalled = convertToBoolean(env.getLoraPluginInstalled());
+        Boolean isUltimateUpscalePluginInstalled = convertToBoolean(env.getUltimateUpscalePluginInstalled());
         String keyUuid = UUID.randomUUID().toString();
         Map<String, Object> params = new HashMap<>();
         params.put("fn_index", fn_index);
@@ -441,19 +443,33 @@ public class Txt2txtRequestParams {
         list.add(null);
         list.add(false);
         list.add(50);
-        List<Object> imageList = new ArrayList<>();
-        Map<String, Object> imageMap = new HashMap<>();
-        imageMap.put("name", "D:\\workspace\\novelai-webui\\novelai-webui-aki-v3\\outputs\\txt2img-images\\"+keyUuid+".png");
-        imageMap.put("data", "file=D:\\workspace\\novelai-webui\\novelai-webui-aki-v3\\outputs\\txt2img-images\\"+keyUuid+".png");
-        imageMap.put("is_file", true);
-        imageList.add(imageMap);
-        list.add(new Gson().toJson(imageList));
+        if (isUltimateUpscalePluginInstalled) {
+            list.add("");
+            list.add(512);
+            list.add(0);
+            list.add(8);
+            list.add(32);
+            list.add(64);
+            list.add(0.35);
+            list.add(32);
+            list.add("None");
+            list.add(true);
+            list.add("Linear");
+            list.add(false);
+            list.add(8);
+            list.add("None");
+            list.add("From img2img2 settings");
+            list.add(2048);
+            list.add(2048);
+            list.add(2);
+        }
+        list.add(new ArrayList<>());
         list.add("");
         list.add("");
         list.add("");
         params.put("data", list);
         params.put("session_hash", sessionHash);
-        return new Gson().toJson(params);
+        return new GsonBuilder().disableHtmlEscaping().create().toJson(params);
     }
 
     private List<String> generateList(String ...args) {

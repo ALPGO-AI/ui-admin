@@ -16,7 +16,6 @@
     </description>
 
     <dependencies>
-
         <!-- 通用工具-->
         <dependency>
             <groupId>cc.alpgo</groupId>
