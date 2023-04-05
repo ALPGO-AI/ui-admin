@@ -533,6 +533,7 @@ export default {
     handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
+      this.getGraph();
     },
     /** 重置按钮操作 */
     resetQuery() {

@@ -82,8 +82,7 @@ export default {
             color: { background: "#7ed6df" },
           },
           Tag: {
-            shape: "circle",
-            color: { background: "#7ed6df" },
+            shape: "box",
           },
         },
       };
