@@ -1,6 +1,7 @@
 <template>
   <div class="neo4j-view">
     <div id="mynetwork"></div>
+    <div class="menu" id="divHoverNode" style="display: none;" />
   </div>
 </template>
 
@@ -49,6 +50,7 @@ export default {
             properties,
             group: n.labels[0],
             image: properties.outputImageUrls?.val && JSON.parse(properties.outputImageUrls.val)[0] + "?imageMogr2/thumbnail/!25p",
+            imageSrc: properties.outputImageUrls?.val && JSON.parse(properties.outputImageUrls.val)[0],
           };
         });
       };
@@ -60,13 +62,18 @@ export default {
             from: r.start,
             to: r.end,
             // label: r.type,
-            // properties, 
+            properties, 
           };
         });
       };
-      const nodes = new vis.DataSet(formatNodes(this.nodes));
+      const formattedNodes = formatNodes(this.nodes);
+      const nodes = new vis.DataSet(formattedNodes);
       const edges = new vis.DataSet(formatRelations(this.relations));
-
+      const nodeMap = {};
+      for (let index = 0; index < formattedNodes.length; index++) {
+        const node = formattedNodes[index];
+        nodeMap[node.id] = node;
+      }
       // create a network
       var container = document.getElementById("mynetwork");
       var data = {
@@ -74,9 +81,20 @@ export default {
         edges: edges
       };
       var options = {
+        physics: {
+          enabled: false,
+        },
         autoResize: true,
+        layout: {
+        },
         edges: {
           physics: false,
+          smooth: true,
+          // arrows: { to: true },
+        },
+        interaction:{
+          hover:true,
+          hoverConnectedEdges: true
         },
         groups: {
           useDefaultGroups: true,
@@ -94,6 +112,7 @@ export default {
         },
       };
       var network = new vis.Network(container, data, options);
+      const that = this;
     }
   },
 };
