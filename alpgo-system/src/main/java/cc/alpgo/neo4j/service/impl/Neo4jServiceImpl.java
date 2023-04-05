@@ -1,6 +1,7 @@
 package cc.alpgo.neo4j.service.impl;
 
 import cc.alpgo.common.utils.StringUtils;
+import cc.alpgo.neo4j.domain.SearchResultData;
 import cc.alpgo.neo4j.domain.sdtool.Output;
 import cc.alpgo.neo4j.domain.sdtool.Pattern;
 import cc.alpgo.neo4j.domain.sdtool.Tag;
@@ -13,15 +14,17 @@ import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import cc.alpgo.sdtool.util.res.StableDiffusionApiResponse;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-
 @Service
 public class Neo4jServiceImpl implements INeo4jService {
+    private static final Logger log = LoggerFactory.getLogger(Neo4jServiceImpl.class);
 
     @Autowired
     private PatternRepository patternRepository;
@@ -30,6 +33,8 @@ public class Neo4jServiceImpl implements INeo4jService {
 
     @Autowired
     private IStableDiffusionPatternService stableDiffusionPatternService;
+    @Autowired
+    private Neo4jClient client;
 
     @Override
     public void createOutput(StableDiffusionOutput sdOutput) throws Exception {
@@ -89,12 +94,24 @@ public class Neo4jServiceImpl implements INeo4jService {
 
 
     @Override
-    public List<Map<String, Object>> fetchPatternGraph() {
-        List<Map<String, Object>> allPatterns = patternRepository.findAllPattern();
-        if (isEmpty(allPatterns)) {
-            return new ArrayList<>();
+    public SearchResultData fetchPatternGraph() {
+        SearchResultData searchResultData = new SearchResultData();
+        try {
+            Neo4jClient.RunnableSpec fetchNode = client.query("match (n) return n;");
+            Collection<Map<String, Object>> resultNode = fetchNode.fetch().all();
+
+            searchResultData.setNodes(resultNode);
+            Neo4jClient.RunnableSpec fetchRelation = client.query("MATCH (n)\n" +
+                    "OPTIONAL MATCH (n)-[r]-()\n" +
+                    "RETURN r");
+            Collection<Map<String, Object>> resultRelation = fetchRelation.fetch().all();
+
+            searchResultData.setRelations(resultRelation);
         }
-        return allPatterns;
+        catch(Exception e){
+            log.error("post search neo4j  error, error msg is "+ e.getMessage());
+        }
+        return searchResultData;
     }
 
     private Output convertFromSdOutput(StableDiffusionOutput sdOutput, String prompt, String negative_prompt, Double height, Double width) {

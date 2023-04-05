@@ -23,8 +23,6 @@ public class Pattern {
 	private String patternStyle;
 	private String prompt;
 	private String model;
-	@Relationship(type="OUTPUT_TO", direction=OUTGOING)
-	private Set<Output> outputSet = new HashSet<>();
 
 
 	public String getId() {
@@ -34,14 +32,6 @@ public class Pattern {
 	public void setId(String id) {
 		this.id = id;
 	}
-	public Set<Output> getOutputSet() {
-		return outputSet;
-	}
-
-	public void setOutputSet(Set<Output> outputSet) {
-		this.outputSet = outputSet;
-	}
-
 	public Long getPatternId() {
 		return patternId;
 	}

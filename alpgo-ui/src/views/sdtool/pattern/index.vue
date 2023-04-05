@@ -29,7 +29,6 @@
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
-
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
@@ -49,8 +48,18 @@
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-switch v-model="showGraph"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="图表显示"
+            inactive-text="表格显示"/>
+      </el-col>
+    </el-row>
 
-    <el-table v-loading="loading" :data="patternList" @selection-change="handleSelectionChange">
+    <neo4j-view ref="neo4jView" v-show="showGraph" :nodes="nodes" :relations="relations"></neo4j-view>
+    <el-table v-show="!showGraph" v-loading="loading" :data="patternList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="id" align="center" prop="patternId" width="55" />
       <el-table-column label="模型" align="center" prop="model" width="125">
@@ -118,7 +127,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+    <pagination v-show="total > 0 && !showGraph" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
 
     <!-- 添加或修改Stable Diffusion 风格模板对话框 -->
@@ -270,7 +279,7 @@
 </template>
 
 <script>
-import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern } from "@/api/sdtool/pattern";
+import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, getGraph } from "@/api/sdtool/pattern";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
 import { controlNetModels, controlNetProcessor } from "@/utils/constant";
@@ -323,6 +332,9 @@ export default {
   },
   data() {
     return {
+      nodes: [],
+      relations: [],
+      showGraph: false,
       generateFormVisible: false,
       formLabelWidth: '120px',
       generateForm: {},
@@ -372,6 +384,7 @@ export default {
   },
   created() {
     this.getList();
+    this.getGraph();
   },
   mounted() {
     const clipboard = new ClipboardJS('#copyNode', {
@@ -416,6 +429,7 @@ export default {
             type: 'success',
             message: `任务添加成功 total: ${totalCount}`
           });
+          this.$store.dispatch('task/updateList');
         })
       }).catch((e) => {
         console.log(e)
@@ -447,6 +461,18 @@ export default {
       }
     },
     /** 查询Stable Diffusion 风格模板列表 */
+    getGraph() {
+      getGraph().then(response => {
+        const data = response.data;
+        const nodes = JSON.parse(data.nodes);
+        const relations = JSON.parse(data.relations);
+        this.nodes = nodes;
+        this.relations = relations;
+        this.$nextTick(() => {
+          this.$refs['neo4jView'].redraw();
+        })
+      })
+    },
     getList() {
       this.loading = true;
       listPattern(this.queryParams).then(response => {

@@ -49,3 +49,11 @@ export async function generateByPattern(patternId, data = []) {
     data: data
   })
 }
+export async function getGraph() {
+  return request({
+    url: '/sdtool/pattern/graph',
+    method: 'get'
+  })
+}
+
+

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.springframework.data.neo4j.core.schema.Relationship.Direction.INCOMING;
+import static org.springframework.data.neo4j.core.schema.Relationship.Direction.OUTGOING;
 
 @Node("Output")
 public class Output {
@@ -23,7 +24,7 @@ public class Output {
     private Double width;
     @Relationship(type="GENERATE_BY", direction=INCOMING)
     private Set<Pattern> patternSet = new HashSet<>();
-    @Relationship(type="PROMPT_TAG", direction=INCOMING)
+    @Relationship(type="PROMPT_TAG", direction=OUTGOING)
     private Set<Tag> promptTagSet = new HashSet<>();
 
     public String getPrompt() {

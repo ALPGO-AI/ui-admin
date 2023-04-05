@@ -9,6 +9,7 @@ import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.page.TableDataInfo;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.utils.poi.ExcelUtil;
+import cc.alpgo.neo4j.service.INeo4jService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +34,9 @@ import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 @RequestMapping("/sdtool/pattern")
 public class StableDiffusionPatternController extends BaseController
 {
+
+    @Autowired
+    private INeo4jService neo4jService;
     @Autowired
     private IStableDiffusionPatternService stableDiffusionPatternService;
 
@@ -112,5 +116,11 @@ public class StableDiffusionPatternController extends BaseController
     public AjaxResult generate(@PathVariable("patternId") Long patternId, @RequestBody List<Map<String, Object>> extraGenerateParams) throws Exception {
 
         return AjaxResult.success(stableDiffusionPatternService.generateByPatternId(getHeaderMap(), patternId, extraGenerateParams));
+    }
+    @PreAuthorize("@ss.hasPermi('sdtool:pattern:list')")
+    @GetMapping("/graph")
+    public AjaxResult graph(){
+
+        return AjaxResult.success(neo4jService.fetchPatternGraph());
     }
 }

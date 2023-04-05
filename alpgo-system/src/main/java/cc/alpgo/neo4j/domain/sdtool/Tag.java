@@ -7,6 +7,7 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.springframework.data.neo4j.core.schema.Relationship.Direction.INCOMING;
 import static org.springframework.data.neo4j.core.schema.Relationship.Direction.OUTGOING;
 
 @Node("Tag")
@@ -18,6 +19,16 @@ public class Tag {
     private String value;
     private String name;
     private String type;
+    @Relationship(type="BELONG", direction=INCOMING)
+    private Set<Tag> parentTagSet = new HashSet<>();
+
+    public Set<Tag> getParentTagSet() {
+        return parentTagSet;
+    }
+
+    public void setParentTagSet(Set<Tag> parentTagSet) {
+        this.parentTagSet = parentTagSet;
+    }
 
     public String getId() {
         return id;
