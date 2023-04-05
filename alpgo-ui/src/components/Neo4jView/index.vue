@@ -31,7 +31,16 @@ export default {
     redraw() {
       // TBD: format nodes method use props
       const formatNodes = (nodes) => {
-        return nodes.map((node) => {
+        return nodes
+          .filter(node => {
+            const n = node.n;
+            const properties = n.properties;
+            if (n.labels[0] === "Tag") {
+              return properties.name.val.indexOf("lora") > -1;
+            }
+            return true;
+          })
+          .map((node) => {
           const n = node.n;
           const properties = n.properties;
           return {
@@ -73,13 +82,11 @@ export default {
           useDefaultGroups: true,
           myGroupId: {},
           Pattern: {
-            shape: "circle",
+            shape: "box",
             color: { background: "#fd91b7" },
-            font: { color: "white" },
           },
           Output: {
             shape: "image",
-            color: { background: "#7ed6df" },
           },
           Tag: {
             shape: "box",
