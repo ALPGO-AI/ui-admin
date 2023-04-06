@@ -101,8 +101,8 @@ public class Neo4jServiceImpl implements INeo4jService {
             Collection<Map<String, Object>> resultNode = fetchNode.fetch().all();
 
             searchResultData.setNodes(resultNode);
-            Neo4jClient.RunnableSpec fetchRelation = client.query("MATCH (n)\n" +
-                    "OPTIONAL MATCH (n)-[r]-()\n" +
+            Neo4jClient.RunnableSpec fetchRelation = client.query("MATCH (n:Pattern)\n" +
+                    "OPTIONAL MATCH (n:Pattern)-[r:GENERATE_BY]-()\n" +
                     "RETURN r");
             Collection<Map<String, Object>> resultRelation = fetchRelation.fetch().all();
 

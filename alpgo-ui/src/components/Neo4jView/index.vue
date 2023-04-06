@@ -61,7 +61,7 @@ export default {
           return {
             from: r.start,
             to: r.end,
-            // label: r.type,
+            // label: r.type + r.start + r.end,
             properties, 
           };
         });
@@ -83,49 +83,24 @@ export default {
       var options = {
         nodes: {
           shape: "dot",
-          scaling: {
-            min: 10,
-            max: 30,
-            label: {
-              min: 8,
-              max: 30,
-              drawThreshold: 12,
-              maxVisible: 20,
-            },
-          },
-          font: {
-            size: 12,
-            face: "Tahoma",
-          },
+          size: 16,
         },
-        edges: {
-          width: 0.15,
-          color: { inherit: "from" },
-          smooth: {
-            type: "continuous",
+        physics: {
+          forceAtlas2Based: {
+            gravitationalConstant: -26,
+            centralGravity: 0.005,
+            springLength: 230,
+            springConstant: 0.18,
           },
-        },
-        physics: false,
-        interaction: {
-          tooltipDelay: 200,
-          hideEdgesOnDrag: true,
-          hideEdgesOnZoom: true,
-        },
-        autoResize: true,
-        layout: {
+          maxVelocity: 146,
+          solver: "forceAtlas2Based",
+          timestep: 0.35,
+          stabilization: { iterations: 150 },
         },
         groups: {
-          useDefaultGroups: true,
-          myGroupId: {},
-          Pattern: {
-            shape: "box",
-            color: { background: "#fd91b7" },
-          },
           Output: {
             shape: "image",
-          },
-          Tag: {
-            shape: "box",
+            size: 8,
           },
         },
       };
