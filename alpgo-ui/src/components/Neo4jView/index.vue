@@ -100,7 +100,7 @@ export default {
         groups: {
           Output: {
             shape: "image",
-            size: 8,
+            size: 24,
           },
         },
       };
