@@ -37,7 +37,7 @@ export default {
             const n = node.n;
             const properties = n.properties;
             if (n.labels[0] === "Tag") {
-              return properties.name.val.indexOf("lora") > -1;
+              return false;
             }
             return true;
           })
