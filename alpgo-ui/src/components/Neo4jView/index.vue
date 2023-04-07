@@ -48,6 +48,7 @@ export default {
             id: n.id,
             label: properties.name?.val || properties.patternStyle?.val,
             properties,
+            shape: properties.outputImageUrls?.val ? "image" : 'box',
             group: n.labels[0],
             image: properties.outputImageUrls?.val && JSON.parse(properties.outputImageUrls.val)[0] + "?imageMogr2/thumbnail/!25p",
             imageSrc: properties.outputImageUrls?.val && JSON.parse(properties.outputImageUrls.val)[0],
@@ -62,7 +63,7 @@ export default {
             from: r.start,
             to: r.end,
             // label: r.type + r.start + r.end,
-            properties, 
+            properties,
           };
         });
       };
@@ -82,30 +83,40 @@ export default {
       };
       var options = {
         nodes: {
-          shape: "dot",
-          size: 16,
-        },
-        physics: {
-          forceAtlas2Based: {
-            gravitationalConstant: -26,
-            centralGravity: 0.005,
-            springLength: 230,
-            springConstant: 0.18,
+          borderWidth: 0,
+          borderWidthSelected: 1,
+          size: 32,
+          color: {
+            border: "white",
+            background: "black",
+            highlight: {
+              border: "black",
+              background: "white",
+            },
+            hover: {
+              border: "orange",
+              background: "grey",
+            },
           },
-          maxVelocity: 146,
-          solver: "forceAtlas2Based",
-          timestep: 0.35,
-          stabilization: { iterations: 150 },
-        },
-        groups: {
-          Output: {
-            shape: "image",
-            size: 24,
+          font: { color: "red" },
+          shapeProperties: {
+            useBorderWithImage: true,
           },
+        },
+        edges: {
+          color: "lightgray",
         },
       };
       var network = new vis.Network(container, data, options);
       const that = this;
+      network.on("doubleClick", function (params) {
+        if (params.nodes.length === 1) {
+          var node = nodes.get(params.nodes[0]);
+          if(node.imageSrc != null) {
+            window.open(node.imageSrc, '_blank');
+          }
+        }
+      });
     }
   },
 };
