@@ -2,13 +2,16 @@ package cc.alpgo.neo4j.service.impl;
 
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.neo4j.domain.SearchResultData;
+import cc.alpgo.neo4j.domain.sdtool.CardPackage;
 import cc.alpgo.neo4j.domain.sdtool.Output;
 import cc.alpgo.neo4j.domain.sdtool.Pattern;
 import cc.alpgo.neo4j.domain.sdtool.Tag;
+import cc.alpgo.neo4j.repository.CardPackageRepository;
 import cc.alpgo.neo4j.repository.OutputRepository;
 import cc.alpgo.neo4j.repository.PatternRepository;
 import cc.alpgo.neo4j.service.INeo4jService;
 import cc.alpgo.neo4j.utils.IdUtil;
+import cc.alpgo.sdtool.domain.PackageCardRequestBody;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
@@ -30,6 +33,8 @@ public class Neo4jServiceImpl implements INeo4jService {
     private PatternRepository patternRepository;
     @Autowired
     private OutputRepository outputRepository;
+    @Autowired
+    private CardPackageRepository cardPackageRepository;
 
     @Autowired
     private IStableDiffusionPatternService stableDiffusionPatternService;
@@ -97,21 +102,34 @@ public class Neo4jServiceImpl implements INeo4jService {
     public SearchResultData fetchPatternGraph() {
         SearchResultData searchResultData = new SearchResultData();
         try {
-            Neo4jClient.RunnableSpec fetchNode = client.query("match (n) return n;");
-            Collection<Map<String, Object>> resultNode = fetchNode.fetch().all();
-
-            searchResultData.setNodes(resultNode);
+            Gson gson = new Gson();
+            Neo4jClient.RunnableSpec fetchPattern = client.query("match (n:Pattern) return n;");
+            searchResultData.setPatterns(gson.toJson(fetchPattern.fetch().all()));
+            Neo4jClient.RunnableSpec fetchOutput = client.query("match (n:Output) WHERE NOT EXISTS {MATCH (n:Output)-[r2:PACKAGE_IN]-(n2:CardPackage)} return n;");
+            searchResultData.setOutputs(gson.toJson(fetchOutput.fetch().all()));
             Neo4jClient.RunnableSpec fetchRelation = client.query("MATCH (n:Pattern)\n" +
-                    "OPTIONAL MATCH (n:Pattern)-[r:GENERATE_BY]-()\n" +
+                    "OPTIONAL MATCH (n:Pattern)-[r:GENERATE_BY]-(o:Output) \n" +
                     "RETURN r");
             Collection<Map<String, Object>> resultRelation = fetchRelation.fetch().all();
-
-            searchResultData.setRelations(resultRelation);
+            searchResultData.setRelations(gson.toJson(resultRelation));
         }
         catch(Exception e){
             log.error("post search neo4j  error, error msg is "+ e.getMessage());
         }
         return searchResultData;
+    }
+
+    @Override
+    public CardPackage packageCard(PackageCardRequestBody packageCardRequestBody) {
+        CardPackage cardPackage = new CardPackage();
+        cardPackage.setId(IdUtil.generateCardPackageId());
+        cardPackage.setName(packageCardRequestBody.getName());
+        cardPackage.setType(packageCardRequestBody.getType());
+        cardPackage.setRarity(packageCardRequestBody.getRarity());
+        List<Output> allById = outputRepository.findAllById(packageCardRequestBody.getOutputIds());
+        cardPackage.setImageSet(allById);
+        cardPackageRepository.save(cardPackage);
+        return cardPackage;
     }
 
     private Output convertFromSdOutput(StableDiffusionOutput sdOutput, String prompt, String negative_prompt, Double height, Double width) {

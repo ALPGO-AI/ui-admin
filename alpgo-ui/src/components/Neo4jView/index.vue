@@ -12,6 +12,10 @@ export default {
   name: "Neo4jView",
   components: {},
   props: {
+    doubleClickNode: {
+      type: Function,
+      default: () => {},
+    },
     nodes: {
       type: Array,
       default: () => [],
@@ -30,51 +34,8 @@ export default {
   },
   methods: {
     redraw() {
-      // TBD: format nodes method use props
-      const formatNodes = (nodes) => {
-        return nodes
-          .filter(node => {
-            const n = node.n;
-            const properties = n.properties;
-            if (n.labels[0] === "Tag") {
-              return false;
-            }
-            return true;
-          })
-          .map((node) => {
-          const n = node.n;
-          const properties = n.properties;
-          return {
-            id: n.id,
-            label: properties.name?.val || properties.patternStyle?.val,
-            properties,
-            shape: properties.outputImageUrls?.val ? "image" : 'box',
-            group: n.labels[0],
-            image: properties.outputImageUrls?.val && JSON.parse(properties.outputImageUrls.val)[0] + "?imageMogr2/thumbnail/!25p",
-            imageSrc: properties.outputImageUrls?.val && JSON.parse(properties.outputImageUrls.val)[0],
-          };
-        });
-      };
-      const formatRelations = (relations) => {
-        return relations.map((relation) => {
-          const r = relation.r;
-          const properties = r.properties;
-          return {
-            from: r.start,
-            to: r.end,
-            // label: r.type + r.start + r.end,
-            properties,
-          };
-        });
-      };
-      const formattedNodes = formatNodes(this.nodes);
-      const nodes = new vis.DataSet(formattedNodes);
-      const edges = new vis.DataSet(formatRelations(this.relations));
-      const nodeMap = {};
-      for (let index = 0; index < formattedNodes.length; index++) {
-        const node = formattedNodes[index];
-        nodeMap[node.id] = node;
-      }
+      const nodes = new vis.DataSet(this.nodes);
+      const edges = new vis.DataSet(this.relations);
       // create a network
       var container = document.getElementById("mynetwork");
       var data = {
@@ -108,15 +69,7 @@ export default {
         },
       };
       var network = new vis.Network(container, data, options);
-      const that = this;
-      network.on("doubleClick", function (params) {
-        if (params.nodes.length === 1) {
-          var node = nodes.get(params.nodes[0]);
-          if(node.imageSrc != null) {
-            window.open(node.imageSrc, '_blank');
-          }
-        }
-      });
+      network.on("doubleClick", this.doubleClickNode);
     }
   },
 };

@@ -56,4 +56,11 @@ export async function getGraph() {
   })
 }
 
+export async function packageCard(data) {
+  return request({
+    url: '/sdtool/pattern/packageCard',
+    method: 'post',
+    data
+  })
+}
 

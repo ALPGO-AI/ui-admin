@@ -26,7 +26,6 @@ public class Output {
     private Set<Pattern> patternSet = new HashSet<>();
     @Relationship(type="PROMPT_TAG", direction=OUTGOING)
     private Set<Tag> promptTagSet = new HashSet<>();
-
     public String getPrompt() {
         return prompt;
     }

@@ -10,10 +10,23 @@ import java.util.Map;
 public class SearchResultData implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    private String nodes;
+    private String patterns;
+    private String outputs;
 
-    public void setNodes(String nodes) {
-        this.nodes = nodes;
+    public String getPatterns() {
+        return patterns;
+    }
+
+    public void setPatterns(String patterns) {
+        this.patterns = patterns;
+    }
+
+    public String getOutputs() {
+        return outputs;
+    }
+
+    public void setOutputs(String outputs) {
+        this.outputs = outputs;
     }
 
     public String getRelations() {
@@ -23,17 +36,6 @@ public class SearchResultData implements Serializable
     public void setRelations(String relations) {
         this.relations = relations;
     }
-    public void setRelations(Collection<Map<String, Object>> relations) {
-        this.relations = new Gson().toJson(relations);
-    }
 
     private String relations;
-
-    public void setNodes(Collection<Map<String, Object>> nodes) {
-        this.nodes = new Gson().toJson(nodes);
-    }
-
-    public String getNodes() {
-        return nodes;
-    }
 }

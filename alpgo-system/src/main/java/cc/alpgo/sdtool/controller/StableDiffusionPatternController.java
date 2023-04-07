@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import cc.alpgo.common.annotation.Log;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
+import cc.alpgo.sdtool.domain.PackageCardRequestBody;
 
 /**
  * stable_diffusion_patternController
@@ -122,5 +123,12 @@ public class StableDiffusionPatternController extends BaseController
     public AjaxResult graph(){
 
         return AjaxResult.success(neo4jService.fetchPatternGraph());
+    }
+
+    @PreAuthorize("@ss.hasPermi('sdtool:pattern:edit')")
+    @PostMapping("/packageCard")
+    public AjaxResult packageCard(@RequestBody PackageCardRequestBody packageCardRequestBody){
+
+        return AjaxResult.success(neo4jService.packageCard(packageCardRequestBody));
     }
 }

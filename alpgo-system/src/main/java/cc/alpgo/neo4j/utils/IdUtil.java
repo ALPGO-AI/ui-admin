@@ -1,5 +1,6 @@
 package cc.alpgo.neo4j.utils;
 
+import cc.alpgo.common.utils.uuid.UUID;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 
@@ -15,5 +16,9 @@ public class IdUtil {
 
     public static String generateTagId(String sTag) {
         return hash(sTag.trim());
+    }
+
+    public static String generateCardPackageId() {
+        return UUID.randomUUID().toString();
     }
 }

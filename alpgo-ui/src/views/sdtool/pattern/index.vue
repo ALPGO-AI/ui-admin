@@ -58,7 +58,7 @@
       </el-col>
     </el-row>
 
-    <neo4j-view ref="neo4jView" v-show="showGraph" :nodes="nodes" :relations="relations"></neo4j-view>
+    <neo4j-view :doubleClickNode="doubleClickNode" ref="neo4jView" v-show="showGraph" :nodes="nodes" :relations="relations"></neo4j-view>
     <el-table v-show="!showGraph" v-loading="loading" :data="patternList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="id" align="center" prop="patternId" width="55" />
@@ -274,12 +274,32 @@
         <el-button type="primary" @click="confirmGenerate()">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog title="生成图包" :visible.sync="cardPackageFormVisible">
+      <el-form ref="cardPackageForm" :model="cardPackageForm">
+        <el-form-item label="图包名称" :label-width="formLabelWidth">
+          <el-input v-model="cardPackageForm.name"/>
+        </el-form-item>
+        <el-form-item label="图包类型" :label-width="formLabelWidth">
+          <el-input v-model="cardPackageForm.type" />
+        </el-form-item>
+        <el-form-item label="图包稀有度" :label-width="formLabelWidth">
+          <el-rate
+            v-model="cardPackageForm.rarity"
+            :colors="['#99A9BF', '#F7BA2A', '#FF9900']">
+          </el-rate>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancelPackage()">取 消</el-button>
+        <el-button type="primary" @click="confirmPackage()">确 定</el-button>
+      </div>
+    </el-dialog>
     <input id="copyNode" type="hidden">
   </div>
 </template>
 
 <script>
-import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, getGraph } from "@/api/sdtool/pattern";
+import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, getGraph, packageCard } from "@/api/sdtool/pattern";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
 import { controlNetModels, controlNetProcessor } from "@/utils/constant";
@@ -287,6 +307,55 @@ import { mapImage } from "@/api/system/image";
 import ClipboardJS from 'clipboard';
 import { mapState } from "vuex";
 
+const formatNodeMap = (nodes) => {
+  const nodeMap = {};
+  nodes.forEach((node) => {
+    nodeMap[node.id] = node;
+  });
+  return nodeMap;
+};
+const formatPatternNodes = (nodes) => {
+  return nodes
+    .map((node) => {
+    const n = node.n;
+    const properties = n.properties;
+    return {
+      id: n.id,
+      label: properties.patternStyle?.val,
+      properties,
+      shape: 'box',
+      group: n.labels[0]
+    };
+  });
+};
+const formatOutputNodes = (nodes) => {
+  return nodes
+    .map((node) => {
+    const n = node.n;
+    const properties = n.properties;
+    return {
+      id: n.id,
+      properties,
+      shape: "image",
+      group: n.labels[0],
+      image: properties.outputImageUrls?.val && JSON.parse(properties.outputImageUrls.val)[0] + "?imageMogr2/thumbnail/!25p",
+      imageSrc: properties.outputImageUrls?.val && JSON.parse(properties.outputImageUrls.val)[0],
+    };
+  });
+};
+const formatRelations = (relations) => {
+  return relations.map((relation) => {
+    const r = relation.r;
+    const properties = r.properties;
+    return {
+      id: r.start + "_" + r.end,
+      from: r.start,
+      to: r.end,
+      // label: r.type + r.start + r.end,
+      properties,
+    };
+  });
+};
 const initParams = {
   CFG: 7,
   steps: 20,
@@ -324,6 +393,11 @@ const getParameters = (jsonString) => {
     ...(JSON.parse(jsonString) || {})
   }
 }
+const getEnds = (edges, nodeMap) => {
+  return edges.map(edge => {
+    return nodeMap[edge.split("_")[1]].properties.id.val;
+  })
+}
 export default {
   name: "SDPattern",
   dicts: ['stable_diffusion_model', 'stable_diffusion_sampler', 'stable_diffusion_preset_template'],
@@ -332,6 +406,9 @@ export default {
   },
   data() {
     return {
+      patterns: [],
+      outputs: [],
+      nodeMap: {},
       nodes: [],
       relations: [],
       showGraph: false,
@@ -379,6 +456,13 @@ export default {
       },
       // 表单校验
       rules: {
+      },
+      cardPackageFormVisible: false,
+      cardPackageForm: {
+        outputIds: [],
+        name: '',
+        type: '',
+        rarity: 0,
       }
     };
   },
@@ -403,6 +487,45 @@ export default {
     })
   },
   methods: {
+    cancelPackage () {
+      this.cardPackageFormVisible = false;
+      this.cardPackageForm = {};
+      this.resetForm("cardPackage");
+    },
+    confirmPackage () {
+      const cardPackageForm = this.cardPackageForm;
+      if (cardPackageForm.rarity === 0) {
+        this.$message.error('请选择稀有度');
+        return;
+      }
+      packageCard(cardPackageForm).then(res => {
+        this.$message.success('打包成功');
+        this.cardPackageFormVisible = false;
+        this.cardPackageForm = {};
+        this.resetForm("cardPackage");
+        this.getGraph();
+      })
+    },
+    doubleClickNode (params) {
+      const edges = params.edges;
+      const nodeMap = this.nodeMap;
+      if (params.nodes.length === 1) {
+        const node = nodeMap[params.nodes[0]];
+        if (node.shape === 'image') {
+          if(node.imageSrc != null) {
+            window.open(node.imageSrc, '_blank');
+          }
+        }
+        if (node.shape === 'box') {
+          this.cardPackageFormVisible = true;
+          this.cardPackageForm = {
+            outputIds: getEnds(edges, nodeMap),
+            name: node.label,
+            type: node.properties.model.val,
+          };
+        }
+      }
+    },
     fetchModelVersions () {
       this.$store.dispatch('task/fetchEnvs', true);
     },
@@ -464,9 +587,13 @@ export default {
     getGraph() {
       getGraph().then(response => {
         const data = response.data;
-        const nodes = JSON.parse(data.nodes);
-        const relations = JSON.parse(data.relations);
-        this.nodes = nodes;
+        const patterns = formatPatternNodes(JSON.parse(data.patterns));
+        const outputs = formatOutputNodes(JSON.parse(data.outputs));
+        const relations = formatRelations(JSON.parse(data.relations));
+        this.patterns = patterns;
+        this.outputs = outputs;
+        this.nodes = patterns.concat(outputs);
+        this.nodeMap = formatNodeMap(this.nodes);
         this.relations = relations;
         this.$nextTick(() => {
           this.$refs['neo4jView'].redraw();
