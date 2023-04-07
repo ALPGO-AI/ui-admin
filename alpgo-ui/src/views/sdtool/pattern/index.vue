@@ -498,9 +498,9 @@ export default {
         this.$message.error('请选择稀有度');
         return;
       }
+      this.cardPackageFormVisible = false;
       packageCard(cardPackageForm).then(res => {
         this.$message.success('打包成功');
-        this.cardPackageFormVisible = false;
         this.cardPackageForm = {};
         this.resetForm("cardPackage");
         this.getGraph();
