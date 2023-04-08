@@ -213,4 +213,8 @@ export default {
     opacity: 0;
     transform: translateY(0);
 }
+
+::v-deep .el-upload-list__item-thumbnail{
+  object-fit: contain;
+}
 </style>
