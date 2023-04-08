@@ -132,6 +132,11 @@ public class Neo4jServiceImpl implements INeo4jService {
         return cardPackage;
     }
 
+    @Override
+    public void updatePattern(StableDiffusionPattern stableDiffusionPattern) {
+        patternRepository.save(convertFromSdPattern(stableDiffusionPattern));
+    }
+
     private Output convertFromSdOutput(StableDiffusionOutput sdOutput, String prompt, String negative_prompt, Double height, Double width) {
         Output output = new Output();
         output.setId(IdUtil.generateId(sdOutput));

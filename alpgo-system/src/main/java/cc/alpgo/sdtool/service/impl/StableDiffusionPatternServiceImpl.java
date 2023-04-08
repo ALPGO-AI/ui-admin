@@ -12,6 +12,7 @@ import cc.alpgo.common.event.SdToolExecuteGenerateByPatternIdEvent;
 import cc.alpgo.common.event.UpdateEnvExecutionStatusEvent;
 import cc.alpgo.common.event.WebSocketSendMessageEvent;
 import cc.alpgo.common.utils.*;
+import cc.alpgo.neo4j.service.INeo4jService;
 import cc.alpgo.sdtool.constant.ProgressInfoConstant;
 import cc.alpgo.sdtool.domain.ControlNetRequestBody;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
@@ -62,6 +63,8 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     private IEnvironmentService environmentService;
     @Autowired
     private IImageService imageService;
+    @Autowired
+    private INeo4jService neo4jService;
 
     /**
      * 查询stable_diffusion_pattern
@@ -110,7 +113,9 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     public int updateStableDiffusionPattern(StableDiffusionPattern stableDiffusionPattern)
     {
         stableDiffusionPattern.setUpdateTime(DateUtils.getNowDate());
-        return stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
+        int i = stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
+        neo4jService.updatePattern(stableDiffusionPattern);
+        return i;
     }
 
     /**

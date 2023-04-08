@@ -5,6 +5,7 @@ import cc.alpgo.neo4j.domain.sdtool.CardPackage;
 import cc.alpgo.neo4j.domain.sdtool.Output;
 import cc.alpgo.sdtool.domain.PackageCardRequestBody;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
+import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import org.neo4j.driver.Result;
 
 import java.util.Collection;
@@ -15,4 +16,6 @@ public interface INeo4jService {
     void createOutput(StableDiffusionOutput sdOutput) throws Exception;
     SearchResultData fetchPatternGraph();
     CardPackage packageCard(PackageCardRequestBody packageCardRequestBody);
+
+    void updatePattern(StableDiffusionPattern stableDiffusionPattern);
 }
