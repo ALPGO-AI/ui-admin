@@ -43,6 +43,17 @@ export default {
         edges: edges
       };
       var options = {
+        layout: {
+          hierarchical: {
+            direction: "UD",
+            treeSpacing: 100,
+            nodeSpacing: 50,
+            shakeTowards: "leaves",
+          },
+        },
+        edges: {
+          arrows: "to",
+        },
         nodes: {
           borderWidth: 0,
           borderWidthSelected: 1,
@@ -63,9 +74,6 @@ export default {
           shapeProperties: {
             useBorderWithImage: true,
           },
-        },
-        edges: {
-          color: "lightgray",
         },
       };
       var network = new vis.Network(container, data, options);
