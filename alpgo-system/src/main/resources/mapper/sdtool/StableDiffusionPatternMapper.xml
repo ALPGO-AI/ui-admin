@@ -33,7 +33,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="presetTemplate != null  and presetTemplate != ''"> and preset_template = #{presetTemplate}</if>
             <if test="patternStyle != null  and patternStyle != ''"> and pattern_style = #{patternStyle}</if>
         </where>
-        order by update_time desc
+        order by create_time desc
     </select>
 
     <select id="selectStableDiffusionPatternListByPatternIds" parameterType="map" resultMap="StableDiffusionPatternResult">

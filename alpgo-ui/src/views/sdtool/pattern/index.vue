@@ -65,11 +65,14 @@
         <el-card class="box-card" :body-style="{ padding: '0px' }">
           <image-preview :src="pattern.sampleImagePreviewUrl || ''" style="width: 100%"/>
           <div style="padding: 14px;">
-            <span>{{pattern.patternStyle}}</span>
-            <el-row>
+            <div class="flex space-between" style="padding-bottom: 7px;">
+              <span v-show="pattern.patternStyle">{{pattern.patternStyle}}</span>
+              <el-tag size="mini">{{pattern.model}}</el-tag>
+            </div>
+            <el-row style="padding-bottom: 7px;">
               <el-link @click="copyText(pattern.positivePrompt)" type="info"><label>提示词:</label> {{ formatPrompt(pattern.positivePrompt) }}</el-link>
             </el-row>
-            <el-row>
+            <el-row style="padding-bottom: 7px;">
               <el-link @click="copyText(pattern.negativePrompt)" type="info"><label>反向词:</label> {{ formatPrompt(pattern.negativePrompt) }}</el-link>
             </el-row>
             <div class="flex bottom space-between">
@@ -110,11 +113,9 @@
               :value="item.value">
             </el-option>
           </el-select>
+          <el-button @click="fetchModelVersions" icon="el-icon-refresh" size="mini" circle></el-button>
         </el-form-item>
         <el-form-item>
-          <template slot="label">
-            <el-button @click="fetchModelVersions" icon="el-icon-refresh" size="mini" circle></el-button>
-          </template>
           <el-form-item v-for="env in selectedWebUIList" :key="env.environmentId" :label="`${env.name}模型`">
             <el-select v-model="form.parameters.modelVersionMap[env.environmentId]" placeholder="请选择">
               <el-option
