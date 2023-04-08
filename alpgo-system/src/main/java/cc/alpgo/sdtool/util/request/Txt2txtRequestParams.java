@@ -541,15 +541,7 @@ public class Txt2txtRequestParams {
     public String toPreDictSwitchModel(String sessionHash, StableDiffusionEnv env){
         if (modelVersionMap != null) {
             String modelVersionMapValue = modelVersionMap.get(env.getEnvId().toString());
-            return "data\n" +
-                    ": \n" +
-                    "[\"" + modelVersionMapValue + "\"]\n" +
-                    "fn_index\n" +
-                    ": \n" +
-                    ""+env.getSwitchModelFnIndex()+"\n" +
-                    "session_hash\n" +
-                    ": \n" +
-                    "\""+sessionHash+"\"";
+            return "{\"fn_index\":"+env.getSwitchModelFnIndex()+",\"data\":[\""+modelVersionMapValue+"\"],\"session_hash\":\""+sessionHash+"\"}";
         }
         return null;
     }
