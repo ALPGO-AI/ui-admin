@@ -17,7 +17,7 @@
         </el-select>
       </el-form-item>
     </el-form>
-    <el-collapse v-model="activeName" accordion style="flex: 1;">
+    <el-collapse v-model="activeName" accordion style="flex: 1; min-width: 300px;">
       <el-collapse-item title="执行任务面板" name="task">
         <el-row :gutter="20">
           <el-col style="padding-bottom: 20px;" v-for="webui in taskList" :key="webui.envId" :title="webuiMap[webui.envId] && webuiMap[webui.envId].label" :xs="24" :sm="12" :md="12">
