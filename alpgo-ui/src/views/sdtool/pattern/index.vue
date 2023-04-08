@@ -67,10 +67,10 @@
           <div style="padding: 14px;">
             <span>{{pattern.patternStyle}}</span>
             <el-row>
-              <el-link @click="copyText(pattern.positivePrompt)" slot="reference" type="info">{{ formatPrompt(pattern.positivePrompt) }}</el-link>
+              <el-link @click="copyText(pattern.positivePrompt)" type="info"><label>提示词:</label> {{ formatPrompt(pattern.positivePrompt) }}</el-link>
             </el-row>
             <el-row>
-              <el-link @click="copyText(pattern.negativePrompt)" slot="reference" type="info">{{ formatPrompt(pattern.negativePrompt) }}</el-link>
+              <el-link @click="copyText(pattern.negativePrompt)" type="info"><label>反向词:</label> {{ formatPrompt(pattern.negativePrompt) }}</el-link>
             </el-row>
             <div class="flex bottom space-between">
               <time class="time">{{ pattern.updateTime }}</time>
