@@ -10,6 +10,7 @@ const state = {
   taskList: [],
   selectedWebUIList: [],
   modelVersionMapOptions: {},
+  taskBoardVisible: false,
 }
 
 const mutations = {
@@ -29,10 +30,16 @@ const mutations = {
   },
   SET_WEBUI_MODEL_OPTIONS: (state, modelVersionMapOptions) => {
     state.modelVersionMapOptions = modelVersionMapOptions;
-  }
+  },
+  SET_SHOW_TASK_BOARD: (state, taskBoardVisible) => {
+    state.taskBoardVisible = taskBoardVisible;
+  },
 }
 
 const actions = {
+  showTaskBoard({ dispatch, commit, state }) {
+    commit('SET_SHOW_TASK_BOARD', true);
+  },
   fetchEnvs({ dispatch, commit, state }, refresh) {
     listEnvironment({
       pageNum: 1,
@@ -83,6 +90,7 @@ const actions = {
         const taskList = [];
         Object.keys(taskMap).forEach(key => {
             taskList.push({
+                envId: key.split(":")[0],
                 envKey: key,
                 env: key.split(":")[2],
                 list: taskMap[key],

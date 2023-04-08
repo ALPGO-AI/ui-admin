@@ -19,58 +19,16 @@
                     :base-path="route.path"
                 />
             </el-menu>
-            <el-popover
-                style="position: absolute; bottom: 25px;"
-                placement="right"
-                width="800"
-                trigger="hover">
-                <el-table :data="taskList" style="min-height: 500px;" :default-expand-all="true">
-                    <el-table-column type="expand">
-                        <template slot-scope="props">
-                            <el-table
-                            :show-header="false"
-                            :data="props.row.list"
-                            style="width: 100%">
-                                <el-table-column
-                                    type="index"
-                                    width="50">
-                                </el-table-column>
-                                <el-table-column
-                                    prop="envName"
-                                    width="150"
-                                    label="环境">
-                                </el-table-column>
-                                <el-table-column
-                                    prop="taskName"
-                                    width="300"
-                                    label="任务">
-                                </el-table-column>
-                                <el-table-column
-                                    prop="createTime"
-                                    :formatter="(value) => {return formatterTime(value)}"
-                                    width="270"
-                                    label="创建时间">
-                                </el-table-column>
-                            </el-table>
-                        </template>
-                        </el-table-column>
-                    <el-table-column width="150" property="env" label="环境"></el-table-column>
-                    <el-table-column width="575" property="count" label="任务">
-                        <template slot-scope="scope">
-                            <el-button type="info" @click="removeEnvTasks(scope.row.envKey)">清空任务</el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-                <el-button
-                    :style="{
-                        border: 'none',
-                        background: settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground,
-                        color: settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor
-                    }"
-                    slot="reference">
-                    <i class="el-icon-notebook-2"></i>
-                </el-button>
-            </el-popover>
+            <el-button
+                @click="showTaskBoard"
+                :style="{
+                    border: 'none',
+                    background: settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground,
+                    color: settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor
+                }"
+                slot="reference">
+                <i class="el-icon-notebook-2"></i>
+            </el-button>
         </el-scrollbar>
     </div>
 </template>
@@ -90,6 +48,9 @@ export default {
         },
         formatterTime (value) {
             return formatDate(value.createTime)
+        },
+        showTaskBoard () {
+            this.$store.dispatch("task/showTaskBoard");
         }
     },
     computed: {

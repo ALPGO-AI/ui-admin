@@ -54,85 +54,53 @@
             active-color="#13ce66"
             inactive-color="#ff4949"
             active-text="图表显示"
-            inactive-text="表格显示"/>
+            inactive-text="列表显示"/>
       </el-col>
     </el-row>
 
     <neo4j-view :doubleClickNode="doubleClickNode" ref="neo4jView" v-show="showGraph" :nodes="nodes" :relations="relations"></neo4j-view>
-    <el-table v-show="!showGraph" v-loading="loading" :data="patternList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="id" align="center" prop="patternId" width="55" />
-      <el-table-column label="模型" align="center" prop="model" width="125">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.stable_diffusion_model" :value="scope.row.model" />
-        </template>
-      </el-table-column>
-
-      <el-table-column label="正向提示" align="center" prop="positivePrompt" >
-        <template slot-scope="scope">
-          <el-popover
-            placement="top-start"
-            title="正向提示"
-            width="300"
-            trigger="hover"
-            :content="scope.row.positivePrompt">
-            <el-link @click="copyText(scope.row.positivePrompt)" slot="reference" type="info">{{ formatPrompt(scope.row.positivePrompt) }}</el-link>
-          </el-popover>
-        </template>
-      </el-table-column>
-      <el-table-column label="负向提示" align="center" prop="negativePrompt" >
-        <template slot-scope="scope">
-          <el-popover
-            placement="top-start"
-            title="负向提示"
-            width="300"
-            trigger="hover"
-            :content="scope.row.negativePrompt">
-            <el-link @click="copyText(scope.row.negativePrompt)" slot="reference" type="info">{{ formatPrompt(scope.row.negativePrompt) }}</el-link>
-          </el-popover>
-        </template>
-      </el-table-column>
-      <el-table-column label="样例图片" align="center" prop="sampleImagePreviewUrl" width="150">
-        <template slot-scope="scope">
-          <image-preview :src="scope.row.sampleImagePreviewUrl || ''" :width="128" :height="128" />
-        </template>
-      </el-table-column>
-      <el-table-column label="预设模板" align="center" prop="presetTemplate" width="85">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.stable_diffusion_preset_template" :value="scope.row.presetTemplate"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="图生图初始图片" align="center" width="150">
-        <template slot-scope="scope">
-          <image-preview v-if="scope.row.presetTemplate === 'img2img'" :src="scope.row.parameters.init_images" :width="128" :height="128" />
-        </template>
-      </el-table-column>
-      <el-table-column label="ControlNet预处理" align="center" width="150">
-        <template slot-scope="scope">
-          <image-preview v-if="scope.row.parameters.controlnet.enable" :src="scope.row.parameters.controlnet.inputImage" :width="128" :height="128" />
-        </template>
-      </el-table-column>
-      <el-table-column label="pattern风格" align="center" prop="patternStyle" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
-        <template slot-scope="scope">
-          <el-button size="mini" type="text" icon="el-icon-cloud" @click="handleGenerate(scope.row)"
-            v-hasPermi="['sdtool:pattern:edit']">以此模板生成图片</el-button>
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleDuplicate(scope.row)"
-            v-hasPermi="['sdtool:pattern:edit']">复制</el-button>
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-            v-hasPermi="['sdtool:pattern:edit']">修改</el-button>
-          <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['sdtool:pattern:remove']">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    
+    <el-row  v-show="!showGraph" type="flex" :gutter="20" style="flex-wrap: wrap;">
+      <el-col style="padding-bottom: 20px;" v-for="pattern in patternList" :key="pattern.patternId" :xs="24" :sm="12" :md="6">
+        <el-card class="box-card" :body-style="{ padding: '0px' }">
+          <image-preview :src="pattern.sampleImagePreviewUrl || ''" style="width: 100%"/>
+          <div style="padding: 14px;">
+            <span>{{pattern.patternStyle}}</span>
+            <el-row>
+              <el-link @click="copyText(pattern.positivePrompt)" slot="reference" type="info">{{ formatPrompt(pattern.positivePrompt) }}</el-link>
+            </el-row>
+            <el-row>
+              <el-link @click="copyText(pattern.negativePrompt)" slot="reference" type="info">{{ formatPrompt(pattern.negativePrompt) }}</el-link>
+            </el-row>
+            <div class="flex bottom space-between">
+              <time class="time">{{ pattern.updateTime }}</time>
+              <el-dropdown trigger="click" @command="(command) => handleDropdownMenuClicked(command, pattern)">
+                <el-link class="el-dropdown-link">
+                  操作按钮<i class="el-icon-arrow-down el-icon--right"></i>
+                </el-link>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="handleGenerate"
+                    v-hasPermi="['sdtool:pattern:edit']">以此模板生成图片</el-dropdown-item>
+                  <el-dropdown-item command="handleDuplicate"
+                    v-hasPermi="['sdtool:pattern:edit']">复制</el-dropdown-item>
+                  <el-dropdown-item command="handleUpdate"
+                    v-hasPermi="['sdtool:pattern:edit']">修改</el-dropdown-item>
+                  <el-dropdown-item command="handleDelete"
+                    v-hasPermi="['sdtool:pattern:remove']">删除</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
 
     <pagination v-show="total > 0 && !showGraph" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
 
     <!-- 添加或修改Stable Diffusion 风格模板对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="1000px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="180px">
+    <el-dialog :title="title" :visible.sync="open" width="90%" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules">
         <el-form-item label="模型">
           <el-select v-model="form.model" placeholder="请选择">
             <el-option
@@ -260,12 +228,12 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="生成图片" :visible.sync="generateFormVisible">
+    <el-dialog title="生成图片" width="90%" :visible.sync="generateFormVisible">
       <el-form v-if="generateForm.parameters" ref="generateForm" :model="generateForm">
-        <el-form-item label="出图数量" :label-width="formLabelWidth">
+        <el-form-item label="出图数量">
           <el-input-number v-model="generateForm.parameters.batch_size" :precision="0" :step="1" :max="8" />
         </el-form-item>
-        <el-form-item label="重复次数" :label-width="formLabelWidth">
+        <el-form-item label="重复次数">
           <el-input-number v-model="generateForm.parameters.n_iter" :precision="0" :step="1" :max="20" />
         </el-form-item>
       </el-form>
@@ -274,15 +242,15 @@
         <el-button type="primary" @click="confirmGenerate()">确 定</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="生成图包" :visible.sync="cardPackageFormVisible">
+    <el-dialog title="生成图包" width="90%" :visible.sync="cardPackageFormVisible">
       <el-form ref="cardPackageForm" :model="cardPackageForm">
-        <el-form-item label="图包名称" :label-width="formLabelWidth">
+        <el-form-item label="图包名称">
           <el-input v-model="cardPackageForm.name"/>
         </el-form-item>
-        <el-form-item label="图包类型" :label-width="formLabelWidth">
+        <el-form-item label="图包类型">
           <el-input v-model="cardPackageForm.type" />
         </el-form-item>
-        <el-form-item label="图包稀有度" :label-width="formLabelWidth">
+        <el-form-item label="图包稀有度">
           <el-rate
             v-model="cardPackageForm.rarity"
             :colors="['#99A9BF', '#F7BA2A', '#FF9900']">
@@ -413,7 +381,6 @@ export default {
       relations: [],
       showGraph: false,
       generateFormVisible: false,
-      formLabelWidth: '120px',
       generateForm: {},
       copyValue: "",
       formatPrompt,
@@ -487,6 +454,9 @@ export default {
     })
   },
   methods: {
+    handleDropdownMenuClicked (method, row) {
+      this[method](row);
+    },
     cancelPackage () {
       this.cardPackageFormVisible = false;
       this.cardPackageForm = {};
@@ -517,12 +487,23 @@ export default {
           }
         }
         if (node.shape === 'box') {
-          this.cardPackageFormVisible = true;
-          this.cardPackageForm = {
-            outputIds: getEnds(edges, nodeMap),
-            name: node.label,
-            type: node.properties.model.val,
-          };
+          if (edges.length > 0) {
+            this.cardPackageFormVisible = true;
+            this.cardPackageForm = {
+              outputIds: getEnds(edges, nodeMap),
+              name: node.label,
+              type: node.properties.model.val,
+            }
+          } else {
+            const patternId = node.properties.patternId.val;
+            getPattern([patternId]).then(response => {
+              const row = {
+                ...response.data,
+                parameters: getParameters(response.data.parametersJson)
+              };
+              this.handleGenerate(row);
+            });
+          }
         }
       }
     },

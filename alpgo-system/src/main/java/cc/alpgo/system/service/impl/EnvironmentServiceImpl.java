@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import cc.alpgo.system.domain.EnvironmentParameters;
 import cc.alpgo.system.mapper.EnvironmentMapper;
 import cc.alpgo.system.domain.Environment;
+import org.springframework.util.CollectionUtils;
 
 import static cc.alpgo.sdtool.constant.ApiContants.ACTIVE_TENCENT_COS;
 import static cc.alpgo.sdtool.constant.ApiContants.ACTIVE_WEBUI_ENVS;
@@ -146,6 +147,9 @@ public class EnvironmentServiceImpl implements IEnvironmentService
 
     @Override
     public List<Environment> selectEnvironmentListByEnvironmentIds(List<Long> envIds) {
+        if (CollectionUtils.isEmpty(envIds)) {
+            return new ArrayList<>();
+        }
         return environmentMapper.selectEnvironmentListByEnvironmentIds(envIds);
     }
 

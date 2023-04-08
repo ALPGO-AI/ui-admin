@@ -189,3 +189,10 @@ aside {
 .multiselect--active {
   z-index: 1000 !important;
 }
+
+.flex {
+  display: flex;
+}
+.space-between {
+  justify-content: space-between;
+}
