@@ -66,6 +66,14 @@ const actions = {
           });
           break;
       }
+      if (!refreshModel.type) {
+        listWebUIControlNetModelOptions(refreshModel.refresh).then(response => {
+          commit('SET_WEBUI_CONTROL_NET_MODEL_OPTIONS', response.data);
+        });
+        listWebUIModelOptions(refreshModel.refresh).then(response => {
+          commit('SET_WEBUI_MODEL_OPTIONS', response.data);
+        });
+      }
     });
   },
   removeEnvTasks({ dispatch, commit }, envKey) {

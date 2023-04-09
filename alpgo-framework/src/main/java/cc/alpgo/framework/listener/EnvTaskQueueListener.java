@@ -4,13 +4,16 @@ import cc.alpgo.common.core.redis.RedisCache;
 import cc.alpgo.common.event.StartEnvApplicationEvent;
 import cc.alpgo.common.event.UpdateEnvExecutionStatusEvent;
 import cc.alpgo.common.enums.EnvTaskExecutionStatus;
+import cc.alpgo.framework.config.StaticScheduleTask;
 import cc.alpgo.framework.websocket.WebSocketUsers;
-import cc.alpgo.quartz.event.EnvTaskCheckEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -20,28 +23,34 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Component
 @EnableAsync
 public class EnvTaskQueueListener implements ApplicationListener<ApplicationEvent> {
+    private static final Logger log = LoggerFactory.getLogger(EnvTaskQueueListener.class);
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
     private RedisCache redisCache;
+
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof EnvTaskCheckEvent) {
-            for (String key : environmentTaskQueues.keySet()) {
-                if (hasNextTaskFromEnvironmentQueue(key)) {
-                    if (EnvTaskExecutionStatus.canRunNewTask(
-                            redisCache.getCacheEnvironmentExecutionStatusMapValue(key)
-                    )) {
-                        applicationContext.publishEvent(getNextTaskFromEnvironmentQueue(key).getEvent());
-                    }
-                }
-            }
-        }
         if (event instanceof UpdateEnvExecutionStatusEvent) {
             redisCache.setCacheEnvironmentExecutionStatusMapValue(((UpdateEnvExecutionStatusEvent) event).getKey(), ((UpdateEnvExecutionStatusEvent) event).getStatus());
             updateTaskList();
         }
     }
+
+    public void scheduled() {
+        for (String key : environmentTaskQueues.keySet()) {
+            if (hasNextTaskFromEnvironmentQueue(key)) {
+                if (EnvTaskExecutionStatus.canRunNewTask(
+                        redisCache.getCacheEnvironmentExecutionStatusMapValue(key)
+                )) {
+                    ApplicationEvent event = getNextTaskFromEnvironmentQueue(key).getEvent();
+                    log.info("开始执行api任务: {}", event);
+                    applicationContext.publishEvent(event);
+                }
+            }
+        }
+    }
+
 
     Map<String, ConcurrentLinkedQueue<StartEnvApplicationEvent>> environmentTaskQueues = new ConcurrentHashMap<>();
 

@@ -1,0 +1,1 @@
+delete from sys_job where job_id = 4;
