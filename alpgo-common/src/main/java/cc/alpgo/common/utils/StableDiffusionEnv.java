@@ -18,7 +18,9 @@ public class StableDiffusionEnv {
     private String envName;
 
     private Boolean isUltimateUpscalePluginInstalled;
-    public StableDiffusionEnv(String envName, Long environmentId, String domain, String username, String password, Integer txt2imgFnIndex, Integer img2imgFnIndex, Integer txt2imgControlNetFnIndex, Integer img2imgControlNetFnIndex, Boolean isLoraPluginInstalled, Integer switchModelFnIndex, Boolean isUltimateUpscalePluginInstalled) {
+    private Integer fetchControlNetModelFnIndex;
+
+    public StableDiffusionEnv(String envName, Long environmentId, String domain, String username, String password, Integer txt2imgFnIndex, Integer img2imgFnIndex, Integer txt2imgControlNetFnIndex, Integer img2imgControlNetFnIndex, Boolean isLoraPluginInstalled, Integer switchModelFnIndex, Boolean isUltimateUpscalePluginInstalled, Integer fetchControlNetModelFnIndex) {
         this.envName = envName;
         this.envId = environmentId;
         this.domain = domain;
@@ -31,6 +33,7 @@ public class StableDiffusionEnv {
         this.isLoraPluginInstalled = isLoraPluginInstalled;
         this.switchModelFnIndex = switchModelFnIndex;
         this.isUltimateUpscalePluginInstalled = isUltimateUpscalePluginInstalled;
+        this.fetchControlNetModelFnIndex = fetchControlNetModelFnIndex;
     }
 
     public Boolean getUltimateUpscalePluginInstalled() {
@@ -83,5 +86,13 @@ public class StableDiffusionEnv {
 
     public String getEnvKey() {
         return this.getEnvId() + ":WebUI:" + this.getEnvName();
+    }
+
+    public Integer getFetchControlNetModelFnIndex() {
+        return fetchControlNetModelFnIndex;
+    }
+
+    public void setFetchControlNetModelFnIndex(Integer fetchControlNetModelFnIndex) {
+        this.fetchControlNetModelFnIndex = fetchControlNetModelFnIndex;
     }
 }

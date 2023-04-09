@@ -279,6 +279,7 @@ export default {
           this.addEnvParam('switchModelFnIndex', 'int', 'WebUI 切换model的fn_index');
           this.addEnvParam('isLoraPluginInstalled', 'boolean', 'WebUI 是否已安装lora插件');
           this.addEnvParam('isUltimateUpscalePluginInstalled', 'boolean', 'WebUI 是否已安装UltimateUpscale插件');
+          this.addEnvParam('fetchControlNetModelFnIndex', 'int', 'WebUI 获取controlnet model的fn_index');
           break;
       }
     },

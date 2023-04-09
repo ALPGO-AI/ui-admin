@@ -16,6 +16,14 @@ export function listWebUIModelOptions(refresh = false) {
     data: {refresh: refresh}
   })
 }
+
+export function listWebUIControlNetModelOptions(refresh = false) {
+  return request({
+    url: '/system/environment/webuiControlNetModelOptions',
+    method: 'post',
+    data: {refresh: refresh}
+  })
+}
 // 查询environments详细
 export function getEnvironment(environmentId) {
   return request({

@@ -118,7 +118,8 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                 Integer.parseInt(map.get("img2imgControlNetFnIndex")),
                 Boolean.valueOf(map.get("isLoraPluginInstalled")),
                 Integer.parseInt(map.get("switchModelFnIndex")),
-                Boolean.valueOf(map.get("isUltimateUpscalePluginInstalled"))
+                Boolean.valueOf(map.get("isUltimateUpscalePluginInstalled")),
+                Integer.parseInt(map.get("fetchControlNetModelFnIndex"))
         );
     }
     /**
@@ -227,7 +228,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
         }
         Map<String, List<String>> result = new HashMap<>();
         for (StableDiffusionEnv activeEnv : activeEnvs) {
-            StableDiffusionApiResponse res = stableDiffusionApiUtil.apiPredict(activeEnv, new ModelListRequestParams(activeEnv).toPreDict());
+            StableDiffusionApiResponse res = stableDiffusionApiUtil.apiPredict(activeEnv, new ModelListRequestParams(activeEnv).toModelsPreDict());
             for (Object datum : res.getData()) {
                 if (datum instanceof LinkedTreeMap) {
                     Map datumMap = (LinkedTreeMap) datum;
@@ -236,6 +237,39 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                         ArrayList choicesList = (ArrayList) choices;
                         result.put(activeEnv.getEnvId().toString(), choicesList);
                         redisCache.setCacheList("webuiModelOptions"+activeEnv.getEnvId().toString(), choicesList);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, List<String>> webuiControlNetModelOptions(Map<String, String> headerMap, Boolean refresh) throws Exception {
+        List<StableDiffusionEnv> activeEnvs = getActiveEnvs(headerMap);
+        if (!refresh) {
+            Map<String, List<String>> webuiModelOptions = new HashMap<>();
+            for (StableDiffusionEnv activeEnv : activeEnvs) {
+                webuiModelOptions.put(activeEnv.getEnvId().toString(), redisCache.getCacheList("webuiControlNetModelOptions"+activeEnv.getEnvId().toString()));
+            }
+            if (webuiModelOptions != null) {
+                return webuiModelOptions;
+            }
+        }
+        Map<String, List<String>> result = new HashMap<>();
+        for (StableDiffusionEnv activeEnv : activeEnvs) {
+            if (activeEnv.getFetchControlNetModelFnIndex() == null) {
+                continue;
+            }
+            StableDiffusionApiResponse res = stableDiffusionApiUtil.apiPredict(activeEnv, new ModelListRequestParams(activeEnv).toControlNetModelPreDict());
+            for (Object datum : res.getData()) {
+                if (datum instanceof LinkedTreeMap) {
+                    Map datumMap = (LinkedTreeMap) datum;
+                    Object choices = datumMap.get("choices");
+                    if (choices instanceof List) {
+                        ArrayList choicesList = (ArrayList) choices;
+                        result.put(activeEnv.getEnvId().toString(), choicesList);
+                        redisCache.setCacheList("webuiControlNetModelOptions"+activeEnv.getEnvId().toString(), choicesList);
                     }
                 }
             }

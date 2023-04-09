@@ -113,7 +113,7 @@
               :value="item.value">
             </el-option>
           </el-select>
-          <el-button @click="fetchModelVersions" icon="el-icon-refresh" size="mini" circle></el-button>
+          <el-button @click="fetchModelVersions('model')" icon="el-icon-refresh" size="mini" circle></el-button>
         </el-form-item>
         <el-form-item>
           <el-form-item v-for="env in selectedWebUIList" :key="env.environmentId" :label="`${env.name}模型`">
@@ -204,14 +204,17 @@
             </el-select>
           </el-form-item>
           <el-form-item label="ControlNet模型">
-            <el-select v-model="form.parameters.controlnet.model" placeholder="请选择">
-              <el-option
-                v-for="item in controlNetModels"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
+            <el-button @click="fetchModelVersions('controlNetModel')" icon="el-icon-refresh" size="mini" circle></el-button>
+            <el-form-item v-for="env in selectedWebUIList" :key="env.environmentId" :label="`${env.name}模型`">
+              <el-select v-model="form.parameters.controlnet.model" placeholder="请选择">
+                <el-option
+                  v-for="item in controlNetModelVersionMapOptions[env.environmentId]"
+                  :key="item"
+                  :label="item"
+                  :value="item">
+                </el-option>
+              </el-select>
+            </el-form-item>
           </el-form-item>
           <el-form-item label="反色模式">
             <el-switch v-model="form.parameters.controlnet.invertImage"
@@ -508,8 +511,8 @@ export default {
         }
       }
     },
-    fetchModelVersions () {
-      this.$store.dispatch('task/fetchEnvs', true);
+    fetchModelVersions (type) {
+      this.$store.dispatch('task/fetchEnvs', {refresh: true, type});
     },
     cancelGenerate() {
       this.generateFormVisible = false;
@@ -754,7 +757,8 @@ export default {
   computed: {
     ...mapState({
       selectedWebUIList: state => state.task.selectedWebUIList,
-      modelVersionMapOptions: state => state.task.modelVersionMapOptions
+      modelVersionMapOptions: state => state.task.modelVersionMapOptions,
+      controlNetModelVersionMapOptions: state => state.task.controlNetModelVersionMapOptions
     })
   }
 };

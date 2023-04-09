@@ -46,6 +46,12 @@ public class EnvironmentController extends BaseController
         Map<String, List<String>> map = environmentService.webuiModelOptions(getHeaderMap(), refresh.getRefresh());
         return AjaxResult.success(map);
     }
+    @PreAuthorize("@ss.hasPermi('system:environment:list')")
+    @PostMapping("/webuiControlNetModelOptions")
+    public AjaxResult webuiControlNetModelOptions(@RequestBody WebUIModelOptionsRequestBody refresh) throws Exception {
+        Map<String, List<String>> map = environmentService.webuiControlNetModelOptions(getHeaderMap(), refresh.getRefresh());
+        return AjaxResult.success(map);
+    }
     /**
      * 查询environments列表
      */

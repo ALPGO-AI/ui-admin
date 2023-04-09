@@ -2,7 +2,7 @@ import axios from 'axios'
 import { getToken } from '@/utils/auth'
 import cache from '@/plugins/cache'
 import { listEnvironment } from "@/api/system/environment";
-import { listWebUIModelOptions } from "@/api/system/environment";
+import { listWebUIModelOptions, listWebUIControlNetModelOptions } from "@/api/system/environment";
 
 const baseURL = process.env.VUE_APP_BASE_API
 
@@ -10,6 +10,7 @@ const state = {
   taskList: [],
   selectedWebUIList: [],
   modelVersionMapOptions: {},
+  controlNetModelVersionMapOptions: {},
   taskBoardVisible: false,
 }
 
@@ -31,6 +32,9 @@ const mutations = {
   SET_WEBUI_MODEL_OPTIONS: (state, modelVersionMapOptions) => {
     state.modelVersionMapOptions = modelVersionMapOptions;
   },
+  SET_WEBUI_CONTROL_NET_MODEL_OPTIONS: (state, controlNetModelVersionMapOptions) => {
+    state.controlNetModelVersionMapOptions = controlNetModelVersionMapOptions;
+  },
   SET_SHOW_TASK_BOARD: (state, taskBoardVisible) => {
     state.taskBoardVisible = taskBoardVisible;
   },
@@ -40,7 +44,7 @@ const actions = {
   showTaskBoard({ dispatch, commit, state }) {
     commit('SET_SHOW_TASK_BOARD', true);
   },
-  fetchEnvs({ dispatch, commit, state }, refresh) {
+  fetchEnvs({ dispatch, commit, state }, refreshModel) {
     listEnvironment({
       pageNum: 1,
       pageSize: 100,
@@ -50,9 +54,18 @@ const actions = {
       accessLevel: null,
     }).then(response => {
       commit('SET_ENV_LIST', response.rows);
-      listWebUIModelOptions(refresh).then(response => {
-        commit('SET_WEBUI_MODEL_OPTIONS', response.data);
-      });
+      switch(refreshModel.type) {
+        case 'model':
+          listWebUIModelOptions(refreshModel.refresh).then(response => {
+            commit('SET_WEBUI_MODEL_OPTIONS', response.data);
+          });
+          break;
+        case 'controlNetModel':
+          listWebUIControlNetModelOptions(refreshModel.refresh).then(response => {
+            commit('SET_WEBUI_CONTROL_NET_MODEL_OPTIONS', response.data);
+          });
+          break;
+      }
     });
   },
   removeEnvTasks({ dispatch, commit }, envKey) {
