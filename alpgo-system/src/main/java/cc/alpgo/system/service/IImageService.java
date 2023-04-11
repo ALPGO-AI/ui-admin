@@ -64,4 +64,6 @@ public interface IImageService
 
     Map<Long, String> selectUrls(List<Long> imageIds, List<CosConfig> cosConfigs);
     Map<Long, String> selectUrls(List<Long> imageIds, CosConfig cosConfigs);
+
+    Map<Long, String> selectUrlsRandom(int count, List<CosConfig> activeConfigs);
 }

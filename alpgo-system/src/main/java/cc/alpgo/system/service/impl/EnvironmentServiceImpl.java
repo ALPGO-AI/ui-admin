@@ -65,7 +65,13 @@ public class EnvironmentServiceImpl implements IEnvironmentService
         List<Environment> environments = selectEnvironmentListByEnvironmentIds(envIds);
         return convertToCosConfigs(environments);
     }
-
+    @Override
+    public List<CosConfig> getActiveConfigs(Long envId) {
+        List<Long> envIds = new ArrayList<>();
+        envIds.add(envId);
+        List<Environment> environments = selectEnvironmentListByEnvironmentIds(envIds);
+        return convertToCosConfigs(environments);
+    }
     private List<CosConfig> convertToCosConfigs(List<Environment> environments) {
         if (isEmpty(environments)) {
             return new ArrayList<>();

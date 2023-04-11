@@ -16,6 +16,7 @@ import cc.alpgo.system.domain.Environment;
 public interface IEnvironmentService 
 {
     List<CosConfig> getActiveConfigs(Map<String, String> params);
+    List<CosConfig> getActiveConfigs(Long envId);
 
     List<StableDiffusionEnv> getActiveEnvs(Map<String, String> params);
 

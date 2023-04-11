@@ -90,4 +90,6 @@ public interface ImageMapper
      */
     public int deleteImageProviderByImageId(Long imageId);
     List<ImageIdUrlVO> selectImageUrlsByImageIdsAndEnvId(@Param("imageIds") List<Long> imageIds,@Param("envId") Long envId);
+
+    List<ImageIdUrlVO> selectImageUrlsRandomCountAndEnvId(@Param("imageCount") int count, @Param("envId") Long envId);
 }

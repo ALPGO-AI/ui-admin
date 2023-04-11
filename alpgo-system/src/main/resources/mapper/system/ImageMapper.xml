@@ -121,4 +121,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
+    <select id="selectImageUrlsRandomCountAndEnvId" resultMap="ImageIdUrlVOResult">
+        select image_id, url from image_provider
+        <where>
+            env_id = #{envId}
+        </where>
+        ORDER BY RAND () LIMIT #{imageCount};
+    </select>
 </mapper>

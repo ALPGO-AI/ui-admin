@@ -7,6 +7,7 @@ import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.DateUtils;
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.system.domain.vo.ImageIdUrlVO;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -128,6 +129,16 @@ public class ImageServiceImpl implements IImageService
     @Override
     public Map<Long, String> selectUrls(List<Long> imageIds, CosConfig cosConfig) {
         List<ImageIdUrlVO> list = imageMapper.selectImageUrlsByImageIdsAndEnvId(imageIds, cosConfig.getEnvId());
+        return list.stream().collect(Collectors.toMap(item -> item.getImageId(), item -> item.getUrl()));
+    }
+
+    @Override
+    public Map<Long, String> selectUrlsRandom(int count, List<CosConfig> activeConfigs) {
+        if (CollectionUtils.isEmpty(activeConfigs)) {
+            return new HashMap<>();
+        }
+        CosConfig cosConfig = activeConfigs.get(0);
+        List<ImageIdUrlVO> list = imageMapper.selectImageUrlsRandomCountAndEnvId(1, cosConfig.getEnvId());
         return list.stream().collect(Collectors.toMap(item -> item.getImageId(), item -> item.getUrl()));
     }
 
