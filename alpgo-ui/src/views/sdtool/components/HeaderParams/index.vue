@@ -59,7 +59,7 @@ export default {
     };
   },
   created() {
-    this.$store.dispatch('task/fetchEnvs');
+    this.$store.dispatch('task/fetchEnvs', { refresh: false, type: 'all'});
   },
   mounted() {
     this.headerParams = this.$cache.local.getJSON("headerParams") || {};
@@ -97,7 +97,7 @@ export default {
       this.$store.dispatch("task/removeEnvTasks", env);
     },
     saveToLocal () {
-      this.$store.dispatch('task/fetchEnvs');
+      this.$store.dispatch('task/fetchEnvs', { refresh: false, type: 'all'});
       this.$cache.local.setJSON("headerParams", this.headerParams);
     }
   },
