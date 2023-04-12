@@ -69,9 +69,9 @@ public class StableDiffusionApiUtil {
         String url = domain + "/login";
         url = url.replace("//login", "/login");
         OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.MINUTES)
-                .readTimeout(2, TimeUnit.MINUTES)
-                .writeTimeout(2, TimeUnit.MINUTES)
+                .connectTimeout(10, TimeUnit.MINUTES)
+                .readTimeout(5, TimeUnit.MINUTES)
+                .writeTimeout(5, TimeUnit.MINUTES)
                 .cookieJar(new CookieJar() {
                     @Override
                     public void saveFromResponse(HttpUrl httpUrl, List<Cookie> list) {

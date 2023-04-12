@@ -242,6 +242,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                     if (choices instanceof List) {
                         ArrayList choicesList = (ArrayList) choices;
                         result.put(activeEnv.getEnvId().toString(), choicesList);
+                        redisCache.deleteObject("webuiModelOptions"+activeEnv.getEnvId().toString());
                         redisCache.setCacheList("webuiModelOptions"+activeEnv.getEnvId().toString(), choicesList);
                     }
                 }
@@ -275,6 +276,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                     if (choices instanceof List) {
                         ArrayList choicesList = (ArrayList) choices;
                         result.put(activeEnv.getEnvId().toString(), choicesList);
+                        redisCache.deleteObject("webuiControlNetModelOptions"+activeEnv.getEnvId().toString());
                         redisCache.setCacheList("webuiControlNetModelOptions"+activeEnv.getEnvId().toString(), choicesList);
                     }
                 }

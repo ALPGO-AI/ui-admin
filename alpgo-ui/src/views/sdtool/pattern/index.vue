@@ -60,7 +60,7 @@
 
     <neo4j-view :doubleClickNode="doubleClickNode" ref="neo4jView" v-show="showGraph" :nodes="nodes" :relations="relations"></neo4j-view>
     
-    <el-row  v-show="!showGraph" type="flex" :gutter="20" style="flex-wrap: wrap;">
+    <el-row  v-show="!showGraph" :gutter="20">
       <el-col style="padding-bottom: 20px;" v-for="pattern in patternList" :key="pattern.patternId" :xs="24" :sm="12" :md="6">
         <el-card class="box-card" :body-style="{ padding: '0px' }">
           <image-preview :src="pattern.sampleImagePreviewUrl || ''" style="width: 100%"/>
