@@ -40,6 +40,7 @@ import DictData from '@/components/DictData'
 import Gallery from "@/components/Gallery"
 import Neo4jView from "@/components/Neo4jView"
 import JsonViewer from 'vue-json-viewer'
+import JsonEditor from '@/components/JsonEditor'
 Vue.use(JsonViewer)
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
@@ -62,6 +63,7 @@ Vue.component('ImageUpload', ImageUpload)
 Vue.component('ImagePreview', ImagePreview)
 Vue.component('Gallery', Gallery)
 Vue.component('Neo4jView', Neo4jView)
+Vue.component('JsonEditor', JsonEditor)
 
 Vue.use(directive)
 Vue.use(plugins)

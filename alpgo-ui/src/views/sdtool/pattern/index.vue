@@ -70,6 +70,9 @@
               <el-tag size="mini">{{pattern.model}}</el-tag>
             </div>
             <el-row style="padding-bottom: 7px;">
+              <dict-tag :options="dict.type.stable_diffusion_preset_template" :value="pattern.presetTemplate"/>
+            </el-row>
+            <el-row style="padding-bottom: 7px;">
               <el-link @click="copyText(pattern.positivePrompt)" type="info"><label>提示词:</label> {{ formatPrompt(pattern.positivePrompt) }}</el-link>
             </el-row>
             <el-row style="padding-bottom: 7px;">
@@ -149,6 +152,35 @@
         <el-form-item v-show="form.presetTemplate === 'img2img'">
           <el-form-item label="图生图初始图片">
             <image-upload :limit="1" v-model="form.parameters.init_images"/>
+          </el-form-item>
+        </el-form-item>
+        <el-form-item v-show="form.presetTemplate === 'customerRequest'">
+          <el-form-item label="自定义请求">
+            <el-row :gutter="10" class="mb8">
+              <el-col :span="1.5">
+                <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddCustomerRequest">添加</el-button>
+              </el-col>
+            </el-row>
+            <el-collapse v-model="activeCustomerRequestIndex" accordion>
+              <el-collapse-item v-for="(requestItem, index) in form.parameters.customer_requests" :key="index" :name="index">
+                <template slot="title">
+                  <el-row type="flex" justify="space-between" :gutter="10" class="mb8" style="width: 100%;">
+                    <el-col :span="8">
+                      {{ `请求体 ${index + 1}  `}}
+                    </el-col>
+                    <el-col :span="8">
+                      <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteCustomerRequest">删除</el-button>
+                    </el-col>
+                  </el-row>
+                </template>
+                <el-row :gutter="10" class="mb8">
+                  <el-col :span="6.5">
+                    <el-input type="text" v-model="requestItem.requestName" placeholder="请输入请求脚本名称" />
+                  </el-col>
+                </el-row>
+                <json-editor :content="requestItem.requestBody" v-model="requestItem.requestBody"/>
+              </el-collapse-item>
+            </el-collapse>
           </el-form-item>
         </el-form-item>
         <el-form-item label="pattern风格" prop="patternStyle">
@@ -318,6 +350,9 @@ const formatOutputNodes = (nodes) => {
 const formatRelations = (relations) => {
   return relations.map((relation) => {
     const r = relation.r;
+    if (!r) {
+      return {};
+    }
     const properties = r.properties;
     return {
       id: r.start + "_" + r.end,
@@ -336,6 +371,7 @@ const initParams = {
   height: 512,
   width: 512,
   init_images: [],
+  customer_requests: [],
   denoising_strength: 0.6,
   seed: '-1',
   batch_size: 1,
@@ -378,6 +414,7 @@ export default {
   },
   data() {
     return {
+      activeCustomerRequestIndex: '',
       patterns: [],
       outputs: [],
       nodeMap: {},
@@ -458,6 +495,19 @@ export default {
     })
   },
   methods: {
+    handleAddCustomerRequest() {
+      let obj = {};
+      obj.requestName = "";
+      obj.requestBody = "";
+      this.form.parameters.customer_requests.push(obj);
+    },
+    /** environment_parameters删除按钮操作 */
+    handleDeleteCustomerRequest(index) {
+      const removeElemet = (arr, index) => {
+        arr.splice(index, 1);
+      };
+      removeElemet(this.form.parameters.customer_requests, index);
+    },
     handleDropdownMenuClicked (method, row) {
       this[method](row);
     },

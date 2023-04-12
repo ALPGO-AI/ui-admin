@@ -93,11 +93,13 @@ public class Txt2txtRequestParams {
     private String controlnet_model;
     // modelVersionMap
     private Map<String, String> modelVersionMap;
+    private String session_hash;
     /**
      * Constructor for StableDiffusionApiParamsBuilder.
      */
-    public Txt2txtRequestParams(String positiveprompt, String negativeprompt,
+    public Txt2txtRequestParams(String session_hash, String positiveprompt, String negativeprompt,
                                 Map<String, Object> map) {
+        this.session_hash = session_hash;
         this.modelVersionMap = (LinkedHashMap) map.getOrDefault("modelVersionMap", new LinkedHashMap<>());
         this.sampler_index = (String) map.getOrDefault("sampler", "Euler a");
         this.script_name = null;
@@ -177,26 +179,28 @@ public class Txt2txtRequestParams {
         return false;
     }
 
-    public Txt2txtRequestParams(String positivePrompt,
+    public Txt2txtRequestParams(String sessionHash, String positivePrompt,
                                 String negativePrompt,
                                 Map<String, Object> parametersJsonMap,
                                 String image,
                                 String module,
                                 String model) {
-        this(positivePrompt, negativePrompt, parametersJsonMap);
+        this(sessionHash, positivePrompt, negativePrompt, parametersJsonMap);
+        this.session_hash = sessionHash;
         this.controlnet_input_image = image;
         this.controlnet_module = module;
         this.controlnet_model = model;
     }
 
-    public String toPreDict(String sessionHash, StableDiffusionEnv env) {
+    public String toPreDict(StableDiffusionEnv env) {
+        String sessionHash = this.session_hash;
         Integer fn_index = convertToInteger(env.getTxt2imgFnIndex());
         Boolean loraPluginInstalled = convertToBoolean(env.getLoraPluginInstalled());
         String keyUuid = UUID.randomUUID().toString();
         Map<String, Object> params = new HashMap<>();
         params.put("fn_index", fn_index);
         List<Object> data = new ArrayList<>();
-        data.add("task("+keyUuid+")");
+        data.add("task("+sessionHash+")");
         data.add(this.prompt);
         data.add(this.negative_prompt);
         data.add(new ArrayList<>());
@@ -317,7 +321,8 @@ public class Txt2txtRequestParams {
         return new Gson().toJson(params);
     }
 
-    public String toPreDictForImg2img(String sessionHash, String initImage, StableDiffusionEnv env) {
+    public String toPreDictForImg2img(String initImage, StableDiffusionEnv env) {
+        String sessionHash = this.session_hash;
         Integer fn_index = convertToInteger(env.getImg2imgFnIndex());
         Boolean loraPluginInstalled = convertToBoolean(env.getLoraPluginInstalled());
         Boolean isUltimateUpscalePluginInstalled = convertToBoolean(env.getUltimateUpscalePluginInstalled());
@@ -480,10 +485,11 @@ public class Txt2txtRequestParams {
         return result;
     }
 
-    public String toPreDictForControlNet(String sessionHash, StableDiffusionEnv env, ControlNetRequestBody controlNetRequestBody) {
-        return toPreDictForControlNet(sessionHash, env, false, controlNetRequestBody);
+    public String toPreDictForControlNet(StableDiffusionEnv env, ControlNetRequestBody controlNetRequestBody) {
+        return toPreDictForControlNet(env, false, controlNetRequestBody);
     }
-    public String toPreDictForControlNet(String sessionHash, StableDiffusionEnv env, boolean isImg2img, ControlNetRequestBody requestBody) {
+    public String toPreDictForControlNet(StableDiffusionEnv env, boolean isImg2img, ControlNetRequestBody requestBody) {
+        String sessionHash = this.session_hash;
         Integer fn_index = convertToInteger(env.getTxt2imgControlNetFnIndex());
         if (isImg2img) {
             fn_index = convertToInteger(env.getImg2imgControlNetFnIndex());
@@ -544,5 +550,34 @@ public class Txt2txtRequestParams {
             return "{\"fn_index\":"+env.getSwitchModelFnIndex()+",\"data\":[\""+modelVersionMapValue+"\"],\"session_hash\":\""+sessionHash+"\"}";
         }
         return null;
+    }
+
+    /**
+     * @param sdEnv
+     * @param content
+     * @return
+     */
+    public String toPreDictUpdateString(StableDiffusionEnv sdEnv, String content) {
+        Map<String, Object> replaceMap = getReplaceMap();
+        Set<Map.Entry<String, Object>> entries = replaceMap.entrySet();
+        for (Map.Entry<String, Object> entry : entries) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            content = content.replaceAll(key, value.toString());
+        }
+        return content;
+    }
+
+    private Map<String, Object> getReplaceMap() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("`session_hash`", session_hash);
+        result.put("`prompt`", prompt);
+        result.put("`negative_prompt`", negative_prompt);
+        result.put("\"`steps`\"", steps);
+        result.put("`sampler_index`", sampler_index);
+        result.put("\"`cfg_scale`\"", cfg_scale);
+        result.put("\"`width`\"", width);
+        result.put("\"`height`\"", height);
+        return result;
     }
 }
