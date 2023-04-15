@@ -26,6 +26,7 @@ import cc.alpgo.system.service.IEnvironmentService;
 import cc.alpgo.system.service.IImageService;
 import cc.alpgo.system.utils.ImageBuilder;
 import com.google.gson.Gson;
+import org.jpedal.parser.shape.S;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import cc.alpgo.sdtool.mapper.StableDiffusionPatternMapper;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
+import org.springframework.util.CollectionUtils;
 
 import static cc.alpgo.sdtool.util.StableDiffusionApiUtil.generateSessionHash;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -192,58 +194,35 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
                 parameters.put(string, extraGenerateParams.get(string));
             }
         }
-        Txt2txtRequestParams txt2txtRequestParams = null;
-        String switchModelRequestContent = new Txt2txtRequestParams(
-                positivePrompt,
-                negativePrompt,
-                parameters
-        ).toPreDictSwitchModel(sessionHash, sdEnv);
-        if (StringUtils.isNotEmpty(switchModelRequestContent)) {
-            stableDiffusionApiUtil.apiPredict(sdEnv, switchModelRequestContent);
-        }
-        updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.Processing);
-        if (stableDiffusionApiUtil.isEnableControlNet(parameters)) {
-            ControlNetRequestBody controlNetRequestBody = stableDiffusionApiUtil.getControlNetRequestBody(parameters);
-            txt2txtRequestParams = new Txt2txtRequestParams(
-                    positivePrompt,
-                    negativePrompt,
-                    parameters,
-                    stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage(), cosConfigs, sdEnv),
-                    controlNetRequestBody.getModule(),
-                    controlNetRequestBody.getModel()
-            );
-            sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_CONTROL_NET);
-            StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.apiPredict(
-                    sdEnv,
-                    txt2txtRequestParams.toPreDictForControlNet(sessionHash,
-                            sdEnv,
-                            stableDiffusionPattern.getPresetTemplate().equals("img2img"),
-                            controlNetRequestBody
-                    ));
-            log.info("predict controlnet response: {}", resultForSetControlNet);
-        } else {
-            txt2txtRequestParams = new Txt2txtRequestParams(
-                    positivePrompt,
-                    negativePrompt,
-                    parameters
-            );
+
+        // txt2img or img2img
+        StableDiffusionApiResponse result = null;
+        String type = stableDiffusionPattern.getPresetTemplate();
+        switch (type) {
+            case "txt2img":
+            case "img2img":
+                result = normalGenerate(
+                        type,
+                        sessionHash,
+                        positivePrompt,
+                        negativePrompt,
+                        parameters,
+                        sdEnv,
+                        cosConfigs,
+                        wsId);
+                break;
+            case "customerRequest":
+                result = customerRequestExecute(
+                        type,
+                        sessionHash,
+                        positivePrompt,
+                        negativePrompt,
+                        parameters,
+                        sdEnv,
+                        cosConfigs,
+                        wsId);
         }
 
-        StableDiffusionApiResponse result = null;
-        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_GENERATE);
-        if (stableDiffusionPattern.getPresetTemplate().equals("img2img")) {
-            Object init_images = parameters.get("init_images");
-            if (init_images == null) {
-                throw new Exception("请选择图生图初始图片");
-            }
-            result = stableDiffusionApiUtil.apiPredict(sdEnv,
-                    txt2txtRequestParams.toPreDictForImg2img(sessionHash,
-                            stableDiffusionApiUtil.convertToBase64((String) init_images, cosConfigs, sdEnv), sdEnv));
-        } else {
-            result = stableDiffusionApiUtil.apiPredict(sdEnv,
-                    txt2txtRequestParams.toPreDict(sessionHash, sdEnv));
-        }
-        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.RECEIVE_IMAGE);
 
         updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.ImageUploading);
         List<Long> imageIds = transToCosReturnImageIds(patternId, sdEnv, result, cosConfigs, wsId);
@@ -256,6 +235,95 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageIds));
         stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
         return output;
+    }
+
+    private StableDiffusionApiResponse customerRequestExecute(String type, String sessionHash, String positivePrompt, String negativePrompt, Map<String, Object> parameters, StableDiffusionEnv sdEnv, List<CosConfig> cosConfigs, String wsId) throws Exception {
+        Txt2txtRequestParams txt2txtRequestParams = new Txt2txtRequestParams(
+                sessionHash,
+                positivePrompt,
+                negativePrompt,
+                parameters);
+
+        String switchModelRequestContent = txt2txtRequestParams.toPreDictSwitchModel(sessionHash, sdEnv);
+        if (StringUtils.isNotEmpty(switchModelRequestContent)) {
+            stableDiffusionApiUtil.apiPredict(sdEnv, switchModelRequestContent);
+        }
+        updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.Processing);
+
+        StableDiffusionApiResponse result = null;
+        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_GENERATE);
+        ArrayList<LinkedHashMap> customerRequests = (ArrayList) parameters.get("customer_requests");
+        if (CollectionUtils.isEmpty(customerRequests)) {
+            throw new Exception("自定义脚本不能为空");
+        }
+        Gson gson = new Gson();
+        for (LinkedHashMap customerRequest : customerRequests) {
+            Object requestBody = customerRequest.get("requestBody");
+            String content = gson.toJson(requestBody);
+            String requestString = txt2txtRequestParams.toPreDictUpdateString(sdEnv, content);
+            result = stableDiffusionApiUtil.apiPredict(sdEnv, requestString);
+        }
+        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.RECEIVE_IMAGE);
+        return result;
+    }
+
+    private StableDiffusionApiResponse normalGenerate(String type, String sessionHash, String positivePrompt, String negativePrompt, Map<String, Object> parameters, StableDiffusionEnv sdEnv, List<CosConfig> cosConfigs, String wsId) throws Exception {
+        Txt2txtRequestParams txt2txtRequestParams = null;
+        String switchModelRequestContent = new Txt2txtRequestParams(
+                sessionHash,
+                positivePrompt,
+                negativePrompt,
+                parameters
+        ).toPreDictSwitchModel(sessionHash, sdEnv);
+        if (StringUtils.isNotEmpty(switchModelRequestContent)) {
+            stableDiffusionApiUtil.apiPredict(sdEnv, switchModelRequestContent);
+        }
+        updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.Processing);
+        if (stableDiffusionApiUtil.isEnableControlNet(parameters)) {
+            ControlNetRequestBody controlNetRequestBody = stableDiffusionApiUtil.getControlNetRequestBody(parameters);
+            txt2txtRequestParams = new Txt2txtRequestParams(
+                    sessionHash,
+                    positivePrompt,
+                    negativePrompt,
+                    parameters,
+                    stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage(), cosConfigs, sdEnv),
+                    controlNetRequestBody.getModule(),
+                    controlNetRequestBody.getModel()
+            );
+            sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_CONTROL_NET);
+            StableDiffusionApiResponse resultForSetControlNet = stableDiffusionApiUtil.apiPredict(
+                    sdEnv,
+                    txt2txtRequestParams.toPreDictForControlNet(
+                            sdEnv,
+                            type.equals("img2img"),
+                            controlNetRequestBody
+                    ));
+            log.info("predict controlnet response: {}", resultForSetControlNet);
+        } else {
+            txt2txtRequestParams = new Txt2txtRequestParams(
+                    sessionHash,
+                    positivePrompt,
+                    negativePrompt,
+                    parameters
+            );
+        }
+
+        StableDiffusionApiResponse result = null;
+        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_GENERATE);
+        if (type.equals("img2img")) {
+            Object init_images = parameters.get("init_images");
+            if (init_images == null) {
+                throw new Exception("请选择图生图初始图片");
+            }
+            result = stableDiffusionApiUtil.apiPredict(sdEnv,
+                    txt2txtRequestParams.toPreDictForImg2img(
+                            stableDiffusionApiUtil.convertToBase64((String) init_images, cosConfigs, sdEnv), sdEnv));
+        } else {
+            result = stableDiffusionApiUtil.apiPredict(sdEnv,
+                    txt2txtRequestParams.toPreDict(sdEnv));
+        }
+        sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.RECEIVE_IMAGE);
+        return result;
     }
 
     private void updateStatus(String envKey, EnvTaskExecutionStatus processing) {
