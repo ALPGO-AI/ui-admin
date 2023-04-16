@@ -213,6 +213,12 @@
                 <version>${alpgo.version}</version>
             </dependency>
 
+            <!-- 流程引擎 -->
+            <dependency>
+                <groupId>cc.alpgo</groupId>
+                <artifactId>alpgo-flowable</artifactId>
+                <version>${alpgo.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

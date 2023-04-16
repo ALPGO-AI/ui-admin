@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 信号量相关处理
  * 
- * @author ruoyi
+ * @author alpgo
  */
 public class SemaphoreUtils
 {

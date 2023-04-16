@@ -1,4 +1,4 @@
-import { parseTime } from './ruoyi'
+import { parseTime } from './alpgo'
 
 export function formatImgArrToSrc(array, imageMap) {
   if (array == null || array == "") return "";

@@ -1,5 +1,5 @@
 {
-  "name": "ruoyi",
+  "name": "alpgo",
   "version": "3.8.1",
   "description": "ALPGO-AI UI Admin",
   "author": "UI Admin",
@@ -36,6 +36,13 @@
     "url": "https://gitee.com/y_project/RuoYi-Vue.git"
   },
   "dependencies": {
+    "xcrud": "^0.4.19",
+    "vkbeautify": "^0.99.3",
+    "bpmn-js": "^11.1.0",
+    "bpmnlint": "^6.4.0",
+    "bpmn-js-bpmnlint": "^0.15.0",
+    "bpmnlint-loader": "^0.1.4",
+    "diagram-js": "^11.4.1",
     "@riophae/vue-treeselect": "0.4.0",
     "axios": "0.24.0",
     "clipboard": "2.0.8",

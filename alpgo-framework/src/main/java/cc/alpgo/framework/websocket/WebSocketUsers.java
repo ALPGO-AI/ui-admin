@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * websocket 客户端用户集
  * 
- * @author ruoyi
+ * @author alpgo
  */
 public class WebSocketUsers
 {

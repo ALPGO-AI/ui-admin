@@ -15,7 +15,7 @@ spring:
         enabled: true
         baseline-on-migrate: true
         clean-on-validation-error: false
-        placeholder-replacementplaceholders: false
+        placeholderReplacement: false
         sql-migration-prefix: V
         sql-migration-suffixes: .sql
         locations: classpath:db/migration/sql
