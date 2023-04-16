@@ -48,6 +48,11 @@
             <groupId>cc.alpgo</groupId>
             <artifactId>alpgo-framework</artifactId>
         </dependency>
+        <!-- 流程引擎模块-->
+        <dependency>
+            <groupId>cc.alpgo</groupId>
+            <artifactId>alpgo-flowable</artifactId>
+        </dependency>
 
         <!-- 定时任务-->
         <dependency>

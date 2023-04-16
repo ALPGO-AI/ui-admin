@@ -87,7 +87,72 @@ export const constantRoutes = [
         meta: { title: '个人中心', icon: 'user' }
       }
     ]
-  }
+  },
+  {
+    path: '/flowable',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'definition/model/',
+        component: () => import('@/views/flowable/definition/model'),
+        name: 'Model',
+        meta: { title: '流程设计', icon: '' }
+      }
+    ]
+  },
+  {
+    path: '/flowable',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'task/finished/detail/index',
+        component: () => import('@/views/flowable/task/finished/detail/index'),
+        name: 'FinishedRecord',
+        meta: { title: '流程详情', icon: '' }
+      }
+    ]
+  },
+  {
+    path: '/flowable',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'task/myProcess/detail/index',
+        component: () => import('@/views/flowable/task/myProcess/detail/index'),
+        name: 'MyProcessRecord',
+        meta: { title: '流程详情', icon: '' }
+      }
+    ]
+  },
+  {
+    path: '/flowable',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'task/myProcess/send/index',
+        component: () => import('@/views/flowable/task/myProcess/send/index'),
+        name: 'SendRecord',
+        meta: { title: '流程发起', icon: '' }
+      }
+    ]
+  },
+  {
+    path: '/flowable',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'task/todo/detail/index',
+        component: () => import('@/views/flowable/task/todo/detail/index'),
+        name: 'TodoRecord',
+        meta: { title: '流程处理', icon: '' }
+      }
+    ]
+  },
 ]
 
 // 动态路由，基于用户权限动态去加载
