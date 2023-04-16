@@ -198,6 +198,12 @@
                 <artifactId>alpgo-framework</artifactId>
                 <version>${alpgo.version}</version>
             </dependency>
+            <!-- flowable模块-->
+            <dependency>
+                <groupId>cc.alpgo</groupId>
+                <artifactId>alpgo-flowable</artifactId>
+                <version>${alpgo.version}</version>
+            </dependency>
 
             <!-- 系统模块-->
             <dependency>
@@ -212,13 +218,6 @@
                 <artifactId>alpgo-common</artifactId>
                 <version>${alpgo.version}</version>
             </dependency>
-
-            <!-- 流程引擎 -->
-            <dependency>
-                <groupId>cc.alpgo</groupId>
-                <artifactId>alpgo-flowable</artifactId>
-                <version>${alpgo.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -229,6 +228,7 @@
         <module>alpgo-quartz</module>
         <module>alpgo-generator</module>
         <module>alpgo-common</module>
+        <module>alpgo-flowable</module>
     </modules>
     <packaging>pom</packaging>
 
