@@ -51,7 +51,7 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
 
 ### 前端启动
 
-1. 需要安装node开发环境和npm
+1. 需要安装node开发环境和npm(推荐使用16.x.x版本的node环境，可以使用[nvm](https://juejin.cn/post/7074108351524634655)更方便地切换本地node版本
 2. 进入前端项目目录安装依赖并启动
 
     ```
@@ -78,6 +78,19 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
             username: ${MYSQL_USERNAME}
             password: ${MYSQL_PASSWORD}
         # 从库数据源
+    ```
+1. 我们使用[neo4j](https://neo4j.com/)这一图数据库存储标签关系，可以在官网上直接部署一个属于免费的版本（试用三十天）
+准备好 neo4j 数据库后，请配置环境变量 `alpgo-admin/src/main/resources/application-druid.yml` 中的参数
+    ```
+    #集成neo4j
+    data:
+        neo4j:
+            ##配置地址
+            uri: bolt://${NEO4J_HOST}:${NEO4J_PORT}
+            ## 账号
+            username: ${NEO4J_USERNAME}
+            ## 密码
+            password: ${NEO4J_PASSWORD}
     ```
 1. 准备好 redis 服务后，请配置环境变量 `alpgo-admin/src/main/resources/application.yml` 中的参数
     ```
