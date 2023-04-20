@@ -1,5 +1,6 @@
 package cc.alpgo.framework.listener;
 
+import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.core.redis.RedisCache;
 import cc.alpgo.common.enums.EnvTaskExecutionStatus;
 import cc.alpgo.common.event.*;
@@ -9,6 +10,8 @@ import cc.alpgo.framework.websocket.WebSocketUsers;
 import cc.alpgo.neo4j.service.INeo4jService;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
+import com.google.gson.Gson;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static cc.alpgo.common.utils.StringUtils.isNotEmpty;
 
 @Component
 @EnableAsync
@@ -40,6 +45,8 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
     private IStableDiffusionPatternService stableDiffusionPatternService;
     @Autowired
     private INeo4jService neo4jService;
+    @Autowired
+    private AlpgoConfig alpgoConfig;
     public void onApplicationEvent(ApplicationEvent event) {
         // 判断事件类型，执行特定处理逻辑
         if (event instanceof UploadToCosEvent) {
@@ -67,6 +74,17 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
                 throw new RuntimeException(e);
             }
             log.info("SDToolListener upload {} finished", ((UploadToCosInputStreamEvent) event).getKey());
+            UploadToCosInputStreamEvent uploadToCosInputStreamEvent = (UploadToCosInputStreamEvent) event;
+            String cosKey = uploadToCosInputStreamEvent.getKey();
+            List<CosConfig> cosConfigsTemp = uploadToCosInputStreamEvent.getCosConfigs();
+            Gson gson = new Gson();
+            if (isNotEmpty(cosConfigsTemp)) {
+                CosConfig cosConfig = cosConfigsTemp.get(0);
+                String fullUrl = cosUtil.getFullUrl(cosConfig, cosKey);
+                Map<String, Object> map = new HashMap<>();
+                map.put("imageUrl", fullUrl);
+                applicationContext.publishEvent(new WebhooksEvent(gson.toJson(map)));
+            }
         }
         if (event instanceof SdToolExecuteGenerateByPatternIdEvent) {
             log.info("SDToolListener catch SdToolGenerateByPatternIdEvent {}", ((SdToolExecuteGenerateByPatternIdEvent) event).getPatternId());
@@ -91,6 +109,23 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
             SdToolAddGenerateByPatternIdEvent sdAddEvent = (SdToolAddGenerateByPatternIdEvent) event;
             envTaskQueueListener.addTaskToEnvironmentQueue(sdAddEvent.getEnvKey(), sdAddEvent);
             log.info("SDToolListener execute {} finished", ((SdToolAddGenerateByPatternIdEvent) event).toString());
+        }
+        if (event instanceof WebhooksEvent) {
+            for (String webhook : alpgoConfig.getWebhooks()) {
+                OkHttpClient client = new OkHttpClient.Builder().build();
+                RequestBody body = RequestBody.create(MediaType.parse("application/json"), ((WebhooksEvent) event).getPayload());
+                Request request = new Request.Builder()
+                        .url(webhook)
+                        .post(body)
+                        .addHeader("Content-Type", "application/json")
+                        .build();
+                try {
+                    Response response = client.newCall(request).execute();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                log.info("call webhook {} success", webhook);
+            }
         }
     }
     private void updateStatus(String envKey, EnvTaskExecutionStatus processing) {

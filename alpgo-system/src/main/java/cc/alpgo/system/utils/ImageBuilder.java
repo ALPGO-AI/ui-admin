@@ -1,5 +1,6 @@
 package cc.alpgo.system.utils;
 
+import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.common.utils.StableDiffusionEnv;
@@ -12,30 +13,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageBuilder {
-    public static List<Image> build(StableDiffusionEnv sdEnv, List<CosConfig> cosConfigs, List<String> fileNames) throws UnsupportedEncodingException {
+    public static List<Image> build(StableDiffusionEnv sdEnv, List<CosConfig> cosConfigs, List<FileNameVO> fileNames) throws UnsupportedEncodingException {
         List<Image> images = new ArrayList<>();
-        for (String fileName : fileNames) {
+        for (FileNameVO fileName : fileNames) {
             Image image = new Image();
-            image.setUri(fileName);
+            image.setUri(fileName.getFileName());
             image.setImageProviderList(generateImageProviderList(sdEnv, cosConfigs, fileName));
             images.add(image);
         }
         return images;
     }
 
-    public static Image build(List<CosConfig> cosConfigs, String fileName) throws UnsupportedEncodingException {
+    public static Image build(List<CosConfig> cosConfigs, FileNameVO fileName) throws UnsupportedEncodingException {
         Image image = new Image();
-        image.setUri(fileName);
+        image.setUri(fileName.getFileName());
         image.setImageProviderList(generateImageProviderList(null, cosConfigs, fileName));
         return image;
     }
 
-    private static List<ImageProvider> generateImageProviderList(StableDiffusionEnv sdEnv, List<CosConfig> cosConfigs, String fileName) throws UnsupportedEncodingException {
+    private static List<ImageProvider> generateImageProviderList(StableDiffusionEnv sdEnv, List<CosConfig> cosConfigs, FileNameVO fileName) throws UnsupportedEncodingException {
         List<ImageProvider> result = new ArrayList<>();
         if (sdEnv != null) {
             ImageProvider imageProvider = new ImageProvider();
             imageProvider.setEnvId(sdEnv.getEnvId());
-            imageProvider.setUrl(StableDiffusionApiUtil.getWebUIDownloadUrl(sdEnv, fileName));
+            imageProvider.setUrl(StableDiffusionApiUtil.getWebUIDownloadUrl(sdEnv, fileName.getFileName()));
             result.add(imageProvider);
         }
         for (CosConfig cosConfig : cosConfigs) {

@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cc.alpgo.common.core.redis.RedisCache;
+import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.enums.EnvTaskExecutionStatus;
 import cc.alpgo.common.event.SdToolAddGenerateByPatternIdEvent;
@@ -225,7 +226,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
 
 
         updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.ImageUploading);
-        List<Long> imageIds = transToCosReturnImageIds(patternId, sdEnv, result, cosConfigs, wsId);
+        List<Long> imageIds = transToCosReturnImageIds(patternId, sdEnv, result, cosConfigs, DateUtils.getDate() + "_PATTERN_" + patternId);
         if (isEmpty(imageIds)) {
             throw new Exception("图片生成失败，请检查参数是否正确");
         }
@@ -334,8 +335,8 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         applicationContext.publishEvent(new WebSocketSendMessageEvent(wsId, sdEnv.getEnvName(), progressInfo.getMsg()));
     }
 
-    private List<Long> transToCosReturnImageIds(Long patternId, StableDiffusionEnv sdEnv, StableDiffusionApiResponse result, List<CosConfig> cosConfigs, String wsId) throws IOException {
-        List<String> fileNames = new ArrayList<>();
+    private List<Long> transToCosReturnImageIds(Long patternId, StableDiffusionEnv sdEnv, StableDiffusionApiResponse result, List<CosConfig> cosConfigs, String folderName) throws IOException {
+        List<FileNameVO> fileNames = new ArrayList<>();
         List<Object> data = result.getData();
         if (isEmpty(data)) {
             return new ArrayList<>();
@@ -354,14 +355,14 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             if (isFile != null && isFile) {
                 Object fileNameObj = map.get("name");
                 String fileName = (String) fileNameObj;
-                fileNames.add(fileName);
+                fileNames.add(new FileNameVO(fileName, folderName));
             }
         }
         List<Image> images = ImageBuilder.build(sdEnv, cosConfigs, fileNames);
         for (Image image : images) {
             imageService.insertImage(image);
         }
-        stableDiffusionApiUtil.transToCos(sdEnv, result, cosConfigs, wsId);
+        stableDiffusionApiUtil.transToCos(sdEnv, result, cosConfigs, folderName);
         return images.stream().map(Image::getImageId).collect(Collectors.toList());
     }
 

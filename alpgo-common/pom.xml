@@ -152,6 +152,10 @@
             <artifactId>OpenViewerFX</artifactId>
             <version>6.6.14</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

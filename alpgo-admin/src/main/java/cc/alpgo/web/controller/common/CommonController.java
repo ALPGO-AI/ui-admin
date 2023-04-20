@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.domain.EnvTaskVO;
+import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.event.StartEnvApplicationEvent;
 import cc.alpgo.common.utils.CosUtil;
@@ -159,10 +160,11 @@ public class CommonController
             ajax.put("url", url);
             Map<String, String> headerMap = getHeaderMap();
             List<CosConfig> activeConfigs = environmentService.getActiveConfigs(headerMap);
+            FileNameVO fileNameVO = new FileNameVO(fileName, "");
             if (isNotEmpty(activeConfigs)) {
                 File localFile = new File(AlpgoConfig.getProfile() + fileName.replace("/profile", "/"));
-                cosUtil.uploadAsync(new FileInputStream(localFile), CosUtil.toKey(fileName), activeConfigs, null);
-                Image image = ImageBuilder.build(activeConfigs, fileName);
+                cosUtil.uploadAsync(new FileInputStream(localFile), CosUtil.toKey(fileNameVO), activeConfigs, null);
+                Image image = ImageBuilder.build(activeConfigs, fileNameVO);
                 imageService.insertImage(image);
                 List<ImageProvider> imageProviderList = image.getImageProviderList();
                 if (isNotEmpty(imageProviderList)) {

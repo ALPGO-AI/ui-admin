@@ -2,6 +2,10 @@ package cc.alpgo.common.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 读取项目相关配置
@@ -32,6 +36,20 @@ public class AlpgoConfig
 
     /** 验证码类型 */
     private static String captchaType;
+
+    /** webhooks target */
+    private List<String> webhooks;
+
+    public List<String> getWebhooks() {
+        if (CollectionUtils.isEmpty(webhooks)) {
+            return new ArrayList<>();
+        }
+        return webhooks;
+    }
+
+    public void setWebhooks(List<String> webhooks) {
+        this.webhooks = webhooks;
+    }
 
     public String getName()
     {
