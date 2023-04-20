@@ -1,6 +1,7 @@
 package cc.alpgo.sdtool.util;
 
 import cc.alpgo.common.config.AlpgoConfig;
+import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.BASE64Encoder;
 import cc.alpgo.common.utils.CosUtil;
@@ -100,7 +101,7 @@ public class StableDiffusionApiUtil {
         return client;
     }
 
-    public List<String> transToCos(StableDiffusionEnv env, StableDiffusionApiResponse result, List<CosConfig> cosConfigs, String wsId) throws IOException {
+    public List<String> transToCos(StableDiffusionEnv env, StableDiffusionApiResponse result, List<CosConfig> cosConfigs, String folderName) throws IOException {
         List<String> results = new ArrayList<>();
         List<Object> data = result.getData();
         Map<String, String> keyUrlMap = new HashMap<>();
@@ -124,7 +125,7 @@ public class StableDiffusionApiUtil {
                 String fileName = (String) fileNameObj;
                 String url = getWebUIDownloadUrl(env, fileName);
                 results.add(url);
-                keyUrlMap.put(CosUtil.toKey(fileName), url);
+                keyUrlMap.put(CosUtil.toKey(new FileNameVO(fileName, folderName)), url);
             }
         }
         if (isNotEmpty(cosConfigs)) {
@@ -183,9 +184,10 @@ public class StableDiffusionApiUtil {
                         dir.mkdirs();
                     }
                     File file = new File(dir, key);
-
+                    if (!file.getParentFile().exists()) {
+                        file.getParentFile().mkdirs();
+                    }
                     try {
-
                         is = response.body().byteStream();
                         long total = response.body().contentLength();
                         fos = new FileOutputStream(file);

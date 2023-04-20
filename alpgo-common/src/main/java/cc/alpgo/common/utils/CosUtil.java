@@ -1,5 +1,6 @@
 package cc.alpgo.common.utils;
 
+import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.event.UploadToCosEvent;
@@ -52,16 +53,17 @@ public class CosUtil {
     private static final Logger log = LoggerFactory.getLogger(CosUtil.class);
     private Map<String, COSClient> cosClientMap = new HashMap<>();
 
-    public static String getFullUrl(CosConfig cosConfig, String fileName) {
+    public static String getFullUrl(CosConfig cosConfig, String cosKey) {
         return "https://{bucketName}.cos.{bucketRegion}.myqcloud.com/"
                 .replace("{bucketName}", cosConfig.getCosApiBucketName())
-                .replace("{bucketRegion}", cosConfig.getCosApiRegion()) + fileName;
+                .replace("{bucketRegion}", cosConfig.getCosApiRegion()) + cosKey;
     }
 
-    public static String toKey(String fileName) {
+    public static String toKey(FileNameVO vo) {
+        String fileName = vo.getFileName();
         String[] split = fileName.split("\\.");
         String ext = split[split.length - 1];
-        return hash(fileName) + "." + ext;
+        return vo.getFolderName() + "/" + hash(fileName) + "." + ext;
     }
 
     public List<String> upload(List<String> images, CosConfig cosConfig) {
