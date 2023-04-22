@@ -44,6 +44,8 @@ public class EnvironmentServiceImpl implements IEnvironmentService
     private EnvironmentMapper environmentMapper;
     @Autowired
     private RedisCache redisCache;
+    private Map<String, List<String>> webuiModelOptionsMap = new HashMap<>();
+    private Map<String, List<String>> webuiControlNetModelOptionsMap = new HashMap<>();
 
     private List<Long> convertToIds(String listString) {
         if (StringUtils.isEmpty(listString)) {
@@ -226,7 +228,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
         if (!refresh) {
             Map<String, List<String>> webuiModelOptions = new HashMap<>();
             for (StableDiffusionEnv activeEnv : activeEnvs) {
-                webuiModelOptions.put(activeEnv.getEnvId().toString(), redisCache.getCacheList("webuiModelOptions"+activeEnv.getEnvId().toString()));
+                webuiModelOptions.put(activeEnv.getEnvId().toString(), webuiModelOptionsMap.get(activeEnv.getEnvId().toString()));
             }
             if (webuiModelOptions != null) {
                 return webuiModelOptions;
@@ -242,8 +244,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                     if (choices instanceof List) {
                         ArrayList choicesList = (ArrayList) choices;
                         result.put(activeEnv.getEnvId().toString(), choicesList);
-                        redisCache.deleteObject("webuiModelOptions"+activeEnv.getEnvId().toString());
-                        redisCache.setCacheList("webuiModelOptions"+activeEnv.getEnvId().toString(), choicesList);
+                        webuiModelOptionsMap.put(activeEnv.getEnvId().toString(), choicesList);
                     }
                 }
             }
@@ -257,7 +258,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
         if (!refresh) {
             Map<String, List<String>> webuiModelOptions = new HashMap<>();
             for (StableDiffusionEnv activeEnv : activeEnvs) {
-                webuiModelOptions.put(activeEnv.getEnvId().toString(), redisCache.getCacheList("webuiControlNetModelOptions"+activeEnv.getEnvId().toString()));
+                webuiModelOptions.put(activeEnv.getEnvId().toString(), webuiControlNetModelOptionsMap.get(activeEnv.getEnvId().toString()));
             }
             if (webuiModelOptions != null) {
                 return webuiModelOptions;
@@ -276,8 +277,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                     if (choices instanceof List) {
                         ArrayList choicesList = (ArrayList) choices;
                         result.put(activeEnv.getEnvId().toString(), choicesList);
-                        redisCache.deleteObject("webuiControlNetModelOptions"+activeEnv.getEnvId().toString());
-                        redisCache.setCacheList("webuiControlNetModelOptions"+activeEnv.getEnvId().toString(), choicesList);
+                        webuiControlNetModelOptionsMap.put(activeEnv.getEnvId().toString(), choicesList);
                     }
                 }
             }
