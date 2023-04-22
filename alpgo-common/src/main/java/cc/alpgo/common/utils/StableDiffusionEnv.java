@@ -19,6 +19,7 @@ public class StableDiffusionEnv {
 
     private Boolean isUltimateUpscalePluginInstalled;
     private Integer fetchControlNetModelFnIndex;
+    private Boolean isDisableGradioAuth = false;
 
     public StableDiffusionEnv(String envName, Long environmentId, String domain, String username, String password, Integer txt2imgFnIndex, Integer img2imgFnIndex, Integer txt2imgControlNetFnIndex, Integer img2imgControlNetFnIndex, Boolean isLoraPluginInstalled, Integer switchModelFnIndex, Boolean isUltimateUpscalePluginInstalled, Integer fetchControlNetModelFnIndex) {
         this.envName = envName;
@@ -34,6 +35,14 @@ public class StableDiffusionEnv {
         this.switchModelFnIndex = switchModelFnIndex;
         this.isUltimateUpscalePluginInstalled = isUltimateUpscalePluginInstalled;
         this.fetchControlNetModelFnIndex = fetchControlNetModelFnIndex;
+    }
+
+    public Boolean getDisableGradioAuth() {
+        return isDisableGradioAuth;
+    }
+
+    public void setDisableGradioAuth(Boolean disableGradioAuth) {
+        isDisableGradioAuth = disableGradioAuth;
     }
 
     public Boolean getUltimateUpscalePluginInstalled() {

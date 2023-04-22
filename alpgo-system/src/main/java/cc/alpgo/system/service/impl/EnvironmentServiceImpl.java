@@ -114,7 +114,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
         for (EnvironmentParameters param : environment.getEnvironmentParametersList()) {
             map.put(param.getParamName(), param.getParamValue());
         }
-        return new StableDiffusionEnv(
+        StableDiffusionEnv stableDiffusionEnv = new StableDiffusionEnv(
                 environment.getName(),
                 environment.getEnvironmentId(),
                 map.get("domain"),
@@ -129,6 +129,10 @@ public class EnvironmentServiceImpl implements IEnvironmentService
                 Boolean.valueOf(map.get("isUltimateUpscalePluginInstalled")),
                 Integer.parseInt(map.get("fetchControlNetModelFnIndex"))
         );
+        if (map.get("isDisableGradioAuth") != null) {
+            stableDiffusionEnv.setDisableGradioAuth(Boolean.valueOf(map.get("isDisableGradioAuth")));
+        }
+        return stableDiffusionEnv;
     }
     /**
      * 查询environments

@@ -37,7 +37,22 @@ public class StableDiffusionApiUtil {
     public static String generateSessionHash() {
         return UUID.randomUUID().toString();
     }
+    class BasicAuthInterceptor implements Interceptor {
+        private String credentials;
 
+
+        public BasicAuthInterceptor(String user, String password) {
+            this.credentials = Credentials.basic(user, password);
+        }
+
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            Request request = chain.request();
+            Request authenticatedRequest = request.newBuilder()
+                    .header("Authorization", credentials).build();
+            return chain.proceed(authenticatedRequest);
+        }
+    }
 
     public StableDiffusionApiResponse apiPredict(StableDiffusionEnv params, String content) throws Exception {
         OkHttpClient client = getClient(params);
@@ -69,7 +84,16 @@ public class StableDiffusionApiUtil {
         String domain = env.getDomain();
         String url = domain + "/login";
         url = url.replace("//login", "/login");
+        if (env.getDisableGradioAuth()) {
+            return new OkHttpClient.Builder()
+                    .addInterceptor(new BasicAuthInterceptor(username, password))
+                    .connectTimeout(10, TimeUnit.MINUTES)
+                    .readTimeout(5, TimeUnit.MINUTES)
+                    .writeTimeout(5, TimeUnit.MINUTES)
+                    .build();
+        }
         OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new BasicAuthInterceptor(username, password))
                 .connectTimeout(10, TimeUnit.MINUTES)
                 .readTimeout(5, TimeUnit.MINUTES)
                 .writeTimeout(5, TimeUnit.MINUTES)
