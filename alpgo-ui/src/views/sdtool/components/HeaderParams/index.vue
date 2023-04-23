@@ -89,6 +89,7 @@ export default {
           webuiMap[element.value] = element;
         }
         this.webuiMap = webuiMap;
+        this.$store.dispatch('task/updateList');
       }
     });
   },
