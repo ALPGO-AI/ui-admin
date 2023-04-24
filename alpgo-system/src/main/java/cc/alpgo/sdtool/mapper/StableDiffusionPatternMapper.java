@@ -62,4 +62,6 @@ public interface StableDiffusionPatternMapper
     public int deleteStableDiffusionPatternByPatternIds(Long[] patternIds);
 
     List<StableDiffusionPattern> selectStableDiffusionPatternListByPatternIds(@Param("patternIds") List<Long> ids);
+
+    void updateStableDiffusionPatternSampleImage(StableDiffusionPattern stableDiffusionPattern);
 }

@@ -6,6 +6,7 @@ import cc.alpgo.common.enums.EnvTaskExecutionStatus;
 import cc.alpgo.common.event.*;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.CosUtil;
+import cc.alpgo.common.utils.StableDiffusionEnv;
 import cc.alpgo.framework.websocket.WebSocketUsers;
 import cc.alpgo.neo4j.service.INeo4jService;
 import cc.alpgo.sdtool.domain.StableDiffusionOutput;
@@ -79,10 +80,18 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
             List<CosConfig> cosConfigsTemp = uploadToCosInputStreamEvent.getCosConfigs();
             Gson gson = new Gson();
             if (isNotEmpty(cosConfigsTemp)) {
+                StableDiffusionEnv env = uploadToCosEvent.getEnv();
+                Map<String, Object> webhookDataMap = env.getWebhookDataMap();
+                if (webhookDataMap == null) {
+                    webhookDataMap = new HashMap<>();
+                }
                 CosConfig cosConfig = cosConfigsTemp.get(0);
                 String fullUrl = cosUtil.getFullUrl(cosConfig, cosKey);
-                Map<String, Object> map = new HashMap<>();
-                map.put("imageUrl", fullUrl);
+                Map map = new HashMap<>();
+                map.put("outputImageUrl", fullUrl);
+                map.put("envId", env.getEnvId());
+                map.put("patternData", webhookDataMap);
+                map.put("outputParams", env.getOutputResponseData());
                 applicationContext.publishEvent(new WebhooksEvent(gson.toJson(map)));
             }
         }

@@ -92,7 +92,7 @@ public class CosUtil {
         return timeStringUtil.getTimeString() + "_" + UUID.randomUUID().toString() + ".png";
     }
 
-    public void uploadAsync(InputStream is, String cosKey, List<CosConfig> cosConfigs, String envKey) throws IOException {
+    public void uploadAsync(InputStream is, String cosKey, List<CosConfig> cosConfigs, StableDiffusionEnv envKey) throws IOException {
         applicationContext.publishEvent(new UploadToCosInputStreamEvent(cosKey, is, cosConfigs, envKey));
     }
     public List<String> uploadAsync(List<String> images, CosConfig cosConfig) {
