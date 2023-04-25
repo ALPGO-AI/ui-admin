@@ -102,6 +102,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where pattern_id = #{patternId}
     </update>
 
+    <update id="updateStableDiffusionPatternSampleImage" parameterType="StableDiffusionPattern">
+        update stable_diffusion_pattern
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="sampleImage != null">sample_image = #{sampleImage},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where pattern_id = #{patternId}
+    </update>
+
     <delete id="deleteStableDiffusionPatternByPatternId" parameterType="Long">
         delete from stable_diffusion_pattern where pattern_id = #{patternId}
     </delete>

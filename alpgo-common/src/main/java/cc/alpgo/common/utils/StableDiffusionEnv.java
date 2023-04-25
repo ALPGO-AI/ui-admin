@@ -1,5 +1,10 @@
 package cc.alpgo.common.utils;
 
+import com.google.gson.Gson;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import static java.util.Objects.hash;
 
 public class StableDiffusionEnv {
@@ -20,6 +25,8 @@ public class StableDiffusionEnv {
     private Boolean isUltimateUpscalePluginInstalled;
     private Integer fetchControlNetModelFnIndex;
     private Boolean isDisableGradioAuth = false;
+    private Map<String, Object> webhookDataMap = new HashMap<>();
+    private Map<String, Object> outputResponseData = new HashMap<>();
 
     public StableDiffusionEnv(String envName, Long environmentId, String domain, String username, String password, Integer txt2imgFnIndex, Integer img2imgFnIndex, Integer txt2imgControlNetFnIndex, Integer img2imgControlNetFnIndex, Boolean isLoraPluginInstalled, Integer switchModelFnIndex, Boolean isUltimateUpscalePluginInstalled, Integer fetchControlNetModelFnIndex) {
         this.envName = envName;
@@ -35,6 +42,14 @@ public class StableDiffusionEnv {
         this.switchModelFnIndex = switchModelFnIndex;
         this.isUltimateUpscalePluginInstalled = isUltimateUpscalePluginInstalled;
         this.fetchControlNetModelFnIndex = fetchControlNetModelFnIndex;
+    }
+
+    public Map<String, Object> getWebhookDataMap() {
+        return webhookDataMap;
+    }
+
+    public void setWebhookDataMap(Map<String, Object> webhookDataMap) {
+        this.webhookDataMap = webhookDataMap;
     }
 
     public Boolean getDisableGradioAuth() {
@@ -103,5 +118,13 @@ public class StableDiffusionEnv {
 
     public void setFetchControlNetModelFnIndex(Integer fetchControlNetModelFnIndex) {
         this.fetchControlNetModelFnIndex = fetchControlNetModelFnIndex;
+    }
+
+    public void setOutputResponseData(Map<String, Object> outputResponseData) {
+        this.outputResponseData = outputResponseData;
+    }
+
+    public Map<String, Object> getOutputResponseData() {
+        return outputResponseData;
     }
 }

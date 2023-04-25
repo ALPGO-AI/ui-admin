@@ -1,23 +1,31 @@
 package cc.alpgo.common.event;
 
 import cc.alpgo.common.enums.CosConfig;
+import cc.alpgo.common.utils.StableDiffusionEnv;
 import org.springframework.context.ApplicationEvent;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 public class UploadToCosInputStreamEvent extends ApplicationEvent {
     private final InputStream inputStream;
     private final String key;
     private final List<CosConfig> cosConfigs;
     private final String envKey;
+    private final StableDiffusionEnv env;
 
-    public UploadToCosInputStreamEvent(String key, InputStream inputStream, List<CosConfig> cosConfigs, String envKey) {
+    public UploadToCosInputStreamEvent(String key, InputStream inputStream, List<CosConfig> cosConfigs, StableDiffusionEnv env) {
         super(key);
         this.inputStream = inputStream;
         this.key = key;
         this.cosConfigs = cosConfigs;
-        this.envKey = envKey;
+        this.envKey = env.getEnvKey();
+        this.env = env;
+    }
+
+    public StableDiffusionEnv getEnv() {
+        return env;
     }
 
     public String getEnvKey() {

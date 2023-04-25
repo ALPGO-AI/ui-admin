@@ -238,7 +238,7 @@ public class StableDiffusionApiUtil {
 
                         }
                     }
-                    cosUtil.uploadAsync(new FileInputStream(file), key, configs, env.getEnvKey());
+                    cosUtil.uploadAsync(new FileInputStream(file), key, configs, env);
                 }
             });
         }

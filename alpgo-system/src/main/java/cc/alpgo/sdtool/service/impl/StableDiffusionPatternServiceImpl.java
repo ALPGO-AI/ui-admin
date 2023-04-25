@@ -156,6 +156,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         }
         for (Map<String, Object> extraGenerateParams : extraGenerateParamsList) {
             for (StableDiffusionEnv sdEnv : sdEnvs) {
+                sdEnv.setWebhookDataMap(extraGenerateParams);
                 applicationContext.publishEvent(
                         new SdToolAddGenerateByPatternIdEvent(
                                 new SdToolExecuteGenerateByPatternIdEvent(
@@ -234,7 +235,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         Map<Long, String> longStringMap = imageService.selectUrls(imageIds, cosConfigs);
         StableDiffusionOutput output = stableDiffusionOutputService.generateOutput(stableDiffusionPattern, new Gson().toJson(longStringMap.values()), "GENERATE_IMAGE", result);
         stableDiffusionPattern.setSampleImage(new Gson().toJson(imageIds));
-        stableDiffusionPatternMapper.updateStableDiffusionPattern(stableDiffusionPattern);
+        stableDiffusionPatternMapper.updateStableDiffusionPatternSampleImage(stableDiffusionPattern);
         return output;
     }
 
@@ -338,6 +339,13 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     private List<Long> transToCosReturnImageIds(Long patternId, StableDiffusionEnv sdEnv, StableDiffusionApiResponse result, List<CosConfig> cosConfigs, String folderName) throws IOException {
         List<FileNameVO> fileNames = new ArrayList<>();
         List<Object> data = result.getData();
+        try {
+            Gson gson = new Gson();
+            Map<String, Object> hashMap = gson.fromJson((String) data.get(1), HashMap.class);
+            sdEnv.setOutputResponseData(hashMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (isEmpty(data)) {
             return new ArrayList<>();
         }
