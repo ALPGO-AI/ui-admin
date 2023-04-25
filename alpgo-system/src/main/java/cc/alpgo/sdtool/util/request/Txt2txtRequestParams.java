@@ -112,7 +112,7 @@ public class Txt2txtRequestParams {
         this.hr_second_pass_steps = 0;
         this.hr_resize_x = 0;
         this.hr_resize_y = 0;
-        this.prompt = positiveprompt;
+        this.prompt = positiveprompt == null ? "" : positiveprompt;
         this.styles = new ArrayList<>();
         this.seed = convertToLong(map.getOrDefault("seed", -1));
         this.subseed = -1;
