@@ -735,7 +735,26 @@ export default {
         })
         return
       }
-
+      
+      if (!row.presetTemplate) {
+        this.$message({
+          type: 'info',
+          message: '请先为该模板选择预设模板类型（如：文生图）'
+        })
+        return
+      }
+      const selectedWebUIList = this.selectedWebUIList;
+      for (let index = 0; index < selectedWebUIList.length; index++) {
+        const env = selectedWebUIList[index];
+        const envId = env.environmentId;
+        if (!row.parameters.modelVersionMap[envId]) {
+          this.$message({
+            type: 'info',
+            message: `请先为该模板中的${env.name}环境选择模型`
+          })
+          return
+        }
+      }
       if (this.$progress.checkIsRunning()) {
         this.$message({
           type: 'info',
