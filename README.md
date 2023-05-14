@@ -92,6 +92,19 @@ Stable Diffusion WebUI Admin, 本项目基于Ruoyi-Vue进行二次开发，base 
             ## 密码
             password: ${NEO4J_PASSWORD}
     ```
+1. 如果我们使用的是官方的neo4j+s的方式,则需要这样配置参数
+    ```
+    #集成neo4j
+    data:
+        neo4j:
+            ##配置地址
+            uri: neo4j+s://${NEO4J_HOST}:${NEO4J_PORT}
+            authentication:
+                ## 账号
+                username: ${NEO4J_USERNAME}
+                ## 密码
+                password: ${NEO4J_PASSWORD}
+    ```
 1. 准备好 redis 服务后，请配置环境变量 `alpgo-admin/src/main/resources/application.yml` 中的参数
     ```
     # redis 配置
