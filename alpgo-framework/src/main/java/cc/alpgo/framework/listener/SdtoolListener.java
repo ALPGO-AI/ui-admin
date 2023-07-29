@@ -81,18 +81,20 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
             Gson gson = new Gson();
             if (isNotEmpty(cosConfigsTemp)) {
                 StableDiffusionEnv env = uploadToCosEvent.getEnv();
-                Map<String, Object> webhookDataMap = env.getWebhookDataMap();
-                if (webhookDataMap == null) {
-                    webhookDataMap = new HashMap<>();
+                if (env != null) {
+                    Map<String, Object> webhookDataMap = env.getWebhookDataMap();
+                    if (webhookDataMap == null) {
+                        webhookDataMap = new HashMap<>();
+                    }
+                    CosConfig cosConfig = cosConfigsTemp.get(0);
+                    String fullUrl = cosUtil.getFullUrl(cosConfig, cosKey);
+                    Map map = new HashMap<>();
+                    map.put("outputImageUrl", fullUrl);
+                    map.put("envId", env.getEnvId());
+                    map.put("patternData", webhookDataMap);
+                    map.put("outputParams", env.getOutputResponseData());
+                    applicationContext.publishEvent(new WebhooksEvent(gson.toJson(map)));
                 }
-                CosConfig cosConfig = cosConfigsTemp.get(0);
-                String fullUrl = cosUtil.getFullUrl(cosConfig, cosKey);
-                Map map = new HashMap<>();
-                map.put("outputImageUrl", fullUrl);
-                map.put("envId", env.getEnvId());
-                map.put("patternData", webhookDataMap);
-                map.put("outputParams", env.getOutputResponseData());
-                applicationContext.publishEvent(new WebhooksEvent(gson.toJson(map)));
             }
         }
         if (event instanceof SdToolExecuteGenerateByPatternIdEvent) {

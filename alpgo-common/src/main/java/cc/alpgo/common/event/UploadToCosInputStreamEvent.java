@@ -2,6 +2,7 @@ package cc.alpgo.common.event;
 
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.StableDiffusionEnv;
+import cc.alpgo.common.utils.uuid.UUID;
 import org.springframework.context.ApplicationEvent;
 
 import java.io.InputStream;
@@ -20,7 +21,7 @@ public class UploadToCosInputStreamEvent extends ApplicationEvent {
         this.inputStream = inputStream;
         this.key = key;
         this.cosConfigs = cosConfigs;
-        this.envKey = env.getEnvKey();
+        this.envKey = env != null ? env.getEnvKey() : UUID.randomUUID().toString();
         this.env = env;
     }
 

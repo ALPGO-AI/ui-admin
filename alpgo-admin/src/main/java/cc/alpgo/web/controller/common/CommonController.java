@@ -145,7 +145,7 @@ public class CommonController
     /**
      * 通用上传请求
      */
-    @PostMapping("/common/upload")
+    @PostMapping("common/upload")
     public AjaxResult uploadFile(MultipartFile file) throws Exception
     {
         try
@@ -176,6 +176,7 @@ public class CommonController
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return AjaxResult.error(e.getMessage());
         }
     }
