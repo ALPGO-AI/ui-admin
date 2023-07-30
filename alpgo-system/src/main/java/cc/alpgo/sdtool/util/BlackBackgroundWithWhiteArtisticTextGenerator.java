@@ -5,9 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -15,8 +13,6 @@ import javax.imageio.ImageIO;
 
 @Component
 public class BlackBackgroundWithWhiteArtisticTextGenerator {
-
-    String text = "以（い）为,伊（イ）人,来了";  // 要生成的文本
     @Autowired
     private FontLoader fontLoader;
     public String generateImageByText(String text, int fontSize, int canvasWidth, int canvasHeight) {
@@ -62,5 +58,29 @@ public class BlackBackgroundWithWhiteArtisticTextGenerator {
             int textY = startTextY + (i * lineHeight) + fontMetrics.getAscent();
             graphics.drawString(line, textX, textY);
         }
+    }
+
+    public InputStream generateImageByTextReturnInputStream(String fontArtText, Integer fontArtSize, int canvasWidth, int canvasHeight) throws IOException {
+        String[] lines = fontArtText.split(",");
+
+        BufferedImage image = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+
+        graphics.setColor(Color.BLACK);
+        graphics.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        graphics.setColor(Color.WHITE);
+        drawTextOnImage(graphics, lines, canvasWidth, canvasHeight, fontArtSize);
+
+        graphics.dispose();
+        // Convert BufferedImage to InputStream
+        InputStream inputStream = bufferedImageToInputStream(image);
+        return inputStream;
+    }
+
+    private static InputStream bufferedImageToInputStream(BufferedImage bufferedImage) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImage, "png", byteArrayOutputStream);
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 }

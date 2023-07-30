@@ -1,16 +1,27 @@
 package cc.alpgo.sdtool.controller;
 
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
+import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.core.controller.BaseController;
 import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.page.TableDataInfo;
+import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.BusinessType;
+import cc.alpgo.common.enums.CosConfig;
+import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.common.utils.poi.ExcelUtil;
+import cc.alpgo.common.utils.uuid.UUID;
 import cc.alpgo.neo4j.service.INeo4jService;
+import cc.alpgo.sdtool.domain.GenerateFontArtRequestBody;
 import cc.alpgo.sdtool.util.BlackBackgroundWithWhiteArtisticTextGenerator;
+import cc.alpgo.system.domain.Image;
+import cc.alpgo.system.domain.ImageProvider;
+import cc.alpgo.system.service.IEnvironmentService;
+import cc.alpgo.system.utils.ImageBuilder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +36,8 @@ import cc.alpgo.common.annotation.Log;
 import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import cc.alpgo.sdtool.service.IStableDiffusionPatternService;
 import cc.alpgo.sdtool.domain.PackageCardRequestBody;
+
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 /**
  * stable_diffusion_patternController
@@ -44,6 +57,11 @@ public class StableDiffusionPatternController extends BaseController
 
     @Autowired
     private BlackBackgroundWithWhiteArtisticTextGenerator blackBackgroundWithWhiteArtisticTextGenerator;
+
+    @Autowired
+    private IEnvironmentService environmentService;
+    @Autowired
+    private CosUtil cosUtil;
 
     /**
      * 查询stable_diffusion_pattern列表
@@ -134,6 +152,31 @@ public class StableDiffusionPatternController extends BaseController
     public AjaxResult packageCard(@RequestBody PackageCardRequestBody packageCardRequestBody){
 
         return AjaxResult.success(neo4jService.packageCard(packageCardRequestBody));
+    }
+
+    @PostMapping("/generateFontArtAndReturnCosUrl")
+    public AjaxResult generateFontArtAndReturnCosUrl(@RequestBody GenerateFontArtRequestBody body) throws IOException {
+        Map<String, String> headerMap = getHeaderMap();
+        InputStream fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByTextReturnInputStream(
+                body.getFontArtText(),
+                body.getFontArtSize(),
+                body.getWidth() == null ? 512 : body.getWidth(),
+                body.getHeight() == null ? 768 : body.getHeight()
+        );
+        List<CosConfig> activeConfigs = environmentService.getActiveConfigs(headerMap);
+        if (isNotEmpty(activeConfigs)) {
+            FileNameVO fileNameVO = new FileNameVO(UUID.randomUUID().toString()+".png", "01_FONT_ART");
+            cosUtil.uploadAsync(fontArtImage, CosUtil.toKey(
+                    fileNameVO
+            ), activeConfigs, null);
+            Image image = ImageBuilder.build(activeConfigs, fileNameVO);
+            List<ImageProvider> imageProviderList = image.getImageProviderList();
+            if (isNotEmpty(imageProviderList)) {
+                ImageProvider imageProvider = imageProviderList.get(0);
+                return AjaxResult.success(imageProvider.getUrl());
+            }
+        }
+        return AjaxResult.error();
     }
 
 

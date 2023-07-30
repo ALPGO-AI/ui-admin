@@ -59,7 +59,7 @@
     </el-row>
 
     <neo4j-view :doubleClickNode="doubleClickNode" ref="neo4jView" v-show="showGraph" :nodes="nodes" :relations="relations"></neo4j-view>
-    
+
     <el-row  v-show="!showGraph" :gutter="20">
       <el-col style="padding-bottom: 20px;" v-for="pattern in patternList" :key="pattern.patternId" :xs="24" :sm="12" :md="6">
         <el-card class="box-card" :body-style="{ padding: '0px' }">
@@ -256,6 +256,19 @@
           <el-form-item label="预处理图片">
             <image-upload :limit="1" v-model="form.parameters.controlnet.inputImage"/>
             <el-link @click="setSampleImageToControlNetInputImage(form)" type="primary">将最新样图作为预处理图片</el-link>
+
+            <el-form-item label="生成艺术字图片：`fontArtImage`">
+              <el-switch v-model="form.parameters.enableFontArtImage"
+                active-color="#13ce66"
+                inactive-color="#ff4949"/>
+            </el-form-item>
+            <el-form-item v-show="form.parameters.enableFontArtImage" label="艺术字体字号">
+              <el-input-number v-model="form.parameters.fontArtSize" :precision="0" :step="1" :max="200"></el-input-number>
+            </el-form-item>
+            <el-form-item v-show="form.parameters.enableFontArtImage" label="艺术字体内容(英文逗号换行)">
+              <el-input v-model="form.parameters.fontArtText"></el-input>
+            </el-form-item>
+            <el-link @click="setGenerateFontArtToControlNetInputImage(form)" type="primary">生成艺术字作为预处理图片</el-link>
           </el-form-item>
         </el-form-item>
       </el-form>
@@ -303,7 +316,7 @@
 </template>
 
 <script>
-import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, getGraph, packageCard } from "@/api/sdtool/pattern";
+import { listPattern, getPattern, delPattern, addPattern, updatePattern, generateByPattern, getGraph, packageCard, generateFontArtAndReturnCosUrl } from "@/api/sdtool/pattern";
 import HeaderParams from "@/views/sdtool/components/HeaderParams/index.vue";
 import { formatImgArrToSrc } from "@/utils"
 import { controlNetModels, controlNetProcessor } from "@/utils/constant";
@@ -383,7 +396,10 @@ const initParams = {
     model: null,
     module: null,
     invertImage: false
-  }
+  },
+  enableFontArtImage: false,
+  fontArtText: '',
+  fontArtSize: 72
 };
 const formatPrompt = (str) => {
   if (!str) {
@@ -612,11 +628,21 @@ export default {
       if (sampleImage) {
         const imageIds = JSON.parse(sampleImage);
         const imageId = imageIds[0];
-        this.form.parameters.controlnet ={
+        this.form.parameters.controlnet = {
           ...form.parameters.controlnet,
           inputImage: imageMap[imageId]
         };
       }
+    },
+    async setGenerateFontArtToControlNetInputImage (form) {
+      const { fontArtSize, fontArtText, width, height } = form.parameters;
+      const res = await generateFontArtAndReturnCosUrl({ fontArtSize, fontArtText, width, height })
+      setTimeout(() => {
+        this.form.parameters.controlnet = {
+          ...form.parameters.controlnet,
+          inputImage: res.msg
+        };
+      }, 1000)
     },
     /** 查询Stable Diffusion 风格模板列表 */
     getGraph() {
@@ -735,7 +761,7 @@ export default {
         })
         return
       }
-      
+
       if (!row.presetTemplate) {
         this.$message({
           type: 'info',

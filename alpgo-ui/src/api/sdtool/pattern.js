@@ -64,3 +64,10 @@ export async function packageCard(data) {
   })
 }
 
+export async function generateFontArtAndReturnCosUrl(data) {
+  return request({
+    url: '/sdtool/pattern/generateFontArtAndReturnCosUrl',
+    method: 'post',
+    data
+  })
+}
