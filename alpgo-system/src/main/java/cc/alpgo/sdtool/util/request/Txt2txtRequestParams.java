@@ -159,7 +159,7 @@ public class Txt2txtRequestParams {
         return Double.parseDouble((String) cfg);
     }
 
-    private int convertToInteger(Object steps) {
+    public static int convertToInteger(Object steps) {
         if (steps instanceof Double) {
             return ((Double) steps).intValue();
         }
@@ -169,7 +169,7 @@ public class Txt2txtRequestParams {
         int v = Integer.parseInt((String) steps);
         return v;
     }
-    private boolean convertToBoolean(Object value) {
+    public static boolean convertToBoolean(Object value) {
         if (value instanceof Boolean) {
             return (Boolean) value;
         }
@@ -558,12 +558,23 @@ public class Txt2txtRequestParams {
      * @return
      */
     public String toPreDictUpdateString(StableDiffusionEnv sdEnv, String content) {
+        return toPreDictUpdateString(sdEnv, content, null);
+    }
+    public String toPreDictUpdateString(StableDiffusionEnv sdEnv, String content, Map<String, Object> extraReplaceMap) {
         Map<String, Object> replaceMap = getReplaceMap();
         Set<Map.Entry<String, Object>> entries = replaceMap.entrySet();
         for (Map.Entry<String, Object> entry : entries) {
             String key = entry.getKey();
             Object value = entry.getValue();
             content = content.replaceAll(key, value.toString());
+        }
+        if (extraReplaceMap != null) {
+            Set<Map.Entry<String, Object>> entries2 = extraReplaceMap.entrySet();
+            for (Map.Entry<String, Object> entry : entries2) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                content = content.replaceAll(key, value.toString());
+            }
         }
         return content;
     }
@@ -578,6 +589,7 @@ public class Txt2txtRequestParams {
         result.put("\"`cfg_scale`\"", cfg_scale);
         result.put("\"`width`\"", width);
         result.put("\"`height`\"", height);
+        result.put("`mask`", maskImg);
         return result;
     }
 }

@@ -38,6 +38,7 @@ import cc.alpgo.sdtool.domain.StableDiffusionPattern;
 import org.springframework.util.CollectionUtils;
 
 import static cc.alpgo.sdtool.util.StableDiffusionApiUtil.generateSessionHash;
+import static cc.alpgo.sdtool.util.request.Txt2txtRequestParams.convertToInteger;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
@@ -68,6 +69,8 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     private IImageService imageService;
     @Autowired
     private INeo4jService neo4jService;
+    @Autowired
+    private BlackBackgroundWithWhiteArtisticTextGenerator blackBackgroundWithWhiteArtisticTextGenerator;
 
     /**
      * 查询stable_diffusion_pattern
@@ -251,7 +254,11 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             stableDiffusionApiUtil.apiPredict(sdEnv, switchModelRequestContent);
         }
         updateStatus(sdEnv.getEnvKey(), EnvTaskExecutionStatus.Processing);
-
+        String inputControlNetImageBase64String = "";
+        if (stableDiffusionApiUtil.isEnableControlNet(parameters)) {
+            ControlNetRequestBody controlNetRequestBody = stableDiffusionApiUtil.getControlNetRequestBody(parameters);
+            inputControlNetImageBase64String = stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage(), cosConfigs, sdEnv);
+        }
         StableDiffusionApiResponse result = null;
         sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_GENERATE);
         ArrayList<LinkedHashMap> customerRequests = (ArrayList) parameters.get("customer_requests");
@@ -259,10 +266,29 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             throw new Exception("自定义脚本不能为空");
         }
         Gson gson = new Gson();
+        Map<String, Object> extraReplaceMap = new HashMap<>();
+        Integer width = convertToInteger(parameters.getOrDefault("width", 512));
+        Integer height = convertToInteger(parameters.getOrDefault("height", 512));
+        extraReplaceMap.put("`inputControlNetImageBase64String`", inputControlNetImageBase64String);
+        if (parameters.get("enableFontArtImage") != null) {
+            if ((Boolean) parameters.get("enableFontArtImage")) {
+                if (parameters.get("fontArtText") != null) {
+                    String fontArtText = (String) parameters.get("fontArtText");
+                    Integer fontArtSize = parameters.get("fontArtSize") == null ? 72 : (Integer) parameters.get("fontArtSize");
+                    String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
+                            fontArtText,
+                            fontArtSize,
+                            width,
+                            height
+                    );
+                    extraReplaceMap.put("`fontArtImage`", fontArtImage);
+                }
+            }
+        }
         for (LinkedHashMap customerRequest : customerRequests) {
             Object requestBody = customerRequest.get("requestBody");
             String content = gson.toJson(requestBody);
-            String requestString = txt2txtRequestParams.toPreDictUpdateString(sdEnv, content);
+            String requestString = txt2txtRequestParams.toPreDictUpdateString(sdEnv, content, extraReplaceMap);
             result = stableDiffusionApiUtil.apiPredict(sdEnv, requestString);
         }
         sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.RECEIVE_IMAGE);
