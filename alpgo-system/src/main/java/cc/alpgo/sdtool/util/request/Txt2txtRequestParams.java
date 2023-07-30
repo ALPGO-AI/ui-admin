@@ -571,8 +571,8 @@ public class Txt2txtRequestParams {
     private Map<String, Object> getReplaceMap() {
         Map<String, Object> result = new HashMap<>();
         result.put("`session_hash`", session_hash);
-        result.put("`prompt`", prompt);
-        result.put("`negative_prompt`", negative_prompt);
+        result.put("`prompt`", prompt.replaceAll("\n", ""));
+        result.put("`negative_prompt`", negative_prompt.replaceAll("\n", ""));
         result.put("\"`steps`\"", steps);
         result.put("`sampler_index`", sampler_index);
         result.put("\"`cfg_scale`\"", cfg_scale);
