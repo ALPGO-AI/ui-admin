@@ -270,21 +270,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         Integer width = convertToInteger(parameters.getOrDefault("width", 512));
         Integer height = convertToInteger(parameters.getOrDefault("height", 512));
         extraReplaceMap.put("`inputControlNetImageBase64String`", inputControlNetImageBase64String);
-        if (parameters.get("enableFontArtImage") != null) {
-            if ((Boolean) parameters.get("enableFontArtImage")) {
-                if (parameters.get("fontArtText") != null) {
-                    String fontArtText = (String) parameters.get("fontArtText");
-                    Integer fontArtSize = parameters.get("fontArtSize") == null ? 72 : (Integer) parameters.get("fontArtSize");
-                    String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
-                            fontArtText,
-                            fontArtSize,
-                            width,
-                            height
-                    );
-                    extraReplaceMap.put("`fontArtImage`", fontArtImage);
-                }
-            }
-        }
+
         for (LinkedHashMap customerRequest : customerRequests) {
             Object requestBody = customerRequest.get("requestBody");
             String content = gson.toJson(requestBody);

@@ -10,6 +10,7 @@ import cc.alpgo.common.core.page.TableDataInfo;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.utils.poi.ExcelUtil;
 import cc.alpgo.neo4j.service.INeo4jService;
+import cc.alpgo.sdtool.util.BlackBackgroundWithWhiteArtisticTextGenerator;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +41,9 @@ public class StableDiffusionPatternController extends BaseController
     private INeo4jService neo4jService;
     @Autowired
     private IStableDiffusionPatternService stableDiffusionPatternService;
+
+    @Autowired
+    private BlackBackgroundWithWhiteArtisticTextGenerator blackBackgroundWithWhiteArtisticTextGenerator;
 
     /**
      * 查询stable_diffusion_pattern列表
@@ -130,5 +134,28 @@ public class StableDiffusionPatternController extends BaseController
     public AjaxResult packageCard(@RequestBody PackageCardRequestBody packageCardRequestBody){
 
         return AjaxResult.success(neo4jService.packageCard(packageCardRequestBody));
+    }
+
+
+    @GetMapping("/fontart/{content}/{fontSize}")
+    public String getFontArtCardWithSize(@PathVariable("content") String fontArtText,@PathVariable("fontSize") Integer fontArtSize){
+        String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
+                fontArtText,
+                fontArtSize,
+                512,
+                768
+        );
+        return "<img src=\"data:image/png;base64,"+fontArtImage+"\" width=\"512\" height=\"768\">";
+    }
+    @GetMapping("/fontart/{content}")
+    public String getFontArtCard(@PathVariable("content") String fontArtText){
+        Integer fontArtSize = 72;
+        String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
+                fontArtText,
+                fontArtSize,
+                512,
+                768
+        );
+        return "<img src=\"data:image/png;base64,"+fontArtImage+"\" width=\"512\" height=\"768\">";
     }
 }
