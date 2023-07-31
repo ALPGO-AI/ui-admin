@@ -137,11 +137,10 @@ public class StableDiffusionApiUtil {
         if (isEmpty(objects)) {
             return results;
         }
-        for (Object object : objects) {
-            Map<String, Object> map = (Map<String, Object>) object;
-            if (map == null) {
-                continue;
-            }
+
+        Object object = objects.get(0);
+        Map<String, Object> map = (Map<String, Object>) object;
+        if (map != null) {
             Object isFileObj = map.get("is_file");
             Boolean isFile = (Boolean) isFileObj;
             if (isFile != null && isFile) {
