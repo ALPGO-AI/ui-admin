@@ -3,8 +3,8 @@ package cc.alpgo.sdtool.controller;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.core.controller.BaseController;
 import cc.alpgo.common.core.domain.AjaxResult;
@@ -13,6 +13,8 @@ import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.utils.CosUtil;
+import cc.alpgo.common.utils.StringUtils;
+import cc.alpgo.common.utils.file.FileUtils;
 import cc.alpgo.common.utils.poi.ExcelUtil;
 import cc.alpgo.common.utils.uuid.UUID;
 import cc.alpgo.neo4j.service.INeo4jService;
@@ -22,6 +24,7 @@ import cc.alpgo.system.domain.Image;
 import cc.alpgo.system.domain.ImageProvider;
 import cc.alpgo.system.service.IEnvironmentService;
 import cc.alpgo.system.utils.ImageBuilder;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -181,15 +184,25 @@ public class StableDiffusionPatternController extends BaseController
 
 
     @GetMapping("/fontart/{content}/{fontSize}/base64.png")
-    public String generateFontArtAndReturnCosUrl(@PathVariable("content") String fontArtText,@PathVariable("fontSize") Integer fontArtSize) throws IOException {
-        String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
+    public void generateFontArtAndReturnFile(@PathVariable("content") String fontArtText,@PathVariable("fontSize") Integer fontArtSize, HttpServletResponse response, HttpServletRequest request) throws IOException {
+        InputStream fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByTextReturnInputStream(
                 fontArtText,
                 fontArtSize,
                 512,
                 768
         );
-        return fontArtImage;
+        try
+        {
+            response.setContentType(MediaType.IMAGE_PNG_VALUE);
+            FileUtils.setAttachmentResponseHeader(response, "base64.png");
+            FileUtils.writeBytes(fontArtImage, response.getOutputStream());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
+
     @GetMapping("/fontart/{content}/{fontSize}")
     public String getFontArtCardWithSize(@PathVariable("content") String fontArtText,@PathVariable("fontSize") Integer fontArtSize){
         String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(

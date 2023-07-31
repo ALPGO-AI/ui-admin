@@ -1,12 +1,6 @@
 package cc.alpgo.common.utils.file;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +39,27 @@ public class FileUtils
                 throw new FileNotFoundException(filePath);
             }
             fis = new FileInputStream(file);
+            byte[] b = new byte[1024];
+            int length;
+            while ((length = fis.read(b)) > 0)
+            {
+                os.write(b, 0, length);
+            }
+        }
+        catch (IOException e)
+        {
+            throw e;
+        }
+        finally
+        {
+            IOUtils.close(os);
+            IOUtils.close(fis);
+        }
+    }
+    public static void writeBytes(InputStream fis, OutputStream os) throws IOException
+    {
+        try
+        {
             byte[] b = new byte[1024];
             int length;
             while ((length = fis.read(b)) > 0)
