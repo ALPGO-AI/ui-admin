@@ -180,6 +180,16 @@ public class StableDiffusionPatternController extends BaseController
     }
 
 
+    @GetMapping("/fontart/{content}/{fontSize}/base64.png")
+    public String generateFontArtAndReturnCosUrl(@PathVariable("content") String fontArtText,@PathVariable("fontSize") Integer fontArtSize) throws IOException {
+        String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
+                fontArtText,
+                fontArtSize,
+                512,
+                768
+        );
+        return fontArtImage;
+    }
     @GetMapping("/fontart/{content}/{fontSize}")
     public String getFontArtCardWithSize(@PathVariable("content") String fontArtText,@PathVariable("fontSize") Integer fontArtSize){
         String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
