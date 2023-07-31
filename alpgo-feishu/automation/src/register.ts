@@ -50,8 +50,8 @@ basekit.addAction({
     properties: {
         // 声明 text 属性
         text: {
-          // 声明 text 字段类型为 string
-          type: ParamType.String,
+          // 声明 text 字段类型为 link
+          type: ParamType.Link,
           // 声明在节点 UI 上展示的文案为「转换结果」
           label: '转换结果',
         },
