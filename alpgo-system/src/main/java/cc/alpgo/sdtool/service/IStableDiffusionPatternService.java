@@ -75,4 +75,6 @@ public interface IStableDiffusionPatternService
     public StableDiffusionApiResponse generateByImg(Map<String, String> params, Long patternId) throws IOException;
 
     List<StableDiffusionPattern> selectStableDiffusionPatternListByPatternIds(List<Long> toArray);
+
+    StableDiffusionPattern selectStableDiffusionPatternByAuthCode(String authCode);
 }

@@ -1,8 +1,7 @@
 package cc.alpgo.sdtool.controller;
 
 import java.io.*;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import cc.alpgo.common.config.AlpgoConfig;
@@ -24,6 +23,8 @@ import cc.alpgo.system.domain.Image;
 import cc.alpgo.system.domain.ImageProvider;
 import cc.alpgo.system.service.IEnvironmentService;
 import cc.alpgo.system.utils.ImageBuilder;
+import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -223,5 +224,33 @@ public class StableDiffusionPatternController extends BaseController
                 768
         );
         return "<img src=\"data:image/png;base64,"+fontArtImage+"\" width=\"512\" height=\"768\">";
+    }
+    @PostMapping("/fontart/generateWithAuthCode/{authcode}")
+    public AjaxResult generateFontArtAndReturnCosUrl(@PathVariable("authcode") String authCode, @RequestBody List<Map<String, Object>> extraGenerateParams) throws Exception {
+        // check auth code status
+        StableDiffusionPattern pattern = stableDiffusionPatternService.selectStableDiffusionPatternByAuthCode(authCode);
+        if (pattern != null) {
+            Map<String, Object> map = new Gson().fromJson(pattern.getParametersJson(), HashMap.class);
+            if (map.get("enableAuthCode") != null && (Boolean) map.get("enableAuthCode") && map.get("authCode") != null && ((String) map.get("authCode")).equals(authCode)) {
+                Object enableAuthCodeCanUseHeaderParams = map.get("enableAuthCodeCanUseHeaderParams");
+                if (enableAuthCodeCanUseHeaderParams == null) {
+                    return AjaxResult.error("No available envs");
+                }
+                LinkedTreeMap enableAuthCodeCanUseHeaderParamsMap = (LinkedTreeMap) enableAuthCodeCanUseHeaderParams;
+                Set<String> set = enableAuthCodeCanUseHeaderParamsMap.keySet();
+                LinkedHashMap headerParams = new LinkedHashMap<>();
+                for (String key: set) {
+                    headerParams.put(key, enableAuthCodeCanUseHeaderParamsMap.get(key).toString());
+                }
+                // valid auth code, start generate with extraParams
+                stableDiffusionPatternService.generateByPatternId(
+                        headerParams,
+                        pattern.getPatternId(),
+                        extraGenerateParams
+                );
+                return AjaxResult.success("OK");
+            }
+        }
+        return AjaxResult.error("Invalid auth code");
     }
 }

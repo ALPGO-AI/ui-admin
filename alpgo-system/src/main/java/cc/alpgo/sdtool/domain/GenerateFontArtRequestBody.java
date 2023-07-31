@@ -8,4 +8,5 @@ public class GenerateFontArtRequestBody {
     private Integer fontArtSize;
     private Integer width;
     private Integer height;
+    private String prompt;
 }

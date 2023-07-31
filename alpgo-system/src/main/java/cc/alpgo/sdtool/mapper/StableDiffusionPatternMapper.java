@@ -64,4 +64,6 @@ public interface StableDiffusionPatternMapper
     List<StableDiffusionPattern> selectStableDiffusionPatternListByPatternIds(@Param("patternIds") List<Long> ids);
 
     void updateStableDiffusionPatternSampleImage(StableDiffusionPattern stableDiffusionPattern);
+
+    StableDiffusionPattern selectStableDiffusionPatternByAuthCode(String authCode);
 }

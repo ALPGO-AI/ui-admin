@@ -100,7 +100,7 @@ public class Txt2txtRequestParams {
     public Txt2txtRequestParams(String session_hash, String positiveprompt, String negativeprompt,
                                 Map<String, Object> map) {
         this.session_hash = session_hash;
-        this.modelVersionMap = (LinkedHashMap) map.getOrDefault("modelVersionMap", new LinkedHashMap<>());
+        this.modelVersionMap = (Map<String, String>) map.getOrDefault("modelVersionMap", new LinkedHashMap<>());
         this.sampler_index = (String) map.getOrDefault("sampler", "Euler a");
         this.script_name = null;
         this.enable_hr = convertToBoolean(map.getOrDefault("enable_hr", false));;

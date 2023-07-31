@@ -1,5 +1,6 @@
 package cc.alpgo.system.service.impl;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class EnvironmentServiceImpl implements IEnvironmentService
 
         List<Long> result = new ArrayList<>();
         for (String str : listString.split(",")) {
-            result.add(Long.parseLong(str));
+            result.add(BigDecimal.valueOf(Double.valueOf(str)).longValue());
         }
         return result;
     }

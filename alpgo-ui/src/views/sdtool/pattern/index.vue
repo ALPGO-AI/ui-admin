@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <header-params></header-params>
+    <header-params ref="headerParams"></header-params>
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="模型" prop="model">
         <el-select v-model="queryParams.model" placeholder="请选择模型" clearable size="small">
@@ -219,6 +219,27 @@
         <el-form-item label="height">
           <el-input-number v-model="form.parameters.height" :precision="0" :step="1" :max="2000"></el-input-number>
         </el-form-item>
+        <el-form-item label="开启外网API调用授权码">
+          <el-switch v-model="form.parameters.enableAuthCode"
+            active-color="#13ce66"
+            inactive-color="#ff4949"/>
+          <el-form-item v-show="form.parameters.enableAuthCode" label="授权码">
+            <el-input readonly v-model="form.parameters.authCode"></el-input>
+            <el-link @click="form.parameters.authCode = uuid()" type="primary">生成授权码</el-link>
+          </el-form-item>
+          <el-form v-if="$refs.headerParams && $refs.headerParams.optionsMap" :model="form.parameters.enableAuthCodeCanUseHeaderParams" ref="form" style="width: 330px;">
+            <el-form-item v-for="(item, index) in headerParamsForm" :key="index" :label="item.label">
+              <el-select v-model="form.parameters.enableAuthCodeCanUseHeaderParams[item.key]"  :placeholder="`请选择${item.label}`">
+                <el-option
+                  v-for="item in $refs.headerParams.optionsMap[item.options]"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </el-form-item>
         <el-form-item label="开启ControlNet">
           <el-switch v-model="form.parameters.controlnet.enable"
             active-color="#13ce66"
@@ -323,6 +344,7 @@ import { controlNetModels, controlNetProcessor } from "@/utils/constant";
 import { mapImage } from "@/api/system/image";
 import ClipboardJS from 'clipboard';
 import { mapState } from "vuex";
+import uuid from 'uuid'
 
 const formatNodeMap = (nodes) => {
   const nodeMap = {};
@@ -399,7 +421,10 @@ const initParams = {
   },
   enableFontArtImage: false,
   fontArtText: '',
-  fontArtSize: 72
+  fontArtSize: 108,
+  enableAuthCode: false,
+  authCode: '',
+  enableAuthCodeCanUseHeaderParams: {}
 };
 const formatPrompt = (str) => {
   if (!str) {
@@ -430,6 +455,7 @@ export default {
   },
   data() {
     return {
+      uuid,
       activeCustomerRequestIndex: '',
       patterns: [],
       outputs: [],
@@ -487,7 +513,11 @@ export default {
         name: '',
         type: '',
         rarity: 0,
-      }
+      },
+      headerParamsForm: [
+        { label: '授权码调用的WebUI环境', key: 'activewebuienvs', type: 'multiselect', options: 'stable_diffusion_webui'},
+        { label: '授权码调用的腾讯云COS', key: 'activetencentcos', type: 'multiselect', options: 'tencent_cos'}
+      ],
     };
   },
   created() {

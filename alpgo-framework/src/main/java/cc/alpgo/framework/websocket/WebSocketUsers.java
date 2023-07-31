@@ -146,6 +146,8 @@ public class WebSocketUsers
      */
     public static void sendMessageToUserByWsId(String wsId, String message)
     {
-        sendMessageToUserByText(USERS.get(wsId.toString()), message);
+        if (wsId != null) {
+            sendMessageToUserByText(USERS.get(wsId.toString()), message);
+        }
     }
 }

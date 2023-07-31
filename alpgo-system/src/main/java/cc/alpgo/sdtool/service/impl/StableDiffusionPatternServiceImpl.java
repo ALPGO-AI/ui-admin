@@ -259,6 +259,21 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
             ControlNetRequestBody controlNetRequestBody = stableDiffusionApiUtil.getControlNetRequestBody(parameters);
             inputControlNetImageBase64String = stableDiffusionApiUtil.convertToBase64(controlNetRequestBody.getInputImage(), cosConfigs, sdEnv);
         }
+        String fontArtImageBase64String = "";
+        if (parameters.get("enableFontArtImage") != null && (Boolean) parameters.get("enableFontArtImage") && parameters.get("fontArtText") != null) {
+            Integer fontArtSize = 128;
+            if (parameters.get("fontArtSize") != null) {
+                fontArtSize = (Integer) parameters.get("fontArtSize");
+            }
+            String fontArtText = (String) parameters.get("fontArtText");
+            String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
+                    fontArtText,
+                    fontArtSize,
+                    (Integer) parameters.get("width"),
+                    (Integer) parameters.get("height")
+            );
+            fontArtImageBase64String = fontArtImage;
+        }
         StableDiffusionApiResponse result = null;
         sendProgressInfo(wsId, sdEnv, ProgressInfoConstant.SEND_GENERATE);
         ArrayList<LinkedHashMap> customerRequests = (ArrayList) parameters.get("customer_requests");
@@ -267,11 +282,9 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         }
         Gson gson = new Gson();
         Map<String, Object> extraReplaceMap = new HashMap<>();
-        Integer width = convertToInteger(parameters.getOrDefault("width", 512));
-        Integer height = convertToInteger(parameters.getOrDefault("height", 512));
         extraReplaceMap.put("`inputControlNetImageBase64String`", inputControlNetImageBase64String);
-
-        for (LinkedHashMap customerRequest : customerRequests) {
+        extraReplaceMap.put("`fontArtImageBase64String`", fontArtImageBase64String);
+        for (Map customerRequest : customerRequests) {
             Object requestBody = customerRequest.get("requestBody");
             String content = gson.toJson(requestBody);
             String requestString = txt2txtRequestParams.toPreDictUpdateString(sdEnv, content, extraReplaceMap);
@@ -410,5 +423,11 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     @Override
     public List<StableDiffusionPattern> selectStableDiffusionPatternListByPatternIds(List<Long> ids) {
         return stableDiffusionPatternMapper.selectStableDiffusionPatternListByPatternIds(ids);
+    }
+
+    @Override
+    public StableDiffusionPattern selectStableDiffusionPatternByAuthCode(String authCode) {
+
+        return stableDiffusionPatternMapper.selectStableDiffusionPatternByAuthCode("%"+authCode+"%");
     }
 }

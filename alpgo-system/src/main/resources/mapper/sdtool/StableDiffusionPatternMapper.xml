@@ -122,4 +122,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{patternId}
         </foreach>
     </delete>
+
+    <select id="selectStableDiffusionPatternByAuthCode" parameterType="String" resultMap="StableDiffusionPatternResult">
+        <include refid="selectStableDiffusionPatternVo"/>
+        where parameters_json like #{authCode}
+    </select>
 </mapper>
