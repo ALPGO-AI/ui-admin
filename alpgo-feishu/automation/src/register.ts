@@ -1,4 +1,5 @@
 import { basekit, Component, ParamType } from '@lark-opdev/block-basekit-server-api';
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 basekit.addAction({
   formItems: [
@@ -20,12 +21,8 @@ basekit.addAction({
       componentProps: {
         options: [
           {
-            label: '转为大写',
-            value: 'toUpperCase',
-          },
-          {
-            label: '转为小写',
-            value: 'toLowerCase',
+            label: '生成字艺',
+            value: 'generateFontArt',
           },
         ]
       }
@@ -36,9 +33,16 @@ basekit.addAction({
     // 从运行时入参 args 中读取实际的源文本 text 和转换类型 transformType
     const { text = '', transformType } = args;
     // 根据转换类型将源文本做大小写转换
-    const outputText = transformType === 'toUpperCase'
-      ? text.toUpperCase()
-      : text.toLowerCase();
+    const generateFontArt = async (text) => {
+      // 发起带Query的请求文本数据
+      const query = new URLSearchParams({
+          foo: 'bar',
+      });
+      const res = await fetch(`https://api.alpgo.cc/prod-api/sdtool/pattern/fontart/${text}/64`);
+      return res.text();
+    }
+    const outputText = transformType === 'generateFontArt'
+      ? await generateFontArt(text) : text;
     // 返回转换后的数据
     return {
       text: outputText,

@@ -5,13 +5,12 @@ async function test() {
     const actionContext = await createActionContext({
       tenantAccessToken: '',
     });
-    
+
     testAction({
         text: 'hello world',
-        transformType: 'toUpperCase',
+        transformType: 'generateFontArt',
     },
     actionContext);
 }
 
 test();
-      
