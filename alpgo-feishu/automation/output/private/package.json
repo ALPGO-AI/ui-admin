@@ -15,6 +15,7 @@
     "@lark-opdev/block-basekit-cli": "^0.0.6"
   },
   "dependencies": {
-    "@lark-opdev/block-basekit-server-api": "^0.0.5"
+    "@lark-opdev/block-basekit-server-api": "^0.0.5",
+    "node-fetch": "^2.6.12"
   }
 }
