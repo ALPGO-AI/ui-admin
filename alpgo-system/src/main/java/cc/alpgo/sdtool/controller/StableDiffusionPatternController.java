@@ -247,6 +247,11 @@ public class StableDiffusionPatternController extends BaseController
 
     @GetMapping("/fontart/transtoprompt/{content}")
     public AjaxResult transtoprompt(@PathVariable("content") String content) throws IOException {
+
+        return AjaxResult.success(getAIPrompt(content));
+    }
+
+    private String getAIPrompt(String content) {
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .followRedirects(true)
                 .build();
@@ -286,8 +291,9 @@ public class StableDiffusionPatternController extends BaseController
                 // nothing
             }
         }
-        return AjaxResult.success(prompt);
+        return prompt;
     }
+
     @PostMapping("/fontart/generateWithAuthCode/{authcode}")
     public AjaxResult generateFontArtAndReturnCosUrl(@PathVariable("authcode") String authCode, @RequestBody List<Map<String, Object>> extraGenerateParams) throws Exception {
         // check auth code status
@@ -305,7 +311,10 @@ public class StableDiffusionPatternController extends BaseController
                 for (String key: set) {
                     headerParams.put(key, enableAuthCodeCanUseHeaderParamsMap.get(key).toString());
                 }
-                // valid auth code, start generate with extraParams
+                if(extraGenerateParams.get(0).get("autoPrompt") != null && (Boolean) extraGenerateParams.get(0).get("autoPrompt")) {
+                    extraGenerateParams.get(0).put("AIPrompt", getAIPrompt((String)extraGenerateParams.get(0).get("autoPromptContent")));
+                }
+                    // valid auth code, start generate with extraParams
                 stableDiffusionPatternService.generateByPatternId(
                         headerParams,
                         pattern.getPatternId(),

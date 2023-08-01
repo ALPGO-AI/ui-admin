@@ -284,6 +284,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
         Map<String, Object> extraReplaceMap = new HashMap<>();
         extraReplaceMap.put("`inputControlNetImageBase64String`", inputControlNetImageBase64String);
         extraReplaceMap.put("`fontArtImageBase64String`", fontArtImageBase64String);
+        extraReplaceMap.put("`AIPrompt`", parameters.get("AIPrompt"));
         for (Map customerRequest : customerRequests) {
             Object requestBody = customerRequest.get("requestBody");
             String content = gson.toJson(requestBody);
