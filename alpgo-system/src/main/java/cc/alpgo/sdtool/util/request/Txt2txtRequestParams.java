@@ -573,7 +573,9 @@ public class Txt2txtRequestParams {
             for (Map.Entry<String, Object> entry : entries2) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                content = content.replaceAll(key, value.toString());
+                if (value != null) {
+                    content = content.replaceAll(key, value.toString());
+                }
             }
         }
         return content;
