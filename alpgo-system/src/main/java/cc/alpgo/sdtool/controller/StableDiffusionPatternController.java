@@ -5,6 +5,7 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cc.alpgo.common.config.AlpgoConfig;
 import cc.alpgo.common.core.controller.BaseController;
 import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.page.TableDataInfo;
@@ -13,6 +14,7 @@ import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.event.CustomWebhooksEvent;
 import cc.alpgo.common.utils.CosUtil;
+import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.file.FileUtils;
 import cc.alpgo.common.utils.poi.ExcelUtil;
 import cc.alpgo.common.utils.uuid.UUID;
@@ -71,6 +73,8 @@ public class StableDiffusionPatternController extends BaseController
     private CosUtil cosUtil;
     @Autowired
     private ApplicationContext applicationContext;
+    @Autowired
+    private AlpgoConfig alpgoConfig;
 
     /**
      * 查询stable_diffusion_pattern列表
@@ -242,13 +246,13 @@ public class StableDiffusionPatternController extends BaseController
     }
 
     @GetMapping("/fontart/transtoprompt/{content}")
-    public String transtoprompt(@PathVariable("content") String content) throws IOException {
+    public AjaxResult transtoprompt(@PathVariable("content") String content) throws IOException {
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .followRedirects(true)
                 .build();
         okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/json");
         okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "{" +
-                "\"uuid\": \"35a89ecc-aa3c-4cad-9b48-958cdb48ad75\"," +
+                "\"uuid\": \""+UUID.randomUUID().toString()+"\"," +
                 "\"messages\": [" +
                 "{" +
                 "\"role\": \"system\"," +
@@ -261,7 +265,7 @@ public class StableDiffusionPatternController extends BaseController
         okhttp3.Request request = new okhttp3.Request.Builder()
                 .url("https://chatboxai.app/api/ai/chat")
                 .method("POST", body)
-                .addHeader("Authorization", "D22508DF-C89D-4701-A1B3-3759220B6114")
+                .addHeader("Authorization", alpgoConfig.getChatBoxAIKey())
                 .addHeader("Content-Type", "application/json")
                 .build();
         okhttp3.Response response = client.newCall(request).execute();
@@ -274,12 +278,15 @@ public class StableDiffusionPatternController extends BaseController
         for (String str : split) {
             try {
                 ChatBoxAIModel res = gson.fromJson(str, ChatBoxAIModel.class);
-                prompt += res.getChoices().get(0).getDelta().getContent();
+                String content2 = res.getChoices().get(0).getDelta().getContent();
+                if (StringUtils.isNotBlank(content2) && !content2.equals("null")) {
+                    prompt += content2;
+                }
             } catch (Exception e) {
                 // nothing
             }
         }
-        return prompt;
+        return AjaxResult.success(prompt);
     }
     @PostMapping("/fontart/generateWithAuthCode/{authcode}")
     public AjaxResult generateFontArtAndReturnCosUrl(@PathVariable("authcode") String authCode, @RequestBody List<Map<String, Object>> extraGenerateParams) throws Exception {

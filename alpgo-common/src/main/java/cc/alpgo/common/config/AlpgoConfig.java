@@ -39,6 +39,7 @@ public class AlpgoConfig
 
     /** webhooks target */
     private List<String> webhooks;
+    private String chatBoxAIKey;
 
     public List<String> getWebhooks() {
         if (CollectionUtils.isEmpty(webhooks)) {
@@ -48,9 +49,16 @@ public class AlpgoConfig
     }
 
     public void setWebhooks(List<String> webhooks) {
+
         this.webhooks = webhooks;
     }
 
+    public String getChatBoxAIKey() {
+        return chatBoxAIKey;
+    }
+    public void setChatBoxAIKey(String chatBoxAIKey) {
+        this.chatBoxAIKey = chatBoxAIKey;
+    }
     public String getName()
     {
         return name;
@@ -158,4 +166,5 @@ public class AlpgoConfig
     {
         return getProfile() + "/upload";
     }
+
 }
