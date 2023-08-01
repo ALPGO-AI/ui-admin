@@ -256,7 +256,7 @@ public class StableDiffusionPatternController extends BaseController
                 "}," +
                 "{" +
                 "    \"role\": \"user\"," +
-                "    \"content\": \"医院\"" +
+                "    \"content\": \""+content+"\"" +
                 "}\n    ],\n    \"temperature\": 0.7,\n    \"stream\": true\n}");
         okhttp3.Request request = new okhttp3.Request.Builder()
                 .url("https://chatboxai.app/api/ai/chat")
