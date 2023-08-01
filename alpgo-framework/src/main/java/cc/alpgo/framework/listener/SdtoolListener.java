@@ -138,6 +138,23 @@ public class SdtoolListener implements ApplicationListener<ApplicationEvent> {
                 log.info("call webhook {} success", webhook);
             }
         }
+        if (event instanceof CustomWebhooksEvent) {
+            CustomWebhooksEvent customWebhooksEvent = (CustomWebhooksEvent) event;
+            String webhook = customWebhooksEvent.getUrl();
+            OkHttpClient client = new OkHttpClient.Builder().build();
+            RequestBody body = RequestBody.create(MediaType.parse("application/json"), customWebhooksEvent.getPayload());
+            Request request = new Request.Builder()
+                    .url(webhook)
+                    .post(body)
+                    .addHeader("Content-Type", "application/json")
+                    .build();
+            try {
+                Response response = client.newCall(request).execute();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            log.info("call webhook {} success", webhook);
+        }
     }
     private void updateStatus(String envKey, EnvTaskExecutionStatus processing) {
         applicationContext.publishEvent(new UpdateEnvExecutionStatusEvent(envKey, processing));

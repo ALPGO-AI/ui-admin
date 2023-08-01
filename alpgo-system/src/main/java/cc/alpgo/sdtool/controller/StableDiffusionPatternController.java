@@ -11,6 +11,8 @@ import cc.alpgo.common.core.page.TableDataInfo;
 import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.enums.CosConfig;
+import cc.alpgo.common.event.CustomWebhooksEvent;
+import cc.alpgo.common.event.WebhooksEvent;
 import cc.alpgo.common.utils.CosUtil;
 import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.file.FileUtils;
@@ -25,6 +27,7 @@ import cc.alpgo.system.service.IEnvironmentService;
 import cc.alpgo.system.utils.ImageBuilder;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +69,8 @@ public class StableDiffusionPatternController extends BaseController
     private IEnvironmentService environmentService;
     @Autowired
     private CosUtil cosUtil;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     /**
      * 查询stable_diffusion_pattern列表
@@ -225,6 +230,17 @@ public class StableDiffusionPatternController extends BaseController
         );
         return "<img src=\"data:image/png;base64,"+fontArtImage+"\" width=\"512\" height=\"768\">";
     }
+
+    @GetMapping("/fontart/regeneratebyrevid/{revId}")
+    public String regenerateByRevId(@PathVariable("revId") String revId){
+        String url = "https://hooks.airtable.com/workflows/v1/genericWebhook/apptggWYplng9n6VI/wflKkckMGdtTyuR4j/wtrpm7zd3djJTMPcR";
+        Gson gson = new Gson();
+        Map map = new HashMap<>();
+        map.put("revId", revId);
+        applicationContext.publishEvent(new CustomWebhooksEvent(url, gson.toJson(map)));
+        return "请求已接受，正在处理中，请稍等";
+    }
+
     @PostMapping("/fontart/generateWithAuthCode/{authcode}")
     public AjaxResult generateFontArtAndReturnCosUrl(@PathVariable("authcode") String authCode, @RequestBody List<Map<String, Object>> extraGenerateParams) throws Exception {
         // check auth code status
