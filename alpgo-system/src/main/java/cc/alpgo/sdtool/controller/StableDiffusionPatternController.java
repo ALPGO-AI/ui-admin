@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import cc.alpgo.common.config.AlpgoConfig;
+
 import cc.alpgo.common.core.controller.BaseController;
 import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.common.core.page.TableDataInfo;
@@ -12,13 +12,12 @@ import cc.alpgo.common.domain.FileNameVO;
 import cc.alpgo.common.enums.BusinessType;
 import cc.alpgo.common.enums.CosConfig;
 import cc.alpgo.common.event.CustomWebhooksEvent;
-import cc.alpgo.common.event.WebhooksEvent;
 import cc.alpgo.common.utils.CosUtil;
-import cc.alpgo.common.utils.StringUtils;
 import cc.alpgo.common.utils.file.FileUtils;
 import cc.alpgo.common.utils.poi.ExcelUtil;
 import cc.alpgo.common.utils.uuid.UUID;
 import cc.alpgo.neo4j.service.INeo4jService;
+import cc.alpgo.sdtool.domain.ChatBoxAIModel;
 import cc.alpgo.sdtool.domain.GenerateFontArtRequestBody;
 import cc.alpgo.sdtool.util.BlackBackgroundWithWhiteArtisticTextGenerator;
 import cc.alpgo.system.domain.Image;
@@ -27,6 +26,7 @@ import cc.alpgo.system.service.IEnvironmentService;
 import cc.alpgo.system.utils.ImageBuilder;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import okhttp3.OkHttpClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -241,6 +241,46 @@ public class StableDiffusionPatternController extends BaseController
         return "请求已接受，正在处理中，请稍等";
     }
 
+    @GetMapping("/fontart/transtoprompt/{content}")
+    public String transtoprompt(@PathVariable("content") String content) throws IOException {
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .followRedirects(true)
+                .build();
+        okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/json");
+        okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "{" +
+                "\"uuid\": \"35a89ecc-aa3c-4cad-9b48-958cdb48ad75\"," +
+                "\"messages\": [" +
+                "{" +
+                "\"role\": \"system\"," +
+                "\"content\": \"给我AI英文提示词，英文逗号分隔，不要返回其他任何内容\"" +
+                "}," +
+                "{" +
+                "    \"role\": \"user\"," +
+                "    \"content\": \"医院\"" +
+                "}\n    ],\n    \"temperature\": 0.7,\n    \"stream\": true\n}");
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url("https://chatboxai.app/api/ai/chat")
+                .method("POST", body)
+                .addHeader("Authorization", "D22508DF-C89D-4701-A1B3-3759220B6114")
+                .addHeader("Content-Type", "application/json")
+                .build();
+        okhttp3.Response response = client.newCall(request).execute();
+        // Handle the response as needed
+        String result = response.body().string();
+        String prompt = "";
+        response.close();
+        String[] split = result.split("data: ");
+        Gson gson = new Gson();
+        for (String str : split) {
+            try {
+                ChatBoxAIModel res = gson.fromJson(str, ChatBoxAIModel.class);
+                prompt += res.getChoices().get(0).getDelta().getContent();
+            } catch (Exception e) {
+                // nothing
+            }
+        }
+        return prompt;
+    }
     @PostMapping("/fontart/generateWithAuthCode/{authcode}")
     public AjaxResult generateFontArtAndReturnCosUrl(@PathVariable("authcode") String authCode, @RequestBody List<Map<String, Object>> extraGenerateParams) throws Exception {
         // check auth code status
