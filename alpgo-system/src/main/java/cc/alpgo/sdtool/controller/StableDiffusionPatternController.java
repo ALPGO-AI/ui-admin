@@ -251,7 +251,7 @@ public class StableDiffusionPatternController extends BaseController
         return AjaxResult.success(getAIPrompt(content));
     }
 
-    private String getAIPrompt(String content) {
+    private String getAIPrompt(String content) throws IOException {
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .followRedirects(true)
                 .build();
