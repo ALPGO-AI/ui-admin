@@ -21,6 +21,7 @@ import cc.alpgo.common.utils.uuid.UUID;
 import cc.alpgo.neo4j.service.INeo4jService;
 import cc.alpgo.sdtool.domain.ChatBoxAIModel;
 import cc.alpgo.sdtool.domain.GenerateFontArtRequestBody;
+import cc.alpgo.sdtool.util.AIUtil;
 import cc.alpgo.sdtool.util.BlackBackgroundWithWhiteArtisticTextGenerator;
 import cc.alpgo.system.domain.Image;
 import cc.alpgo.system.domain.ImageProvider;
@@ -75,6 +76,8 @@ public class StableDiffusionPatternController extends BaseController
     private ApplicationContext applicationContext;
     @Autowired
     private AlpgoConfig alpgoConfig;
+    @Autowired
+    private AIUtil aiUtil;
 
     /**
      * 查询stable_diffusion_pattern列表
@@ -248,50 +251,7 @@ public class StableDiffusionPatternController extends BaseController
     @GetMapping("/fontart/transtoprompt/{content}")
     public AjaxResult transtoprompt(@PathVariable("content") String content) throws IOException {
 
-        return AjaxResult.success(getAIPrompt(content));
-    }
-
-    private String getAIPrompt(String content) throws IOException {
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                .followRedirects(true)
-                .build();
-        okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/json");
-        okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "{" +
-                "\"uuid\": \""+UUID.randomUUID().toString()+"\"," +
-                "\"messages\": [" +
-                "{" +
-                "\"role\": \"system\"," +
-                "\"content\": \"给我AI英文提示词，英文逗号分隔，不要返回其他任何内容\"" +
-                "}," +
-                "{" +
-                "    \"role\": \"user\"," +
-                "    \"content\": \""+content+"\"" +
-                "}\n    ],\n    \"temperature\": 0.7,\n    \"stream\": true\n}");
-        okhttp3.Request request = new okhttp3.Request.Builder()
-                .url("https://chatboxai.app/api/ai/chat")
-                .method("POST", body)
-                .addHeader("Authorization", alpgoConfig.getChatBoxAIKey())
-                .addHeader("Content-Type", "application/json")
-                .build();
-        okhttp3.Response response = client.newCall(request).execute();
-        // Handle the response as needed
-        String result = response.body().string();
-        String prompt = "";
-        response.close();
-        String[] split = result.split("data: ");
-        Gson gson = new Gson();
-        for (String str : split) {
-            try {
-                ChatBoxAIModel res = gson.fromJson(str, ChatBoxAIModel.class);
-                String content2 = res.getChoices().get(0).getDelta().getContent();
-                if (StringUtils.isNotBlank(content2) && !content2.equals("null")) {
-                    prompt += content2;
-                }
-            } catch (Exception e) {
-                // nothing
-            }
-        }
-        return prompt;
+        return AjaxResult.success(aiUtil.getAIPrompt(content));
     }
 
     @PostMapping("/fontart/generateWithAuthCode/{authcode}")
@@ -312,7 +272,7 @@ public class StableDiffusionPatternController extends BaseController
                     headerParams.put(key, enableAuthCodeCanUseHeaderParamsMap.get(key).toString());
                 }
                 if(extraGenerateParams.get(0).get("autoPrompt") != null && (Boolean) extraGenerateParams.get(0).get("autoPrompt")) {
-                    extraGenerateParams.get(0).put("AIPrompt", getAIPrompt((String)extraGenerateParams.get(0).get("autoPromptContent")));
+                    extraGenerateParams.get(0).put("AIPrompt", aiUtil.getAIPrompt((String)extraGenerateParams.get(0).get("autoPromptContent")));
                 }
                     // valid auth code, start generate with extraParams
                 stableDiffusionPatternService.generateByPatternId(

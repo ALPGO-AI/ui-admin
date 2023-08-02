@@ -221,4 +221,13 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
         }
         return UserConstants.UNIQUE;
     }
+
+    @Override
+    public String selectValueByTypeAndLabel(String type, String label) {
+        SysDictData data = new SysDictData();
+        data.setDictType(type);
+        data.setDictLabel(label);
+        SysDictData sysDictData = dictDataMapper.selectValueByTypeAndLabel(data);
+        return sysDictData.getDictValue();
+    }
 }
