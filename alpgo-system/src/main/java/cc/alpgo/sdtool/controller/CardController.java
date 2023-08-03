@@ -2,13 +2,11 @@ package cc.alpgo.sdtool.controller;
 
 import cc.alpgo.common.core.domain.AjaxResult;
 import cc.alpgo.neo4j.service.INeo4jService;
+import cc.alpgo.sdtool.domain.OpenAIRequest;
 import cc.alpgo.sdtool.util.AIUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -25,6 +23,11 @@ public class CardController {
     public AjaxResult aiToolOpenApi(@PathVariable("content") String content, @PathVariable("type") String type) throws IOException {
 
         return AjaxResult.success(aiUtil.cartToolCall(type, content));
+    }
+    @PostMapping("/open")
+    public AjaxResult aiToolOpenApiPostCustom(@RequestBody OpenAIRequest req) throws IOException {
+
+        return AjaxResult.success(aiUtil.cartToolCall(req));
     }
     @GetMapping("/graph")
     public AjaxResult graph(){
