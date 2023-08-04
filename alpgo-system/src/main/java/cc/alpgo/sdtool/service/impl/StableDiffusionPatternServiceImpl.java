@@ -71,6 +71,8 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
     private INeo4jService neo4jService;
     @Autowired
     private BlackBackgroundWithWhiteArtisticTextGenerator blackBackgroundWithWhiteArtisticTextGenerator;
+    @Autowired
+    private AutoLayoutGenerator autoLayoutGenerator;
 
     /**
      * 查询stable_diffusion_pattern
@@ -266,7 +268,7 @@ public class StableDiffusionPatternServiceImpl implements IStableDiffusionPatter
                 fontArtSize = (Integer) parameters.get("fontArtSize");
             }
             String fontArtText = (String) parameters.get("fontArtText");
-            String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
+            String fontArtImage = autoLayoutGenerator.generateImageByTextAutoLayout(
                     fontArtText,
                     fontArtSize,
                     (Integer) parameters.get("width"),
