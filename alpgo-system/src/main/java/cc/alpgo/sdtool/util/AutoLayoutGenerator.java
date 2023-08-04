@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,25 +14,27 @@ import java.io.InputStream;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 @Component
 public class AutoLayoutGenerator {
     @Autowired
     private FontLoader fontLoader;
-    private static final int MARGIN = 25; // 安全边距的大小
-    private static final int SINGLE_SIZE = 108;
+    private static final int MARGIN = 20; // 安全边距的大小
+    private static final int SINGLE_SIZE = 96;
     public String generateImageByTextAutoLayout(String text, int fontSize, int canvasWidth, int canvasHeight) throws IOException {
         Font font = new Font(fontLoader.loadFont(), Font.BOLD, fontSize);
         Color backgroundColor = Color.BLACK;
         Color foregroundColor = Color.WHITE;
-
-        return generateTextLayout(text, font, backgroundColor, foregroundColor, canvasWidth, canvasHeight);
+        // 使用正则表达式将多个空格替换为两个空格
+        String result = text.replaceAll("\\s{2,}", "  ");
+        return generateTextLayout(result, font, backgroundColor, foregroundColor, canvasWidth, canvasHeight);
     }
 
     public static String generateTextLayout(String text, Font font, Color backgroundColor, Color foregroundColor, int canvasWidth, int canvasHeight) throws IOException {
         // 创建黑底白字的图像
         int fontSize = font.getSize();
-        String[] paragraphs = text.split(" {8}");
+        String[] paragraphs = text.split(" {2}");
         Integer totalAreas = paragraphs.length;
         BufferedImage image = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
@@ -52,7 +55,7 @@ public class AutoLayoutGenerator {
             double regionWidth = regionSize.getWidth();
             double regionHeight = regionSize.getHeight();
             // 自动调整字体大小，直到符合高度要求
-            int minSize = 45;
+            int minSize = 50;
 //            while (regionHeight > canvasHeight) {
 //                tempSize -= 2; // 递减字体大小
 //                tempFont = new Font(font.getFamily(), font.getStyle(), tempSize);
@@ -99,7 +102,7 @@ public class AutoLayoutGenerator {
         }
 
         // 计算每个区域的垂直偏移量
-        int offsetYInit = (int) ((canvasHeight - totalHeight) / 2) + SINGLE_SIZE;
+        int offsetYInit = (int) ((canvasHeight - totalHeight) / 2);
         int currentY = offsetYInit + MARGIN;
 
         // 计算每个区域的起始偏移量
@@ -111,16 +114,16 @@ public class AutoLayoutGenerator {
             Dimension regionSize = dimensionMap.get(index);
             // 计算 offsetX
             int regionWidth = (int) regionSize.getWidth();
-            int rightX = index - 1 >= 0 ? offsetXArray[index - 1] + regionWidth + fontMap.get(index).getSize() : 0;
-            int limit = canvasWidth;
-            if (index - 1 >= 0 && rightX<=limit) {
+            int rightX = index - 1 >= 0 ? offsetXArray[index - 1] + regionWidth + fontMap.get(index).getSize() : canvasWidth;
+            int limit = canvasWidth - (MARGIN * 2);
+            if (index - 1 >= 0 && rightX<limit) {
                 offsetXArray[index] = offsetXArray[index - 1] + regionWidth + MARGIN;
                 // 计算 offsetY
                 offsetYArray[index] = currentY;
             } else {
                 if (index > 0) {
                     // 更新当前区域的垂直偏移量
-                    currentY += regionSize.getHeight() + MARGIN;
+                    currentY += dimensionMap.get(index - 1).getHeight() + MARGIN;
                 }
                 offsetXArray[index] = MARGIN;
                 // 计算 offsetY
@@ -133,19 +136,54 @@ public class AutoLayoutGenerator {
             // 获取当前区域的偏移量
             int offsetX = offsetXArray[index];
             int offsetY = offsetYArray[index];
-
+//            g.setColor(new Color((int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)));
+//            g.drawRect(offsetX, offsetY, (int) dimensionMap.get(index).getWidth(), (int) dimensionMap.get(index).getHeight());
             // 绘制文本
             g.setFont(fontMap.get(index));
-            g.drawString(paragraphs[index], offsetX, offsetY);
+//            g.drawString(paragraphs[index], offsetX, offsetY);
+            drawTexts(g, paragraphs[index], canvasWidth - (MARGIN * 2), offsetX, offsetY);
         }
 
         String base64Image = convertImageToBase64(image);
         return base64Image;
     }
+
+    private static void drawTexts(Graphics2D g2d, String text, int maxWidth, int offsetX, int offsetY) {
+        // Calculate the bounding rectangle for text
+        FontMetrics fontMetrics = g2d.getFontMetrics();
+        Rectangle2D bounds = fontMetrics.getStringBounds(text, g2d);
+        int baseY = 144;
+
+        // Wrap the text if it exceeds the maximum width
+        if (bounds.getWidth() > maxWidth) {
+            String[] words = text.split(" ");
+            int currentLineY = (int) bounds.getY();
+            StringBuilder currentLine = new StringBuilder();
+
+            for (String word : words) {
+                Rectangle2D wordBounds = fontMetrics.getStringBounds(currentLine + word, g2d);
+
+                if (wordBounds.getWidth() > maxWidth) {
+                    g2d.drawString(currentLine.toString(), offsetX,baseY + offsetY + currentLineY);
+                    currentLine = new StringBuilder(word + " ");
+                    currentLineY += fontMetrics.getHeight();
+                } else {
+                    currentLine.append(word).append(" ");
+                }
+            }
+
+            g2d.drawString(currentLine.toString(), offsetX, baseY + offsetY + currentLineY);
+        } else {
+            // Draw the entire text without wrapping
+            g2d.drawString(text, offsetX, baseY + offsetY + (int) bounds.getY());
+        }
+
+    }
+
     public static Dimension calculateRegionSize(int wordCount, Font font, Graphics graphics) {
         FontMetrics fontMetrics = graphics.getFontMetrics(font);
         int fontHeight = fontMetrics.getHeight();
-        int fontWidth = fontMetrics.getMaxAdvance();
+        int fontWidth = font.getSize();
 
         int regionWidth = calculateRegionWidth(wordCount, fontWidth);
         int regionHeight = calculateRegionHeight(wordCount, fontHeight, fontMetrics.getLeading());
@@ -155,8 +193,7 @@ public class AutoLayoutGenerator {
 
     private static int calculateRegionWidth(int wordCount, int fontWidth) {
         // 根据每行字数和字体宽度计算区域宽度
-        // 这里假设每行最多容纳10个字
-        int maxWordsPerLine = 10;
+        int maxWordsPerLine = 9;
         int lines = (int) Math.ceil((double) wordCount / maxWordsPerLine);
         if (wordCount < maxWordsPerLine) {
             return wordCount * fontWidth;
