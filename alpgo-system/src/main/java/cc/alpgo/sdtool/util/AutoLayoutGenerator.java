@@ -107,7 +107,9 @@ public class AutoLayoutGenerator {
             Dimension regionSize = dimensionMap.get(index);
             // 计算 offsetX
             int regionWidth = (int) regionSize.getWidth();
-            if (index - 1 >= 0 && offsetXArray[index - 1] + regionWidth + MARGIN <= canvasWidth) {
+            int rightX = index - 1 >= 0 ? offsetXArray[index - 1] + regionWidth + fontMap.get(index).getSize() : 0;
+            int limit = canvasWidth;
+            if (index - 1 >= 0 && rightX<=limit) {
                 offsetXArray[index] = offsetXArray[index - 1] + regionWidth + MARGIN;
                 // 计算 offsetY
                 offsetYArray[index] = currentY;
