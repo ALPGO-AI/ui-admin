@@ -52,7 +52,7 @@ public class AutoLayoutGenerator {
             double regionWidth = regionSize.getWidth();
             double regionHeight = regionSize.getHeight();
             // 自动调整字体大小，直到符合高度要求
-            int minSize = 65;
+            int minSize = 45;
 //            while (regionHeight > canvasHeight) {
 //                tempSize -= 2; // 递减字体大小
 //                tempFont = new Font(font.getFamily(), font.getStyle(), tempSize);
