@@ -22,6 +22,7 @@ import cc.alpgo.neo4j.service.INeo4jService;
 import cc.alpgo.sdtool.domain.ChatBoxAIModel;
 import cc.alpgo.sdtool.domain.GenerateFontArtRequestBody;
 import cc.alpgo.sdtool.util.AIUtil;
+import cc.alpgo.sdtool.util.AutoLayoutGenerator;
 import cc.alpgo.sdtool.util.BlackBackgroundWithWhiteArtisticTextGenerator;
 import cc.alpgo.system.domain.Image;
 import cc.alpgo.system.domain.ImageProvider;
@@ -78,6 +79,8 @@ public class StableDiffusionPatternController extends BaseController
     private AlpgoConfig alpgoConfig;
     @Autowired
     private AIUtil aiUtil;
+    @Autowired
+    private AutoLayoutGenerator autoLayoutGenerator;
 
     /**
      * 查询stable_diffusion_pattern列表
@@ -227,9 +230,9 @@ public class StableDiffusionPatternController extends BaseController
         return "<img src=\"data:image/png;base64,"+fontArtImage+"\" width=\"512\" height=\"768\">";
     }
     @GetMapping("/fontart/{content}")
-    public String getFontArtCard(@PathVariable("content") String fontArtText){
+    public String getFontArtCard(@PathVariable("content") String fontArtText) throws IOException {
         Integer fontArtSize = 72;
-        String fontArtImage = blackBackgroundWithWhiteArtisticTextGenerator.generateImageByText(
+        String fontArtImage = autoLayoutGenerator.generateImageByTextAutoLayout(
                 fontArtText,
                 fontArtSize,
                 512,

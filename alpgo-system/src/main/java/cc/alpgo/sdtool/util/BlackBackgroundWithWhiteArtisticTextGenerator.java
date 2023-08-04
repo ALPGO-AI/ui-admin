@@ -1,14 +1,12 @@
 package cc.alpgo.sdtool.util;
-import cc.alpgo.common.utils.uuid.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
 import javax.imageio.ImageIO;
 
 @Component
@@ -32,7 +30,7 @@ public class BlackBackgroundWithWhiteArtisticTextGenerator {
         return base64Image;
     }
 
-    private String convertImageToBase64(BufferedImage image) {
+    private static String convertImageToBase64(BufferedImage image) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(image, "png", baos);
