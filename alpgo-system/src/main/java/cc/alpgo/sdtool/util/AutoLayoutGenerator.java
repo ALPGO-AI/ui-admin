@@ -52,15 +52,19 @@ public class AutoLayoutGenerator {
             double regionWidth = regionSize.getWidth();
             double regionHeight = regionSize.getHeight();
             // 自动调整字体大小，直到符合高度要求
-            while (regionHeight > canvasHeight) {
-                tempSize -= 2; // 递减字体大小
-                tempFont = new Font(font.getFamily(), font.getStyle(), tempSize);
-                regionSize = calculateRegionSize(paragraphs[index].length(), tempFont, g);
-                regionWidth = regionSize.getWidth();
-                regionHeight = regionSize.getHeight();
-            }
+            int minSize = 65;
+//            while (regionHeight > canvasHeight) {
+//                tempSize -= 2; // 递减字体大小
+//                tempFont = new Font(font.getFamily(), font.getStyle(), tempSize);
+//                regionSize = calculateRegionSize(paragraphs[index].length(), tempFont, g);
+//                regionWidth = regionSize.getWidth();
+//                regionHeight = regionSize.getHeight();
+//            }
             // 自动调整字体大小，直到符合宽度要求
             while (regionWidth > canvasWidth) {
+                if (tempSize <= minSize) {
+                    break;
+                }
                 tempSize -= 2; // 递减字体大小
                 tempFont = new Font(font.getFamily(), font.getStyle(), tempSize);
                 regionSize = calculateRegionSize(paragraphs[index].length(), tempFont, g);
