@@ -240,6 +240,25 @@ public class StableDiffusionPatternController extends BaseController
         );
         return "<img src=\"data:image/png;base64,"+fontArtImage+"\" width=\"512\" height=\"768\">";
     }
+    @GetMapping("/fontart/{content}/base64.png")
+    public void generateFontArtAndReturnFile(@PathVariable("content") String fontArtText,HttpServletResponse response, HttpServletRequest request) throws IOException {
+        InputStream fontArtImage = autoLayoutGenerator.generateImageByTextAutoLayoutReturnInputStream(
+                fontArtText,
+                72,
+                512,
+                768
+        );
+        try
+        {
+            response.setContentType(MediaType.IMAGE_PNG_VALUE);
+            FileUtils.setAttachmentResponseHeader(response, "base64.png");
+            FileUtils.writeBytes(fontArtImage, response.getOutputStream());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     @GetMapping("/fontart/regeneratebyrevid/{revId}")
     public String regenerateByRevId(@PathVariable("revId") String revId){

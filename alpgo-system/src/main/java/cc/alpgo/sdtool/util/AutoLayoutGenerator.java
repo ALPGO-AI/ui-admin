@@ -32,6 +32,17 @@ public class AutoLayoutGenerator {
     }
 
     public static String generateTextLayout(String text, Font font, Color backgroundColor, Color foregroundColor, int canvasWidth, int canvasHeight) throws IOException {
+
+        String base64Image = convertImageToBase64(generateImage(text,font,backgroundColor,foregroundColor,canvasWidth,canvasHeight));
+        return base64Image;
+    }
+    public static InputStream generateTextLayoutReturnStream(String text, Font font, Color backgroundColor, Color foregroundColor, int canvasWidth, int canvasHeight) throws IOException {
+
+        return bufferedImageToInputStream(generateImage(text,font,backgroundColor,foregroundColor,canvasWidth,canvasHeight));
+    }
+
+
+    private static BufferedImage generateImage(String text, Font font, Color backgroundColor, Color foregroundColor, int canvasWidth, int canvasHeight) {
         // 创建黑底白字的图像
         int fontSize = font.getSize();
         String[] paragraphs = text.split(" {2}");
@@ -143,9 +154,7 @@ public class AutoLayoutGenerator {
 //            g.drawString(paragraphs[index], offsetX, offsetY);
             drawTexts(g, paragraphs[index], canvasWidth - (MARGIN * 2), offsetX, offsetY);
         }
-
-        String base64Image = convertImageToBase64(image);
-        return base64Image;
+        return image;
     }
 
     private static void drawTexts(Graphics2D g2d, String text, int maxWidth, int offsetX, int offsetY) {
@@ -227,5 +236,15 @@ public class AutoLayoutGenerator {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ImageIO.write(bufferedImage, "png", byteArrayOutputStream);
         return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+    }
+
+    public InputStream generateImageByTextAutoLayoutReturnInputStream(String text, int fontSize, int canvasWidth, int canvasHeight) throws IOException {
+        Font font = new Font(fontLoader.loadFont(), Font.BOLD, fontSize);
+        Color backgroundColor = Color.BLACK;
+        Color foregroundColor = Color.WHITE;
+        // 使用正则表达式将多个空格替换为两个空格
+        String result = text.replaceAll("\\s{2,}", "  ");
+        return generateTextLayoutReturnStream(result, font, backgroundColor, foregroundColor, canvasWidth, canvasHeight);
+
     }
 }
